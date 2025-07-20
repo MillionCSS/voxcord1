@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voxcord - Enterprise AI Voice Infrastructure | 99.9% Uptime SLA</title>
+    <meta name="description" content="Deploy intelligent voice assistants with carrier-grade infrastructure. 99.9% uptime SLA, enterprise security, and industry-specific AI training. Start free trial.">
+    <meta name="keywords" content="AI voice assistant, enterprise telephony, business phone system, voice AI, customer service automation, call center AI">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://voxcord.com/">
+    <meta property="og:title" content="Voxcord - Enterprise AI Voice Infrastructure">
+    <meta property="og:description" content="Deploy intelligent voice assistants with carrier-grade infrastructure. 99.9% uptime SLA, enterprise security.">
+    <meta property="og:image" content="https://voxcord.com/static/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://voxcord.com/">
+    <meta property="twitter:title" content="Voxcord - Enterprise AI Voice Infrastructure">
+    <meta property="twitter:description" content="Deploy intelligent voice assistants with carrier-grade infrastructure. 99.9% uptime SLA, enterprise security.">
+    <meta property="twitter:image" content="https://voxcord.com/static/og-image.png">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/static/styles.css" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" as="style">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="alternate icon" href="/static/favicon.ico">
+    
+    <!-- Stylesheets -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+    
+    <!-- Schema.org markup -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Voxcord",
+        "description": "Enterprise AI Voice Infrastructure with 99.9% uptime SLA",
+        "url": "https://voxcord.com",
+        "applicationCategory": "Business Communication",
+        "operatingSystem": "Web-based",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "description": "Free plan available"
+        }
+    }
+    </script>
+    
+    <!-- Additional landing page specific styles -->
+    <style>
+        /* Performance optimizations */
+        .hero-visual {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            will-change: transform;
+        }
+
+        .telecom-dashboard {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-xl);
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            max-width: 420px;
+            animation: float 6s ease-in-out infinite;
+            will-change: transform;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .signal-bars {
+            display: flex;
+            gap: var(--space-xs);
+            justify-content: center;
+            margin-bottom: var(--space-lg);
+        }
+
+        .signal-bar {
+            width: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            animation: pulse-bar 2s ease-in-out infinite;
+            will-change: background;
+        }
+
+        .signal-bar:nth-child(1) { height: 20px; animation-delay: 0s; }
+        .signal-bar:nth-child(2) { height: 30px; animation-delay: 0.2s; }
+        .signal-bar:nth-child(3) { height: 40px; animation-delay: 0.4s; }
+        .signal-bar:nth-child(4) { height: 50px; animation-delay: 0.6s; }
+        .signal-bar:nth-child(5) { height: 35px; animation-delay: 0.8s; }
+
+        @keyframes pulse-bar {
+            0%, 100% { background: rgba(255, 255, 255, 0.3); }
+            50% { background: rgba(255, 255, 255, 0.8); }
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-md);
+            margin-top: var(--space-lg);
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: var(--space-lg);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+            display: block;
+            margin-bottom: var(--space-xs);
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: var(--space-xl);
+            margin-top: var(--space-3xl);
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            box-shadow: var(--shadow-lg);
+            transition: all var(--transition-normal);
+            border-top: 4px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--telecom-cyan) 100%);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-2xl);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--telecom-cyan) 100%);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: var(--space-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stats-section {
+            background: linear-gradient(135deg, var(--gray-900) 0%, var(--telecom-indigo) 100%);
+            color: white;
+            padding: var(--space-3xl) 0;
+            margin: var(--space-3xl) 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-xl);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--accent);
+            display: block;
+            margin-bottom: var(--space-sm);
+            counter-reset: number;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .pricing-section {
+            background: var(--gray-50);
+            padding: var(--space-3xl) 0;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-xl);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: white;
+            border-radius: var(--radius-2xl);
+            padding: var(--space-xl);
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            border: 2px solid transparent;
+            transition: all var(--transition-normal);
+        }
+
+        .pricing-card.featured {
+            border-color: var(--primary);
+            transform: scale(1.05);
+            box-shadow: var(--shadow-2xl);
+        }
+
+        .pricing-card.featured::before {
+            content: 'Most Popular';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: var(--space-sm) var(--space-lg);
+            border-radius: var(--radius-lg);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .plan-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--space-sm);
+        }
+
+        .plan-price {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .plan-period {
+            color: var(--gray-500);
+            margin-bottom: var(--space-xl);
+        }
+
+        .plan-features {
+            list-style: none;
+            margin-bottom: var(--space-xl);
+        }
+
+        .plan-features li {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-sm);
+            color: var(--gray-600);
+        }
+
+        .plan-features .check {
+            color: var(--success);
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        /* Lazy loading optimization */
+        .lazy-section {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease-out;
+        }
+
+        .lazy-section.loaded {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Performance optimizations for mobile */
+        @media (max-width: 768px) {
+            .hero-content {
+                grid-column: span 2;
+                order: 1;
+            }
+            
+            .hero-visual {
+                grid-column: span 2;
+                order: 2;
+                margin-top: var(--space-xl);
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .pricing-card.featured {
+                transform: none;
+            }
+
+            .telecom-dashboard {
+                max-width: 320px;
+            }
+        }
+
+        /* Reduce motion for users who prefer it */
+        @media (prefers-reduced-motion: reduce) {
+            .telecom-dashboard,
+            .signal-bar {
+                animation: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-container">
+                <a href="/" class="navbar-brand" aria-label="Voxcord Home">
+                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary) 0%, var(--telecom-cyan) 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.4rem; margin-right: 0.75rem;">📡</div>
+                    Voxcord
+                </a>
+                <ul class="navbar-nav">
+                    <li><a href="#solutions" class="nav-link">Solutions</a></li>
+                    <li><a href="#enterprise" class="nav-link">Enterprise</a></li>
+                    <li><a href="#pricing" class="nav-link">Pricing</a></li>
+                    <li><a href="/login" class="btn btn-ghost btn-sm">Sign In</a></li>
+                    <li><a href="/signup?plan=free" class="btn btn-primary btn-sm">Start Free Trial</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="grid grid-cols-2" style="align-items: center; gap: var(--space-3xl);">
+                <div class="hero-content">
+                    <h1 class="hero-title">Enterprise-Grade <span style="background: linear-gradient(135deg, #00ccff 0%, #ffffff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">AI Voice Infrastructure</span></h1>
+                    <p class="hero-subtitle">Deploy intelligent voice assistants that understand your business. Built on carrier-grade infrastructure with enterprise security and 99.9% uptime SLA.</p>
+                    
+                    <div class="metrics-grid" aria-label="Key metrics">
+                        <div class="metric-card">
+                            <span class="metric-value">99.9%</span>
+                            <span class="metric-label">Uptime SLA</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-value">&lt; 3s</span>
+                            <span class="metric-label">Response Time</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-value">24/7</span>
+                            <span class="metric-label">Monitoring</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-value">SOC 2</span>
+                            <span class="metric-label">Certified</span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: var(--space-lg); margin-top: var(--space-xl); align-items: center; flex-wrap: wrap;">
+                        <a href="/signup?plan=free" class="btn btn-primary btn-xl" onclick="gtag('event', 'click', {'event_category': 'CTA', 'event_label': 'Hero Start Free'});">Start Free - No Credit Card</a>
+                        <a href="#demo" style="color: white; font-weight: 600; display: flex; align-items: center; gap: var(--space-sm);" aria-label="View product demo">
+                            ▶️ View Demo
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="hero-visual" aria-label="Live dashboard demonstration">
+                    <div class="telecom-dashboard">
+                        <div style="text-align: center; margin-bottom: var(--space-lg);">
+                            <div style="font-size: 2rem; margin-bottom: var(--space-sm);" aria-hidden="true">📡</div>
+                            <h3 style="color: white; margin: 0 0 var(--space-xs); font-size: 1.2rem;">Voice Network Active</h3>
+                            <p style="color: var(--gray-600); line-height: 1.6; margin-bottom: var(--space-lg);">Connect with your existing CRM, helpdesk, and business tools through our comprehensive API.</p>
+                    <ul style="list-style: none; color: var(--gray-600);">
+                        <li style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            REST & GraphQL APIs
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            Webhook integrations
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-sm);">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            SDK & libraries
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: var(--space-md); color: var(--gray-900);">Advanced Analytics</h3>
+                    <p style="color: var(--gray-600); line-height: 1.6; margin-bottom: var(--space-lg);">Real-time insights and performance metrics to optimize your voice AI operations.</p>
+                    <ul style="list-style: none; color: var(--gray-600);">
+                        <li style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            Call performance metrics
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            Customer satisfaction tracking
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-sm);">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            Custom dashboards
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: var(--space-md); color: var(--gray-900);">Industry-Specific AI</h3>
+                    <p style="color: var(--gray-600); line-height: 1.6; margin-bottom: var(--space-lg);">Pre-trained models for healthcare, finance, retail, and more industries.</p>
+                    <ul style="list-style: none; color: var(--gray-600);">
+                        <li style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            Healthcare compliance
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            Financial regulations
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-sm);">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            Custom training data
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: var(--space-md); color: var(--gray-900);">Auto-Scaling Infrastructure</h3>
+                    <p style="color: var(--gray-600); line-height: 1.6; margin-bottom: var(--space-lg);">Handle traffic spikes effortlessly with our elastic cloud infrastructure.</p>
+                    <ul style="list-style: none; color: var(--gray-600);">
+                        <li style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            Auto-scaling capabilities
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            Multi-region deployment
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-sm);">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            99.9% uptime SLA
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section lazy-section">
+        <div class="container">
+            <div style="text-align: center; margin-bottom: var(--space-3xl);">
+                <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: var(--space-lg);">Powering Enterprise Communications</h2>
+                <p style="font-size: 1.25rem; opacity: 0.9; max-width: 600px; margin: 0 auto;">Join thousands of businesses transforming their customer experience</p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number" data-count="10000">10,000+</span>
+                    <span class="stat-label">Businesses Served</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" data-count="50000000">50M+</span>
+                    <span class="stat-label">Calls Processed</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" data-count="99.9">99.9%</span>
+                    <span class="stat-label">Uptime Achievement</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" data-count="2.1">2.1s</span>
+                    <span class="stat-label">Average Response Time</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing-section lazy-section">
+        <div class="container">
+            <div style="text-align: center; margin-bottom: var(--space-3xl);">
+                <h2 style="font-size: 2.5rem; font-weight: 800; color: var(--gray-900); margin-bottom: var(--space-lg);">Simple, Transparent Pricing</h2>
+                <p style="font-size: 1.25rem; color: var(--gray-600); max-width: 600px; margin: 0 auto;">Choose the plan that fits your business needs. All plans include our core AI features.</p>
+            </div>
+            
+            <div class="pricing-grid">
+                <!-- Free Plan -->
+                <div class="pricing-card">
+                    <div class="plan-name">Free</div>
+                    <div class="plan-price">$0</div>
+                    <div class="plan-period">Forever free</div>
+                    
+                    <ul class="plan-features">
+                        <li><span class="check">✓</span> 100 calls per month</li>
+                        <li><span class="check">✓</span> 1 AI assistant</li>
+                        <li><span class="check">✓</span> Basic AI responses</li>
+                        <li><span class="check">✓</span> Email support</li>
+                        <li><span class="check">✓</span> 5-minute call duration</li>
+                        <li style="opacity: 0.5;"><span class="cross">✗</span> Advanced analytics</li>
+                        <li style="opacity: 0.5;"><span class="cross">✗</span> CRM integration</li>
+                    </ul>
+                    
+                    <a href="/signup?plan=free" class="btn btn-secondary" style="width: 100%; justify-content: center;" onclick="gtag('event', 'click', {'event_category': 'Pricing', 'event_label': 'Free Plan'});">Start Free</a>
+                </div>
+                
+                <!-- Professional Plan -->
+                <div class="pricing-card featured">
+                    <div class="plan-name">Professional</div>
+                    <div class="plan-price">$99</div>
+                    <div class="plan-period">per month</div>
+                    
+                    <ul class="plan-features">
+                        <li><span class="check">✓</span> Unlimited calls</li>
+                        <li><span class="check">✓</span> 5 AI assistants</li>
+                        <li><span class="check">✓</span> Advanced AI training</li>
+                        <li><span class="check">✓</span> Priority support</li>
+                        <li><span class="check">✓</span> Unlimited call duration</li>
+                        <li><span class="check">✓</span> Advanced analytics</li>
+                        <li><span class="check">✓</span> CRM integration</li>
+                    </ul>
+                    
+                    <a href="/signup?plan=professional" class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="gtag('event', 'click', {'event_category': 'Pricing', 'event_label': 'Professional Plan'});">Start 14-Day Trial</a>
+                </div>
+                
+                <!-- Enterprise Plan -->
+                <div class="pricing-card">
+                    <div class="plan-name">Enterprise</div>
+                    <div class="plan-price">$299</div>
+                    <div class="plan-period">per month</div>
+                    
+                    <ul class="plan-features">
+                        <li><span class="check">✓</span> Everything in Professional</li>
+                        <li><span class="check">✓</span> Unlimited assistants</li>
+                        <li><span class="check">✓</span> Voice cloning</li>
+                        <li><span class="check">✓</span> Dedicated support</li>
+                        <li><span class="check">✓</span> API access</li>
+                        <li><span class="check">✓</span> Custom integrations</li>
+                        <li><span class="check">✓</span> White-label options</li>
+                    </ul>
+                    
+                    <a href="/signup?plan=enterprise" class="btn btn-secondary" style="width: 100%; justify-content: center;" onclick="gtag('event', 'click', {'event_category': 'Pricing', 'event_label': 'Enterprise Plan'});">Contact Sales</a>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: var(--space-xl); color: var(--gray-600);">
+                <p>All plans include 99.9% uptime SLA • No setup fees • Cancel anytime</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="lazy-section" style="background: linear-gradient(135deg, var(--telecom-blue) 0%, var(--telecom-indigo) 100%); color: white; padding: var(--space-3xl) 0;">
+        <div class="container" style="text-align: center;">
+            <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: var(--space-lg);">Ready to Transform Your Customer Experience?</h2>
+            <p style="font-size: 1.25rem; opacity: 0.9; margin-bottom: var(--space-xl); max-width: 600px; margin-left: auto; margin-right: auto; margin-bottom: var(--space-xl);">Join thousands of businesses using Voxcord to deliver exceptional voice experiences.</p>
+            
+            <div style="display: flex; gap: var(--space-lg); justify-content: center; align-items: center; flex-wrap: wrap;">
+                <a href="/signup?plan=free" class="btn" style="background: white; color: var(--telecom-blue); padding: var(--space-lg) var(--space-2xl); font-size: 1.125rem;" onclick="gtag('event', 'click', {'event_category': 'CTA', 'event_label': 'Final CTA'});">Start Free Trial</a>
+                <a href="#demo" style="color: white; font-weight: 600; display: flex; align-items: center; gap: var(--space-sm);">
+                    📞 Schedule Demo
+                </a>
+            </div>
+            
+            <div style="margin-top: var(--space-xl); opacity: 0.8;">
+                <p style="font-size: 0.9rem;">No credit card required • 14-day free trial • Setup in under 5 minutes</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background: var(--gray-900); color: white; padding: var(--space-3xl) 0 var(--space-xl);">
+        <div class="container">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-xl); margin-bottom: var(--space-xl);">
+                <div>
+                    <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-lg);">
+                        <div style="width: 32px; height: 32px; background: linear-gradient(135deg, var(--primary) 0%, var(--telecom-cyan) 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">📡</div>
+                        <span style="font-size: 1.5rem; font-weight: 800;">Voxcord</span>
+                    </div>
+                    <p style="opacity: 0.8; line-height: 1.6;">Enterprise AI voice infrastructure that scales with your business.</p>
+                </div>
+                
+                <div>
+                    <h4 style="font-weight: 600; margin-bottom: var(--space-lg);">Product</h4>
+                    <ul style="list-style: none; opacity: 0.8;">
+                        <li style="margin-bottom: var(--space-sm);"><a href="#" style="color: inherit; text-decoration: none;">Features</a></li>
+                        <li style="margin-bottom: var(--space-sm);"><a href="#pricing" style="color: inherit; text-decoration: none;">Pricing</a></li>
+                        <li style="margin-bottom: var(--space-sm);"><a href="#" style="color: inherit; text-decoration: none;">API Documentation</a></li>
+                        <li style="margin-bottom: var(--space-sm);"><a href="#" style="color: inherit; text-decoration: none;">Integrations</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 style="font-weight: 600; margin-bottom: var(--space-lg);">Company</h4>
+                    <ul style="list-style: none; opacity: 0.8;">
+                        <li style="margin-bottom: var(--space-sm);"><a href="#" style="color: inherit; text-decoration: none;">About</a></li>
+                        <li style="margin-bottom: var(--space-sm);"><a href="#" style="color: inherit; text-decoration: none;">Blog</a></li>
+                        <li style="margin-bottom: var(--space-sm);"><a href="#" style="color: inherit; text-decoration: none;">Careers</a></li>
+                        <li style="margin-bottom: var(--space-sm);"><a href="#" style="color: inherit; text-decoration: none;">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 style="font-weight: 600; margin-bottom: var(--space-lg);">Support</h4>
+                    <ul style="list-style: none; opacity: 0.8;">
+                        <li style="margin-bottom: var(--space-sm);"><a href="#" style="color: inherit; text-decoration: none;">Help Center</a></li>
+                        <li style="margin-bottom: var(--space-sm);"><a href="#" style="color: inherit; text-decoration: none;">Status Page</a></li>
+                        <li style="margin-bottom: var(--space-sm);"><a href="#" style="color: inherit; text-decoration: none;">Security</a></li>
+                        <li style="margin-bottom: var(--space-sm);"><a href="#" style="color: inherit; text-decoration: none;">Privacy</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div style="border-top: 1px solid var(--gray-700); padding-top: var(--space-lg); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-lg);">
+                <p style="opacity: 0.6;">&copy; 2025 Voxcord. All rights reserved.</p>
+                <div style="display: flex; gap: var(--space-lg); opacity: 0.6;">
+                    <a href="#" style="color: inherit; text-decoration: none;">Terms</a>
+                    <a href="#" style="color: inherit; text-decoration: none;">Privacy</a>
+                    <a href="#" style="color: inherit; text-decoration: none;">Security</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Performance optimizations
+        
+        // Animate counter numbers
+        function animateCounters() {
+            const counters = document.querySelectorAll('[data-count]');
+            const observerOptions = {
+                threshold: 0.7,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const counter = entry.target;
+                        const target = parseFloat(counter.dataset.count);
+                        const duration = 2000;
+                        const increment = target / (duration / 16);
+                        let current = 0;
+
+                        const updateCounter = () => {
+                            current += increment;
+                            if (current < target) {
+                                counter.textContent = formatNumber(current);
+                                requestAnimationFrame(updateCounter);
+                            } else {
+                                counter.textContent = formatNumber(target);
+                            }
+                        };
+
+                        updateCounter();
+                        observer.unobserve(counter);
+                    }
+                });
+            }, observerOptions);
+
+            counters.forEach(counter => observer.observe(counter));
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M+';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(0) + 'K+';
+            } else if (num % 1 !== 0) {
+                return num.toFixed(1) + 's';
+            }
+            return Math.floor(num).toString();
+        }
+
+        // Lazy load sections
+        function setupLazyLoading() {
+            const sections = document.querySelectorAll('.lazy-section');
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('loaded');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => observer.observe(section));
+        }
+
+        // Animate live dashboard numbers
+        function animateLiveDashboard() {
+            const callsElement = document.getElementById('live-calls');
+            const agentsElement = document.getElementById('active-agents');
+            
+            if (!callsElement || !agentsElement) return;
+            
+            setInterval(() => {
+                // Simulate live call updates
+                const currentCalls = parseInt(callsElement.textContent.replace(',', ''));
+                const variation = Math.floor(Math.random() * 20) - 10; // ±10
+                const newCalls = Math.max(1200, currentCalls + variation);
+                callsElement.textContent = newCalls.toLocaleString();
+                
+                // Simulate agent updates
+                const currentAgents = parseInt(agentsElement.textContent);
+                const agentVariation = Math.floor(Math.random() * 3) - 1; // ±1
+                const newAgents = Math.max(8, Math.min(15, currentAgents + agentVariation));
+                agentsElement.textContent = newAgents;
+            }, 3000);
+        }
+
+        // Initialize all animations and optimizations
+        document.addEventListener('DOMContentLoaded', function() {
+            setupLazyLoading();
+            animateCounters();
+            animateLiveDashboard();
+            
+            // Preload critical pages
+            const criticalLinks = ['/signup', '/login'];
+            criticalLinks.forEach(link => {
+                const linkElement = document.createElement('link');
+                linkElement.rel = 'prefetch';
+                linkElement.href = link;
+                document.head.appendChild(linkElement);
+            });
+        });
+
+        // Analytics
+        function gtag() {
+            if (typeof dataLayer !== 'undefined') {
+                dataLayer.push(arguments);
+            }
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Service Worker for caching (if supported)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .catch(() => {}); // Fail silently
+            });
+        }
+    </script>
+
+    <!-- Google Analytics (replace GA_MEASUREMENT_ID with your actual ID) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'GA_MEASUREMENT_ID');
+    </script>
+</body>
+</html>="color: rgba(255,255,255,0.8); margin: 0; font-size: 0.9rem;">AI Agents Online</p>
+                        </div>
+                        
+                        <div class="signal-bars" aria-label="Network signal strength">
+                            <div class="signal-bar"></div>
+                            <div class="signal-bar"></div>
+                            <div class="signal-bar"></div>
+                            <div class="signal-bar"></div>
+                            <div class="signal-bar"></div>
+                        </div>
+                        
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <span class="metric-value" id="live-calls">1,247</span>
+                                <span class="metric-label">Calls Today</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-value" id="active-agents">12</span>
+                                <span class="metric-label">Active Now</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-value">98%</span>
+                                <span class="metric-label">Satisfaction</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-value">2.1s</span>
+                                <span class="metric-label">Avg Response</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Section -->
+    <section class="lazy-section" style="padding: var(--space-xl) 0; background: white;">
+        <div class="container">
+            <p style="text-align: center; color: var(--gray-500); margin-bottom: var(--space-lg);">Trusted by enterprises worldwide</p>
+            <div style="display: flex; justify-content: center; align-items: center; gap: var(--space-2xl); flex-wrap: wrap; opacity: 0.6;">
+                <!-- Placeholder for company logos -->
+                <div style="height: 40px; width: 120px; background: var(--gray-200); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--gray-500);">Enterprise A</div>
+                <div style="height: 40px; width: 120px; background: var(--gray-200); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--gray-500);">Enterprise B</div>
+                <div style="height: 40px; width: 120px; background: var(--gray-200); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--gray-500);">Enterprise C</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="solutions" class="lazy-section" style="padding: var(--space-3xl) 0;">
+        <div class="container">
+            <div style="text-align: center; margin-bottom: var(--space-3xl);">
+                <h2 style="font-size: 2.5rem; font-weight: 800; color: var(--gray-900); margin-bottom: var(--space-lg);">Enterprise Solutions</h2>
+                <p style="font-size: 1.25rem; color: var(--gray-600); max-width: 600px; margin: 0 auto;">Deploy AI voice assistants that integrate seamlessly with your business infrastructure</p>
+            </div>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: var(--space-md); color: var(--gray-900);">Enterprise Security</h3>
+                    <p style="color: var(--gray-600); line-height: 1.6; margin-bottom: var(--space-lg);">SOC 2 Type II certified with end-to-end encryption, GDPR & HIPAA compliance ready.</p>
+                    <ul style="list-style: none; color: var(--gray-600);">
+                        <li style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            Zero-trust architecture
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            Advanced threat detection
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-sm);">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            Regular security audits
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: var(--space-md); color: var(--gray-900);">Ultra-Low Latency</h3>
+                    <p style="color: var(--gray-600); line-height: 1.6; margin-bottom: var(--space-lg);">Sub-3 second response times with global edge infrastructure and intelligent routing.</p>
+                    <ul style="list-style: none; color: var(--gray-600);">
+                        <li style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            Global CDN network
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            Intelligent load balancing
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-sm);">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            Real-time optimization
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🔗</div>
+                    <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: var(--space-md); color: var(--gray-900);">Seamless Integration</h3>
+                    <p style

@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voxcord - AI Voice Assistant Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            color: var(--gray-800);
+            line-height: 1.6;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--gray-600);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 5rem;
+            padding: 2rem;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .page-subtitle {
+            font-size: 1.25rem;
+            color: var(--gray-600);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-icon {
+            width: 24px;
+            height: 24px;
+            color: var(--primary);
+        }
+
+        .card-action {
+            background: none;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            color: var(--gray-600);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .card-action:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: rotate(45deg);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-change {
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            opacity: 0.8;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Call List */
+        .call-list {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .call-item {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .call-item:hover {
+            background: white;
+            border-color: var(--primary);
+            transform: translateX(4px);
+        }
+
+        .call-item.selected {
+            background: rgba(99, 102, 241, 0.05);
+            border-color: var(--primary);
+        }
+
+        .call-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .call-info h4 {
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.25rem;
+        }
+
+        .call-meta {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+        }
+
+        .call-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-active {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .status-completed {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        .call-preview {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Transcript */
+        .transcript-container {
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .message {
+            margin-bottom: 1.5rem;
+            padding: 1.25rem;
+            border-radius: 16px;
+            position: relative;
+        }
+
+        .message-user {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+            margin-left: 3rem;
+            border-left: 3px solid var(--primary);
+        }
+
+        .message-assistant {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.05) 100%);
+            margin-right: 3rem;
+            border-left: 3px solid var(--success);
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .avatar-user {
+            background: var(--primary);
+            color: white;
+        }
+
+        .avatar-assistant {
+            background: var(--success);
+            color: white;
+        }
+
+        .message-label {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .message-time {
+            color: var(--gray-500);
+            font-size: 0.75rem;
+            margin-left: auto;
+        }
+
+        .message-content {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--gray-700);
+        }
+
+        /* AI Configuration */
+        .config-section {
+            background: var(--gray-50);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .config-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .voice-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .voice-option {
+            background: white;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .voice-option:hover {
+            border-color: var(--primary);
+        }
+
+        .voice-option.selected {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .voice-name {
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.25rem;
+        }
+
+        .voice-desc {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--gray-500);
+        }
+
+        .empty-state-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1rem;
+            color: var(--gray-300);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .nav-menu {
+                display: none;
+            }
+
+            .message-user {
+                margin-left: 1rem;
+            }
+
+            .message-assistant {
+                margin-right: 1rem;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--gray-100);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--gray-300);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gray-400);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <div class="logo-icon">🎤</div>
+                Voxcord
+            </a>
+            <div class="nav-menu">
+                <a href="#" class="nav-link">Dashboard</a>
+                <a href="#" class="nav-link">Analytics</a>
+                <a href="#" class="nav-link">Settings</a>
+                <div class="status-badge">
+                    <div class="status-dot"></div>
+                    System Online
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Page Header -->
+        <header class="page-header">
+            <h1 class="page-title">AI Voice Assistant Dashboard</h1>
+            <p class="page-subtitle">Monitor conversations, analyze performance, and customize your AI assistant in real-time</p>
+        </header>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="total-calls">0</div>
+                <div class="stat-label">Total Calls</div>
+                <div class="stat-change">+12% from last week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="active-calls">0</div>
+                <div class="stat-label">Active Now</div>
+                <div class="stat-change">Real-time monitoring</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avg-duration">0s</div>
+                <div class="stat-label">Avg Duration</div>
+                <div class="stat-change">Optimized responses</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="satisfaction">98%</div>
+                <div class="stat-label">Satisfaction</div>
+                <div class="stat-change">AI-powered insights</div>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Live Calls -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <svg class="card-icon" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+                        </svg>
+                        Live Calls
+                    </h2>
+                    <button class="card-action" onclick="refreshData()">Refresh</button>
+                </div>
+                <div class="call-list" id="calls-list">
+                    <div class="empty-state">
+                        <svg class="empty-state-icon" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+                        </svg>
+                        <h3>No calls yet</h3>
+                        <p>Your AI assistant is ready and waiting for customer calls</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conversation Transcript -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <svg class="card-icon" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z"/>
+                        </svg>
+                        Conversation
+                    </h2>
+                    <button class="card-action" onclick="exportTranscript()">Export</button>
+                </div>
+                <div class="transcript-container" id="transcript-container">
+                    <div class="empty-state">
+                        <svg class="empty-state-icon" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z"/>
+                        </svg>
+                        <h3>Select a call</h3>
+                        <p>Choose a call from the list to view the full conversation transcript</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Configuration -->
+            <div class="card" style="grid-column: span 2;">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <svg class="card-icon" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"/>
+                        </svg>
+                        AI Assistant Configuration
+                    </h2>
+                    <button class="btn btn-secondary" onclick="saveConfiguration()">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M15.854.146a.5.5 0 0 1 0 .708L14.5 2.207l-1.354-1.353L14.5.5a.5.5 0 0 1 .708 0l.646.646zM13.793 1.5l1.353 1.354-1.353 1.353L12.44 2.854 13.793 1.5zm-2.207 2.207L12.44 2.854 2.854 12.44l-.854.853-.853-.854L12.44 1.146l-.854.854z"/>
+                        </svg>
+                        Save Changes
+                    </button>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <!-- Voice Settings -->
+                    <div class="config-section">
+                        <h3 class="config-title">Voice & Personality</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Assistant Voice</label>
+                            <div class="voice-selector">
+                                <div class="voice-option selected" data-voice="echo">
+                                    <div class="voice-name">Echo</div>
+                                    <div class="voice-desc">Deep, resonant</div>
+                                </div>
+                                <div class="voice-option" data-voice="nova">
+                                    <div class="voice-name">Nova</div>
+                                    <div class="voice-desc">Bright, upbeat</div>
+                                </div>
+                                <div class="voice-option" data-voice="alloy">
+                                    <div class="voice-name">Alloy</div>
+                                    <div class="voice-desc">Balanced, neutral</div>
+                                </div>
+                                <div class="voice-option" data-voice="onyx">
+                                    <div class="voice-name">Onyx</div>
+                                    <div class="voice-desc">Authoritative</div>
+                                </div>
+                                <div class="voice-option" data-voice="fable">
+                                    <div class="voice-name">Fable</div>
+                                    <div class="voice-desc">Warm, storytelling</div>
+                                </div>
+                                <div class="voice-option" data-voice="shimmer">
+                                    <div class="voice-name">Shimmer</div>
+                                    <div class="voice-desc">Soft, gentle</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Speaking Speed</label>
+                            <select class="form-select" id="speaking-speed">
+                                <option value="0.8">Slow</option>
+                                <option value="1.0" selected>Normal</option>
+                                <option value="1.2">Fast</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Business Settings -->
+                    <div class="config-section">
+                        <h3 class="config-title">Business Information</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Business Name</label>
+                            <input type="text" class="form-input" id="business-name" placeholder="Enter your business name">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Industry</label>
+                            <select class="form-select" id="industry">
+                                <option value="">Select industry</option>
+                                <option value="technology">Technology</option>
+                                <option value="healthcare">Healthcare</option>
+                                <option value="finance">Finance</option>
+                                <option value="retail">Retail</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" class="form-input" id="phone-number" placeholder="+1 (555) 123-4567" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assistant Instructions -->
+                <div class="config-section">
+                    <h3 class="config-title">Assistant Instructions</h3>
+                    <div class="form-group">
+                        <label class="form-label">Custom Instructions</label>
+                        <textarea class="form-textarea" id="assistant-instructions" placeholder="Tell your AI assistant how to behave, what to say, and how to help your customers...">You are a helpful customer service assistant. Be friendly, professional, and concise in your responses. Keep responses under 50 words when possible since this is a phone conversation. Ask clarifying questions when needed and try to resolve customer issues. If you cannot help with something, politely let them know and offer to take a message.</textarea>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Greeting Message</label>
+                            <input type="text" class="form-input" id="greeting-message" placeholder="Hello! Thank you for calling. How can I help you today?">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Fallback Message</label>
+                            <input type="text" class="form-input" id="fallback-message" placeholder="I'm sorry, I didn't understand. Could you please repeat that?">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedCallId = null;
+        let refreshInterval = null;
+        let currentVoice = 'echo';
+        let aiConfig = {
+            voice: 'echo',
+            speed: 1.0,
+            businessName: '',
+            industry: '',
+            instructions: '',
+            greeting: 'Hello! Thank you for calling. How can I help you today?',
+            fallback: "I'm sorry, I didn't understand. Could you please repeat that?"
+        };
+
+        // API base URL
+        const API_BASE = window.location.origin;
+
+        // Initialize the dashboard
+        function initDashboard() {
+            loadConfiguration();
+            setupEventListeners();
+            startAutoRefresh();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Voice selector
+            document.querySelectorAll('.voice-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    document.querySelectorAll('.voice-option').forEach(o => o.classList.remove('selected'));
+                    option.classList.add('selected');
+                    currentVoice = option.dataset.voice;
+                    aiConfig.voice = currentVoice;
+                });
+            });
+
+            // Form inputs
+            document.getElementById('speaking-speed').addEventListener('change', (e) => {
+                aiConfig.speed = parseFloat(e.target.value);
+            });
+
+            document.getElementById('business-name').addEventListener('input', (e) => {
+                aiConfig.businessName = e.target.value;
+            });
+
+            document.getElementById('industry').addEventListener('change', (e) => {
+                aiConfig.industry = e.target.value;
+            });
+
+            document.getElementById('assistant-instructions').addEventListener('input', (e) => {
+                aiConfig.instructions = e.target.value;
+            });
+
+            document.getElementById('greeting-message').addEventListener('input', (e) => {
+                aiConfig.greeting = e.target.value;
+            });
+
+            document.getElementById('fallback-message').addEventListener('input', (e) => {
+                aiConfig.fallback = e.target.value;
+            });
+        }
+
+        // Load configuration
+        function loadConfiguration() {
+            // Load from localStorage or use defaults
+            const savedConfig = localStorage.getItem('voxcord-config');
+            if (savedConfig) {
+                aiConfig = { ...aiConfig, ...JSON.parse(savedConfig) };
+                updateUIFromConfig();
+            }
+
+            // Load phone number from backend
+            loadPhoneNumber();
+        }
+
+        // Update UI from configuration
+        function updateUIFromConfig() {
+            document.getElementById('speaking-speed').value = aiConfig.speed;
+            document.getElementById('business-name').value = aiConfig.businessName;
+            document.getElementById('industry').value = aiConfig.industry;
+            document.getElementById('assistant-instructions').value = aiConfig.instructions;
+            document.getElementById('greeting-message').value = aiConfig.greeting;
+            document.getElementById('fallback-message').value = aiConfig.fallback;
+
+            // Update voice selection
+            document.querySelectorAll('.voice-option').forEach(option => {
+                option.classList.remove('selected');
+                if (option.dataset.voice === aiConfig.voice) {
+                    option.classList.add('selected');
+                }
+            });
+        }
+
+        // Save configuration
+        async function saveConfiguration() {
+            try {
+                // Save to localStorage
+                localStorage.setItem('voxcord-config', JSON.stringify(aiConfig));
+
+                // Send to backend
+                const response = await fetch(`${API_BASE}/update_config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(aiConfig)
+                });
+
+                if (response.ok) {
+                    showNotification('Configuration saved successfully!', 'success');
+                } else {
+                    showNotification('Failed to save configuration', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving configuration:', error);
+                showNotification('Failed to save configuration', 'error');
+            }
+        }
+
+        // Load phone number
+        async function loadPhoneNumber() {
+            try {
+                const response = await fetch(`${API_BASE}/phone_info`);
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('phone-number').value = data.phone_number || 'Not configured';
+                }
+            } catch (error) {
+                console.error('Error loading phone number:', error);
+            }
+        }
+
+        // Start auto-refresh
+        function startAutoRefresh() {
+            refreshData();
+            refreshInterval = setInterval(refreshData, 5000);
+        }
+
+        // Stop auto-refresh
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+        }
+
+        // Refresh all data
+        async function refreshData() {
+            try {
+                await Promise.all([
+                    loadStats(),
+                    loadCalls()
+                ]);
+            } catch (error) {
+                console.error('Error refreshing data:', error);
+            }
+        }
+
+        // Load statistics
+        async function loadStats() {
+            try {
+                const [callsResponse, healthResponse] = await Promise.all([
+                    fetch(`${API_BASE}/active_calls`),
+                    fetch(`${API_BASE}/health`)
+                ]);
+
+                const calls = await callsResponse.json();
+                const health = await healthResponse.json();
+
+                // Calculate stats
+                const totalCalls = calls.length;
+                const activeCalls = health.active_calls || 0;
+                const totalMessages = calls.reduce((sum, call) => sum + call.message_count, 0);
+                
+                // Calculate average duration
+                const now = Date.now() / 1000;
+                const avgDuration = calls.length > 0 
+                    ? Math.round(calls.reduce((sum, call) => sum + (now - call.started_at), 0) / calls.length)
+                    : 0;
+
+                // Update UI
+                document.getElementById('total-calls').textContent = totalCalls;
+                document.getElementById('active-calls').textContent = activeCalls;
+                document.getElementById('avg-duration').textContent = formatDuration(avgDuration);
+
+                // Animate numbers
+                animateNumber('total-calls', totalCalls);
+                animateNumber('active-calls', activeCalls);
+
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Load calls list
+        async function loadCalls() {
+            try {
+                const response = await fetch(`${API_BASE}/active_calls`);
+                const calls = await response.json();
+
+                const callsList = document.getElementById('calls-list');
+                
+                if (calls.length === 0) {
+                    callsList.innerHTML = `
+                        <div class="empty-state">
+                            <svg class="empty-state-icon" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+                            </svg>
+                            <h3>No calls yet</h3>
+                            <p>Your AI assistant is ready and waiting for customer calls</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                callsList.innerHTML = calls.map(call => {
+                    const startTime = new Date(call.started_at * 1000);
+                    const timeAgo = formatTimeAgo(startTime);
+                    const isActive = call.message_count > 0;
+                    const duration = Math.round((Date.now() / 1000) - call.started_at);
+                    
+                    return `
+                        <div class="call-item ${selectedCallId === call.call_sid ? 'selected' : ''}" onclick="selectCall('${call.call_sid}')">
+                            <div class="call-header">
+                                <div class="call-info">
+                                    <h4>Call ${call.call_sid.substring(0, 8)}...</h4>
+                                    <div class="call-meta">${timeAgo} • ${formatDuration(duration)}</div>
+                                </div>
+                                <div class="call-status ${isActive ? 'status-active' : 'status-completed'}">
+                                    ${isActive ? 'Active' : 'Completed'}
+                                </div>
+                            </div>
+                            <div class="call-preview">
+                                ${call.message_count} messages exchanged
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Error loading calls:', error);
+            }
+        }
+
+        // Select and load call transcript
+        async function selectCall(callSid) {
+            selectedCallId = callSid;
+            
+            // Update UI selection
+            document.querySelectorAll('.call-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            
+            try {
+                const response = await fetch(`${API_BASE}/call_summary/${callSid}`);
+                const callData = await response.json();
+
+                const transcriptContainer = document.getElementById('transcript-container');
+                
+                if (!callData.conversation_history || callData.conversation_history.length === 0) {
+                    transcriptContainer.innerHTML = `
+                        <div class="empty-state">
+                            <svg class="empty-state-icon" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z"/>
+                            </svg>
+                            <h3>No messages yet</h3>
+                            <p>This call hasn't had any conversation exchanges</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                transcriptContainer.innerHTML = callData.conversation_history.map(exchange => {
+                    const timestamp = new Date(exchange.timestamp * 1000).toLocaleTimeString();
+                    
+                    return `
+                        <div class="message message-user">
+                            <div class="message-header">
+                                <div class="message-avatar avatar-user">👤</div>
+                                <div class="message-label">Customer</div>
+                                <div class="message-time">${timestamp}</div>
+                            </div>
+                            <div class="message-content">${exchange.user}</div>
+                        </div>
+                        <div class="message message-assistant">
+                            <div class="message-header">
+                                <div class="message-avatar avatar-assistant">🤖</div>
+                                <div class="message-label">Voxcord AI</div>
+                                <div class="message-time">${timestamp}</div>
+                            </div>
+                            <div class="message-content">${exchange.assistant}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                // Scroll to bottom
+                transcriptContainer.scrollTop = transcriptContainer.scrollHeight;
+
+            } catch (error) {
+                console.error('Error loading call transcript:', error);
+            }
+        }
+
+        // Export transcript
+        function exportTranscript() {
+            if (!selectedCallId) {
+                showNotification('Please select a call first', 'warning');
+                return;
+            }
+
+            // Create and download transcript
+            const transcriptData = document.getElementById('transcript-container').innerText;
+            const blob = new Blob([transcriptData], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `voxcord-transcript-${selectedCallId}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showNotification('Transcript exported successfully!', 'success');
+        }
+
+        // Utility functions
+        function formatTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffSecs = Math.floor(diffMs / 1000);
+            const diffMins = Math.floor(diffSecs / 60);
+            const diffHours = Math.floor(diffMins / 60);
+
+            if (diffSecs < 60) return `${diffSecs}s ago`;
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            return date.toLocaleDateString();
+        }
+
+        function formatDuration(seconds) {
+            if (seconds < 60) return `${seconds}s`;
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}m ${remainingSeconds}s`;
+        }
+
+        function animateNumber(elementId, targetValue) {
+            const element = document.getElementById(elementId);
+            const currentValue = parseInt(element.textContent) || 0;
+            const increment = (targetValue - currentValue) / 10;
+            let current = currentValue;
+
+            const animation = setInterval(() => {
+                current += increment;
+                if ((increment > 0 && current >= targetValue) || (increment < 0 && current <= targetValue)) {
+                    current = targetValue;
+                    clearInterval(animation);
+                }
+                element.textContent = Math.round(current);
+            }, 50);
+        }
+
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--error)' : 'var(--primary)'};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                z-index: 10000;
+                font-weight: 500;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Start the dashboard when page loads
+        window.addEventListener('load', initDashboard);
+
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopAutoRefresh();
+            } else {
+                startAutoRefresh();
+            }
+        });
+    </script>
+</body>
+</html>
