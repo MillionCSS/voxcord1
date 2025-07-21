@@ -383,41 +383,65 @@ def get_calls():
     
     return jsonify(formatted_calls)
 
+@app.route('/audio/<filename>')
+def serve_audio(filename):
+    """Serve audio files"""
+    try:
+        return send_from_directory('audio_files', filename)
+    except:
+        return "Audio not found", 404
+
+AUDIO_DIR = Path("audio_files")
+
 # Twilio Voice Webhook
-@app.route('/api/twilio/voice', methods=['POST'])
+app.route('/api/twilio/voice', methods=['POST'])
 def handle_voice_call():
     try:
         call_sid = request.form.get('CallSid')
+        from_number = request.form.get('From')
+        
+        logger.info(f"Incoming call: {call_sid} from {from_number}")
+        
+        # Create call session
+        call_data = {'id': str(uuid.uuid4()), 'call_sid': call_sid, 'caller_number': from_number}
+        db.create_call_session(call_data)
+        active_calls[call_sid] = []
         
         if openai_client:
-            # Generate natural speech with OpenAI
+            # Generate audio with OpenAI
             audio_response = openai_client.audio.speech.create(
                 model="tts-1",
                 voice="echo",
                 input="Hello! Welcome to Voxcord. How can I help you today?"
             )
             
-            # Save audio temporarily 
-            audio_path = f"/tmp/{call_sid}_greeting.mp3"
-            audio_response.stream_to_file(audio_path)
+            # Save to audio_files folder
+            audio_filename = f"{call_sid}_greeting.mp3"
+            audio_path = AUDIO_DIR / audio_filename
             
-            # Use the generated audio in TwiML
+            # Fix deprecated method
+            with open(audio_path, 'wb') as f:
+                f.write(audio_response.content)
+            
+            # Play the generated audio
             response = VoiceResponse()
-            response.play(f"https://yourapp.com/audio/{call_sid}_greeting.mp3")
+            audio_url = f"https://yourapp.ondigitalocean.app/audio/{audio_filename}"
+            response.play(audio_url)
         else:
-            # Fallback to Twilio voice
             response = VoiceResponse()
             response.say("Hello! Welcome to Voxcord.", voice='Polly.Joanna')
         
-        # Continue with speech gathering...
+        # Continue with gathering
         gather = Gather(input='speech', action=f'/api/twilio/gather/{call_sid}')
+        gather.say("Please tell me what you need.", voice='Polly.Joanna')
         response.append(gather)
         
         return str(response)
+        
     except Exception as e:
         logger.error(f"Voice call error: {e}")
         response = VoiceResponse()
-        response.say("Sorry, technical difficulties. Try again later.")
+        response.say("Sorry, technical difficulties.")
         return str(response)
 
 @app.route('/api/twilio/gather/<call_sid>', methods=['POST'])
