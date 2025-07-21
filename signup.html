@@ -3,28 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account - Voxcord</title>
+    <title>Start Automating Support - Voxcord</title>
+    <meta name="description" content="Get started with automated customer support lines. Upload your business data and go live in minutes.">
+    
+    <!-- Varela Round font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
+            font-family: 'Varela Round', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0F0F0F;
+            color: #FFFFFF;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
+            overflow-x: hidden;
             padding: 20px;
-            background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%);
+        }
+
+        /* Animated background orbs */
+        .bg-orbs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.2;
+            animation: float 35s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, #3B82F6 0%, #1E40AF 100%);
+            top: -200px;
+            left: -200px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, #8B5CF6 0%, #5B21B6 100%);
+            top: 20%;
+            right: -150px;
+            animation-delay: -15s;
+        }
+
+        .orb-3 {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, #06B6D4 0%, #0891B2 100%);
+            bottom: -125px;
+            left: 10%;
+            animation-delay: -25s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+            25% { transform: translate(80px, -40px) scale(1.1) rotate(90deg); }
+            50% { transform: translate(40px, 60px) scale(0.9) rotate(180deg); }
+            75% { transform: translate(-60px, 20px) scale(1.05) rotate(270deg); }
+            100% { transform: translate(0px, 0px) scale(1) rotate(360deg); }
         }
 
         .container {
-            background: white;
+            background: rgba(20, 20, 20, 0.9);
+            backdrop-filter: blur(20px);
             border-radius: 24px;
             padding: 48px;
             width: 100%;
-            max-width: 480px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 10;
         }
 
         .logo {
@@ -36,20 +108,14 @@
         }
 
         .logo-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
+            font-size: 28px;
+            filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.3));
         }
 
         .logo-text {
-            font-size: 28px;
-            font-weight: 800;
-            color: #1e40af;
+            font-size: 26px;
+            font-weight: 700;
+            color: #FFFFFF;
         }
 
         .header {
@@ -58,55 +124,31 @@
         }
 
         .header h1 {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 700;
-            margin-bottom: 8px;
-            color: #1f2937;
+            margin-bottom: 12px;
+            color: #FFFFFF;
         }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .form-input, .form-select {
-            width: 100%;
-            padding: 16px;
-            background: #f8fafc;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            color: #1f2937;
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-
-        .form-input:focus, .form-select:focus {
-            outline: none;
-            border-color: #3b82f6;
-            background: white;
+        .header p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+            line-height: 1.5;
         }
 
         .plan-selector {
-            background: #f8fafc;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .plan-selector h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #FFFFFF;
         }
 
         .plan-options {
@@ -117,63 +159,152 @@
         .plan-option {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
             padding: 16px;
-            background: white;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+        }
+
+        .plan-option:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .plan-option.selected {
-            border-color: #3b82f6;
-            background: #eff6ff;
+            border-color: #3B82F6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .plan-option input[type="radio"] {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            background: transparent;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .plan-option input[type="radio"]:checked {
+            border-color: #3B82F6;
+        }
+
+        .plan-option input[type="radio"]:checked::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            background: #3B82F6;
+            border-radius: 50%;
+        }
+
+        .plan-details {
+            flex: 1;
         }
 
         .plan-name {
             font-weight: 600;
-            color: #1f2937;
-            font-size: 14px;
+            color: #FFFFFF;
+            font-size: 16px;
             margin-bottom: 4px;
         }
 
         .plan-price {
-            color: #3b82f6;
+            color: #3B82F6;
             font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .plan-description {
+            color: rgba(255, 255, 255, 0.6);
             font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 8px;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #FFFFFF;
+            font-size: 15px;
+            font-family: 'Varela Round', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #3B82F6;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .submit-btn {
             width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            padding: 16px 24px;
+            background: #3B82F6;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             color: white;
-            font-weight: 600;
-            font-size: 14px;
+            font-weight: 700;
+            font-size: 16px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             margin-bottom: 24px;
+            font-family: 'Varela Round', sans-serif;
         }
 
         .submit-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+            background: #2563EB;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4);
         }
 
         .submit-btn:disabled {
-            opacity: 0.6;
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.3);
             cursor: not-allowed;
             transform: none;
         }
 
         .status-message {
-            padding: 12px 16px;
-            border-radius: 8px;
+            padding: 16px;
+            border-radius: 12px;
             margin-bottom: 20px;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 500;
             display: none;
         }
@@ -181,45 +312,73 @@
         .status-message.success {
             background: rgba(16, 185, 129, 0.1);
             border: 1px solid rgba(16, 185, 129, 0.2);
-            color: #065f46;
+            color: #10B981;
         }
 
         .status-message.error {
             background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #991b1b;
+            color: #EF4444;
         }
 
         .footer-links {
             text-align: center;
             padding-top: 24px;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .footer-links a {
-            color: #6b7280;
+            color: rgba(255, 255, 255, 0.6);
             text-decoration: none;
-            font-size: 13px;
+            font-size: 14px;
             margin: 0 16px;
-            transition: color 0.2s ease;
+            transition: color 0.3s ease;
         }
 
         .footer-links a:hover {
-            color: #3b82f6;
+            color: #3B82F6;
         }
 
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Mobile responsiveness */
         @media (max-width: 580px) {
             .container {
                 padding: 32px 24px;
+                margin: 20px;
             }
             
             .form-row {
                 grid-template-columns: 1fr;
             }
+
+            .plan-option {
+                padding: 14px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Animated background orbs -->
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
     <div class="container">
         <div class="logo">
             <div class="logo-icon">📡</div>
@@ -227,22 +386,22 @@
         </div>
 
         <div class="header">
-            <h1>Create your account</h1>
-            <p>Join thousands of businesses using AI voice technology</p>
+            <h1>Automate your customer support</h1>
+            <p>Join thousands of businesses using AI-powered support lines with call transcripts and analytics</p>
         </div>
 
         <div class="status-message" id="statusMessage"></div>
 
         <form id="signupForm">
             <div class="plan-selector">
-                <h3>Choose your plan</h3>
+                <h3>Choose your support plan</h3>
                 <div class="plan-options">
                     <label class="plan-option selected" for="plan-free">
                         <input type="radio" id="plan-free" name="plan" value="free" checked>
                         <div class="plan-details">
                             <div class="plan-name">Free</div>
                             <div class="plan-price">$0/month</div>
-                            <div class="plan-description">Perfect for testing • 100 calls/month</div>
+                            <div class="plan-description">Perfect for testing • 100 support calls/month</div>
                         </div>
                     </label>
                     <label class="plan-option" for="plan-pro">
@@ -250,7 +409,7 @@
                         <div class="plan-details">
                             <div class="plan-name">Professional</div>
                             <div class="plan-price">$99/month</div>
-                            <div class="plan-description">For growing businesses • Unlimited calls</div>
+                            <div class="plan-description">For growing businesses • Unlimited support calls</div>
                         </div>
                     </label>
                 </div>
@@ -279,24 +438,28 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label" for="company">Company</label>
-                    <input type="text" class="form-input" id="company" name="company" placeholder="Acme Inc">
+                    <label class="form-label" for="company">Company Name</label>
+                    <input type="text" class="form-input" id="company" name="company" placeholder="Acme Inc" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="industry">Industry</label>
-                    <select class="form-select" id="industry" name="industry">
-                        <option value="">Select industry</option>
-                        <option value="technology">Technology</option>
+                    <label class="form-label" for="industry">Business Type</label>
+                    <select class="form-select" id="industry" name="industry" required>
+                        <option value="">Select business type</option>
+                        <option value="ecommerce">E-commerce</option>
+                        <option value="saas">SaaS/Technology</option>
                         <option value="healthcare">Healthcare</option>
                         <option value="finance">Financial Services</option>
-                        <option value="retail">Retail & E-commerce</option>
+                        <option value="retail">Retail</option>
+                        <option value="restaurant">Restaurant/Food</option>
+                        <option value="professional">Professional Services</option>
+                        <option value="real-estate">Real Estate</option>
                         <option value="other">Other</option>
                     </select>
                 </div>
             </div>
 
             <button type="submit" class="submit-btn" id="submitBtn">
-                <span id="btnText">Create Account</span>
+                <span id="btnText">Start Automating Support</span>
             </button>
         </form>
 
@@ -318,7 +481,7 @@
                 // Update button text based on plan
                 const btnText = document.getElementById('btnText');
                 if (radio.value === 'free') {
-                    btnText.textContent = 'Create Free Account';
+                    btnText.textContent = 'Start Automating Support';
                 } else {
                     btnText.textContent = 'Start Free Trial';
                 }
@@ -334,7 +497,7 @@
             
             // Show loading state
             submitBtn.disabled = true;
-            btnText.textContent = 'Creating Account...';
+            btnText.innerHTML = '<div class="loading"></div>Creating your support line...';
             
             try {
                 const formData = new FormData(this);
@@ -345,7 +508,7 @@
                     throw new Error('Password must be at least 6 characters');
                 }
                 
-                // Make API call to backend
+                // Simulate API call to backend
                 const response = await fetch('/api/signup', {
                     method: 'POST',
                     headers: {
@@ -360,11 +523,11 @@
                     throw new Error(result.error || 'Registration failed');
                 }
                 
-                showStatus('Account created successfully! You can now sign in.', 'success');
+                showStatus('Account created! Your automated support line is being set up...', 'success');
                 
-                // Redirect to login page after delay
+                // Redirect to dashboard after delay
                 setTimeout(() => {
-                    window.location.href = '/login';
+                    window.location.href = '/dashboard';
                 }, 2000);
                 
             } catch (error) {
@@ -373,7 +536,7 @@
                 // Reset button state
                 submitBtn.disabled = false;
                 const selectedPlan = document.querySelector('input[name="plan"]:checked').value;
-                btnText.textContent = selectedPlan === 'free' ? 'Create Free Account' : 'Start Free Trial';
+                btnText.textContent = selectedPlan === 'free' ? 'Start Automating Support' : 'Start Free Trial';
             }
         });
 
