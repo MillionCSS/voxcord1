@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Voxcord Backend - AI Voice Assistant Platform
-Production-ready Flask application with Gunicorn support
-"""
-
 import os
 import hashlib
 import secrets
@@ -11,407 +5,269 @@ import jwt
 import smtplib
 import json
 import sqlite3
-import psycopg2
-import psycopg2.extras
-import re
-import time
-import uuid
-from datetime import datetime, timedelta
-from pathlib import Path
-from contextlib import contextmanager
-from functools import wraps
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from urllib.parse import urlparse
-
-# Flask and extensions
-from flask import Flask, request, jsonify, send_file, send_from_directory, render_template_string, redirect
-from werkzeug.exceptions import BadRequest, Unauthorized, NotFound, InternalServerError
-
-# External services
+from datetime import datetime, timedelta
+import uuid
+import time
+import re
+# Import missing modules
+from flask import Flask, request, Response, send_file, jsonify, redirect, render_template_string, send_from_directory, render_template
 from twilio.twiml.voice_response import VoiceResponse, Gather
-from twilio.rest import Client as TwilioClient
+from twilio.rest import Client
 from openai import OpenAI
-
-# Utilities
-import logging
 import threading
+from pathlib import Path
+import logging
 from dotenv import load_dotenv
+from functools import wraps
+import redis
+from contextlib import contextmanager
 
 # Load environment variables
 load_dotenv()
 
-# Configure logging for production
+# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.StreamHandler()  # Only stdout for Digital Ocean
+        logging.FileHandler('voxcord.log'),
+        logging.StreamHandler()
     ]
 )
 logger = logging.getLogger(__name__)
 
-# Create Flask app
 app = Flask(__name__)
-app.config.update(
-    SECRET_KEY=os.getenv('SECRET_KEY', secrets.token_hex(32)),
-    JSON_SORT_KEYS=False,
-    JSONIFY_PRETTYPRINT_REGULAR=False  # Disable for production
-)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', secrets.token_hex(32))
 
-# Constants
-SHARED_PHONE_NUMBER = "+16095073300"
-DEFAULT_AI_GREETING = "Hello! Thank you for calling. How can I help you today?"
+# Static file configuration
+app.static_folder = 'static'
+app.static_url_path = '/static'
 
-# Configuration Classes
-class Config:
-    """Application configuration"""
-    
-    @staticmethod
-    def get_env(key: str, default=None) -> str:
-        """Get environment variable with fallback"""
-        return os.getenv(key, default)
-    
-    # API Keys
-    OPENAI_API_KEY = get_env('OPENAI_API_KEY')
-    TWILIO_ACCOUNT_SID = get_env('TWILIO_ACCOUNT_SID')
-    TWILIO_AUTH_TOKEN = get_env('TWILIO_AUTH_TOKEN')
-    
-    # Security
-    JWT_SECRET = get_env('JWT_SECRET', secrets.token_hex(64))
-    JWT_EXPIRY_HOURS = int(get_env('JWT_EXPIRY_HOURS', '24'))
-    
-    # Email
-    SMTP_SERVER = get_env('SMTP_SERVER', 'smtp.gmail.com')
-    SMTP_PORT = int(get_env('SMTP_PORT', '587'))
-    EMAIL_ADDRESS = get_env('EMAIL_ADDRESS')
-    EMAIL_PASSWORD = get_env('EMAIL_PASSWORD')
-    
-    # Database - Auto-detect PostgreSQL vs SQLite
-    DATABASE_URL = get_env('DATABASE_URL')
-    
-    # Application
-    DEBUG = get_env('DEBUG', 'False').lower() == 'true'
-    PORT = int(get_env('PORT', '8080'))
-    HOST = get_env('HOST', '0.0.0.0')
-    DOMAIN = get_env('DOMAIN', 'localhost:8080')
-    
-    # Rate limiting
-    RATE_LIMIT_REQUESTS = int(get_env('RATE_LIMIT_REQUESTS', '10'))
-    RATE_LIMIT_WINDOW = int(get_env('RATE_LIMIT_WINDOW', '15'))
+# Initialize clients
+try:
+    openai_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+    twilio_client = Client(os.getenv('TWILIO_ACCOUNT_SID'), os.getenv('TWILIO_AUTH_TOKEN'))
+except Exception as e:
+    logger.error(f"Failed to initialize clients: {e}")
+    openai_client = None
+    twilio_client = None
 
+# Database configuration
+DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///voxcord.db')
+REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379')
 
-class ServiceClients:
-    """External service clients"""
-    
-    def __init__(self):
-        self.openai = None
-        self.twilio = None
-        self._initialize_clients()
-    
-    def _initialize_clients(self):
-        """Initialize external service clients"""
-        try:
-            if Config.OPENAI_API_KEY:
-                self.openai = OpenAI(api_key=Config.OPENAI_API_KEY)
-                logger.info("OpenAI client initialized")
-            else:
-                logger.warning("OpenAI API key not provided")
-        except Exception as e:
-            logger.error(f"Failed to initialize OpenAI: {e}")
-        
-        try:
-            if Config.TWILIO_ACCOUNT_SID and Config.TWILIO_AUTH_TOKEN:
-                self.twilio = TwilioClient(Config.TWILIO_ACCOUNT_SID, Config.TWILIO_AUTH_TOKEN)
-                logger.info("Twilio client initialized")
-            else:
-                logger.warning("Twilio credentials not provided")
-        except Exception as e:
-            logger.error(f"Failed to initialize Twilio: {e}")
+# Try to connect to Redis, fallback to in-memory
+try:
+    redis_client = redis.from_url(REDIS_URL)
+    redis_client.ping()
+    logger.info("Connected to Redis")
+except:
+    redis_client = None
+    logger.warning("Redis not available, using in-memory storage")
 
-# Initialize service clients
-services = ServiceClients()
+# JWT Secret
+JWT_SECRET = os.getenv('JWT_SECRET', secrets.token_hex(64))
+
+# Email Configuration
+EMAIL_CONFIG = {
+    'smtp_server': os.getenv('SMTP_SERVER', 'smtp.gmail.com'),
+    'smtp_port': int(os.getenv('SMTP_PORT', '587')),
+    'email': os.getenv('EMAIL_ADDRESS'),
+    'password': os.getenv('EMAIL_PASSWORD'),
+    'from_name': 'Voxcord Team'
+}
+
+# Plan configurations
+PLAN_LIMITS = {
+    'free': {
+        'max_assistants': 1,
+        'max_calls_per_month': 100,
+        'max_call_duration': 300,
+        'features': ['basic_ai', 'email_support'],
+        'price': 0,
+        'trial_days': None
+    },
+    'professional': {
+        'max_assistants': 5,
+        'max_calls_per_month': -1,
+        'max_call_duration': -1,
+        'features': ['custom_training', 'crm_integration', 'analytics', 'priority_support'],
+        'price': 99,
+        'trial_days': 14
+    },
+    'enterprise': {
+        'max_assistants': -1,
+        'max_calls_per_month': -1,
+        'max_call_duration': -1,
+        'features': ['voice_cloning', 'api_access', 'custom_integration', 'dedicated_support', 'white_label'],
+        'price': 299,
+        'trial_days': 14
+    }
+}
+
+# Create directories
+AUDIO_DIR = Path("audio_files")
+AUDIO_DIR.mkdir(exist_ok=True)
+
+STATIC_DIR = Path("static")
+STATIC_DIR.mkdir(exist_ok=True)
 
 class DatabaseManager:
-    """Database operations manager with PostgreSQL/SQLite support"""
+    """Centralized database management"""
     
-    def __init__(self):
-        self.db_url = Config.DATABASE_URL
-        self.is_postgres = self.db_url and self.db_url.startswith('postgres')
+    def __init__(self, db_path='voxcord.db'):
+        self.db_path = db_path
         self.init_database()
+    
+    def init_database(self):
+        """Initialize SQLite database with tables"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            
+            # Users table
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS users (
+                    id TEXT PRIMARY KEY,
+                    first_name TEXT NOT NULL,
+                    last_name TEXT NOT NULL,
+                    email TEXT UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    company TEXT,
+                    industry TEXT,
+                    phone TEXT,
+                    plan TEXT DEFAULT 'free',
+                    verified BOOLEAN DEFAULT FALSE,
+                    verification_token TEXT,
+                    verification_expiry TIMESTAMP,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    last_login TIMESTAMP,
+                    subscription_status TEXT DEFAULT 'active',
+                    trial_end TIMESTAMP,
+                    settings TEXT DEFAULT '{}'
+                )
+            ''')
+            
+            # Call sessions table
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS call_sessions (
+                    id TEXT PRIMARY KEY,
+                    user_id TEXT,
+                    call_sid TEXT UNIQUE,
+                    started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    ended_at TIMESTAMP,
+                    duration INTEGER,
+                    status TEXT DEFAULT 'active',
+                    conversation_history TEXT DEFAULT '[]',
+                    metadata TEXT DEFAULT '{}',
+                    FOREIGN KEY (user_id) REFERENCES users (id)
+                )
+            ''')
+            
+            # Usage tracking table
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS usage_tracking (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT,
+                    date DATE,
+                    calls_count INTEGER DEFAULT 0,
+                    total_duration INTEGER DEFAULT 0,
+                    FOREIGN KEY (user_id) REFERENCES users (id),
+                    UNIQUE(user_id, date)
+                )
+            ''')
+            
+            # Phone numbers table
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS phone_numbers (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT UNIQUE,
+                    phone_number TEXT UNIQUE,
+                    twilio_sid TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users (id)
+                )
+            ''')
+            
+            conn.commit()
+            logger.info("Database initialized successfully")
     
     @contextmanager
     def get_connection(self):
-        """Database connection context manager"""
-        if self.is_postgres:
-            # PostgreSQL connection
-            conn = psycopg2.connect(
-                self.db_url,
-                cursor_factory=psycopg2.extras.RealDictCursor
-            )
-        else:
-            # SQLite connection
-            db_path = 'voxcord.db'
-            conn = sqlite3.connect(db_path)
-            conn.row_factory = sqlite3.Row
-        
+        """Context manager for database connections"""
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
         try:
             yield conn
-        except Exception as e:
-            conn.rollback()
-            logger.error(f"Database error: {e}")
-            raise
         finally:
             conn.close()
     
-    def init_database(self):
-        """Initialize database schema"""
-        with self.get_connection() as conn:
-            cursor = conn.cursor()
-            
-            if self.is_postgres:
-                # PostgreSQL schema
-                cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS users (
-                        id TEXT PRIMARY KEY,
-                        first_name TEXT NOT NULL,
-                        last_name TEXT NOT NULL,
-                        email TEXT UNIQUE NOT NULL,
-                        password_hash TEXT NOT NULL,
-                        company TEXT DEFAULT '',
-                        industry TEXT DEFAULT '',
-                        phone TEXT DEFAULT '',
-                        plan TEXT DEFAULT 'free',
-                        verified BOOLEAN DEFAULT FALSE,
-                        verification_token TEXT,
-                        verification_expiry TIMESTAMP,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        last_login TIMESTAMP,
-                        settings TEXT DEFAULT '{}',
-                        oauth_provider TEXT,
-                        oauth_id TEXT
-                    )
-                ''')
-                
-                cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS call_sessions (
-                        id TEXT PRIMARY KEY,
-                        user_id TEXT,
-                        call_sid TEXT UNIQUE,
-                        caller_number TEXT,
-                        started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        ended_at TIMESTAMP,
-                        duration INTEGER,
-                        status TEXT DEFAULT 'active',
-                        conversation_history TEXT DEFAULT '[]',
-                        metadata TEXT DEFAULT '{}'
-                    )
-                ''')
-                
-                cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS user_phone_routing (
-                        id SERIAL PRIMARY KEY,
-                        user_id TEXT UNIQUE,
-                        routing_key TEXT UNIQUE,
-                        phone_number TEXT DEFAULT %s,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )
-                ''', (SHARED_PHONE_NUMBER,))
-                
-            else:
-                # SQLite schema
-                cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS users (
-                        id TEXT PRIMARY KEY,
-                        first_name TEXT NOT NULL,
-                        last_name TEXT NOT NULL,
-                        email TEXT UNIQUE NOT NULL,
-                        password_hash TEXT NOT NULL,
-                        company TEXT DEFAULT '',
-                        industry TEXT DEFAULT '',
-                        phone TEXT DEFAULT '',
-                        plan TEXT DEFAULT 'free',
-                        verified BOOLEAN DEFAULT FALSE,
-                        verification_token TEXT,
-                        verification_expiry TIMESTAMP,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        last_login TIMESTAMP,
-                        settings TEXT DEFAULT '{}',
-                        oauth_provider TEXT,
-                        oauth_id TEXT
-                    )
-                ''')
-                
-                cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS call_sessions (
-                        id TEXT PRIMARY KEY,
-                        user_id TEXT,
-                        call_sid TEXT UNIQUE,
-                        caller_number TEXT,
-                        started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        ended_at TIMESTAMP,
-                        duration INTEGER,
-                        status TEXT DEFAULT 'active',
-                        conversation_history TEXT DEFAULT '[]',
-                        metadata TEXT DEFAULT '{}'
-                    )
-                ''')
-                
-                cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS user_phone_routing (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        user_id TEXT UNIQUE,
-                        routing_key TEXT UNIQUE,
-                        phone_number TEXT DEFAULT ?,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )
-                ''', (SHARED_PHONE_NUMBER,))
-            
-            conn.commit()
-            logger.info(f"Database initialized ({'PostgreSQL' if self.is_postgres else 'SQLite'})")
-    
-    def create_user(self, user_data: dict) -> str:
+    def create_user(self, user_data):
         """Create a new user"""
         with self.get_connection() as conn:
             cursor = conn.cursor()
             
-            user_id = str(uuid.uuid4())
+            # Handle the verified field - THIS IS THE KEY FIX
+            verified = user_data.get('verified', False)
             
-            if self.is_postgres:
-                cursor.execute('''
-                    INSERT INTO users (
-                        id, first_name, last_name, email, password_hash,
-                        company, industry, phone, plan, verified,
-                        verification_token, verification_expiry, oauth_provider, oauth_id
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ''', (
-                    user_id, user_data['first_name'], user_data['last_name'], user_data['email'],
-                    user_data['password_hash'], user_data.get('company', ''), user_data.get('industry', ''),
-                    user_data.get('phone', ''), user_data.get('plan', 'free'), user_data.get('verified', False),
-                    user_data.get('verification_token'), user_data.get('verification_expiry'),
-                    user_data.get('oauth_provider'), user_data.get('oauth_id')
-                ))
-                
-                # Create routing entry
-                routing_key = user_id[-8:]
-                cursor.execute('''
-                    INSERT INTO user_phone_routing (user_id, routing_key, phone_number)
-                    VALUES (%s, %s, %s)
-                ''', (user_id, routing_key, SHARED_PHONE_NUMBER))
-            else:
-                cursor.execute('''
-                    INSERT INTO users (
-                        id, first_name, last_name, email, password_hash,
-                        company, industry, phone, plan, verified,
-                        verification_token, verification_expiry, oauth_provider, oauth_id
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (
-                    user_id, user_data['first_name'], user_data['last_name'], user_data['email'],
-                    user_data['password_hash'], user_data.get('company', ''), user_data.get('industry', ''),
-                    user_data.get('phone', ''), user_data.get('plan', 'free'), user_data.get('verified', False),
-                    user_data.get('verification_token'), user_data.get('verification_expiry'),
-                    user_data.get('oauth_provider'), user_data.get('oauth_id')
-                ))
-                
-                # Create routing entry
-                routing_key = user_id[-8:]
-                cursor.execute('''
-                    INSERT INTO user_phone_routing (user_id, routing_key, phone_number)
-                    VALUES (?, ?, ?)
-                ''', (user_id, routing_key, SHARED_PHONE_NUMBER))
-            
+            cursor.execute('''
+                INSERT INTO users (
+                    id, first_name, last_name, email, password_hash, company, 
+                    industry, phone, plan, verification_token, verification_expiry, verified
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                user_data['id'], user_data['firstName'], user_data['lastName'],
+                user_data['email'], user_data['passwordHash'], user_data['company'],
+                user_data['industry'], user_data['phone'], user_data['plan'],
+                user_data['verificationToken'], user_data['verificationExpiry'], verified
+            ))
             conn.commit()
-            logger.info(f"User created: {user_data['email']} (ID: {user_id})")
-            return user_id
+            return cursor.lastrowid
     
-    def get_user_by_email(self, email: str) -> dict:
+    def get_user_by_email(self, email):
         """Get user by email"""
         with self.get_connection() as conn:
             cursor = conn.cursor()
-            
-            param = '%s' if self.is_postgres else '?'
-            cursor.execute(f'SELECT * FROM users WHERE email = {param}', (email,))
+            cursor.execute('SELECT * FROM users WHERE email = ?', (email,))
             row = cursor.fetchone()
             return dict(row) if row else None
     
-    def get_user_by_id(self, user_id: str) -> dict:
+    def get_user_by_id(self, user_id):
         """Get user by ID"""
         with self.get_connection() as conn:
             cursor = conn.cursor()
-            
-            param = '%s' if self.is_postgres else '?'
-            cursor.execute(f'SELECT * FROM users WHERE id = {param}', (user_id,))
+            cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
             row = cursor.fetchone()
             return dict(row) if row else None
     
-    def verify_user_email(self, verification_token: str) -> bool:
-        """Verify user email with token"""
+    def verify_user(self, verification_token):
+        """Verify user email"""
         with self.get_connection() as conn:
             cursor = conn.cursor()
-            
-            if self.is_postgres:
-                cursor.execute('''
-                    UPDATE users 
-                    SET verified = TRUE, verification_token = NULL 
-                    WHERE verification_token = %s 
-                    AND verification_expiry > NOW()
-                ''', (verification_token,))
-            else:
-                cursor.execute('''
-                    UPDATE users 
-                    SET verified = TRUE, verification_token = NULL 
-                    WHERE verification_token = ? 
-                    AND verification_expiry > datetime('now')
-                ''', (verification_token,))
-            
+            cursor.execute('''
+                UPDATE users 
+                SET verified = TRUE, verification_token = NULL 
+                WHERE verification_token = ? AND verification_expiry > datetime('now')
+            ''', (verification_token,))
             conn.commit()
             return cursor.rowcount > 0
     
-    def get_user_by_routing_key(self, routing_key: str) -> dict:
-        """Get user by routing key"""
-        with self.get_connection() as conn:
-            cursor = conn.cursor()
-            
-            param = '%s' if self.is_postgres else '?'
-            cursor.execute(f'''
-                SELECT u.* FROM users u
-                JOIN user_phone_routing upr ON u.id = upr.user_id
-                WHERE upr.routing_key = {param}
-            ''', (routing_key,))
-            row = cursor.fetchone()
-            return dict(row) if row else None
-    
-    def create_call_session(self, call_data: dict) -> str:
+    def create_call_session(self, call_data):
         """Create a new call session"""
         with self.get_connection() as conn:
             cursor = conn.cursor()
-            
-            call_id = str(uuid.uuid4())
-            
-            if self.is_postgres:
-                cursor.execute('''
-                    INSERT INTO call_sessions (
-                        id, user_id, call_sid, caller_number, metadata
-                    ) VALUES (%s, %s, %s, %s, %s)
-                ''', (
-                    call_id, call_data.get('user_id'), call_data['call_sid'],
-                    call_data.get('caller_number'), json.dumps(call_data.get('metadata', {}))
-                ))
-            else:
-                cursor.execute('''
-                    INSERT INTO call_sessions (
-                        id, user_id, call_sid, caller_number, metadata
-                    ) VALUES (?, ?, ?, ?, ?)
-                ''', (
-                    call_id, call_data.get('user_id'), call_data['call_sid'],
-                    call_data.get('caller_number'), json.dumps(call_data.get('metadata', {}))
-                ))
-            
+            cursor.execute('''
+                INSERT INTO call_sessions (id, user_id, call_sid, metadata)
+                VALUES (?, ?, ?, ?)
+            ''', (
+                call_data['id'], call_data.get('user_id'), 
+                call_data['call_sid'], json.dumps(call_data.get('metadata', {}))
+            ))
             conn.commit()
-            logger.info(f"Call session created: {call_data['call_sid']}")
-            return call_id
+            return cursor.lastrowid
     
-    def get_active_calls(self) -> list:
+    def get_active_calls(self):
         """Get all active call sessions"""
         with self.get_connection() as conn:
             cursor = conn.cursor()
@@ -422,218 +278,263 @@ class DatabaseManager:
             ''')
             return [dict(row) for row in cursor.fetchall()]
     
-    def get_call_by_sid(self, call_sid: str) -> dict:
-        """Get call session by SID"""
+    def update_call_session(self, call_sid, updates):
+        """Update call session"""
         with self.get_connection() as conn:
             cursor = conn.cursor()
-            
-            param = '%s' if self.is_postgres else '?'
-            cursor.execute(f'SELECT * FROM call_sessions WHERE call_sid = {param}', (call_sid,))
-            row = cursor.fetchone()
-            return dict(row) if row else None
-    
-    def update_call_conversation(self, call_sid: str, conversation_history: list):
-        """Update call conversation history"""
-        with self.get_connection() as conn:
-            cursor = conn.cursor()
-            
-            if self.is_postgres:
-                cursor.execute('''
-                    UPDATE call_sessions 
-                    SET conversation_history = %s 
-                    WHERE call_sid = %s
-                ''', (json.dumps(conversation_history), call_sid))
-            else:
-                cursor.execute('''
-                    UPDATE call_sessions 
-                    SET conversation_history = ? 
-                    WHERE call_sid = ?
-                ''', (json.dumps(conversation_history), call_sid))
-            
+            set_clause = ', '.join([f"{key} = ?" for key in updates.keys()])
+            values = list(updates.values()) + [call_sid]
+            cursor.execute(f'''
+                UPDATE call_sessions 
+                SET {set_clause}
+                WHERE call_sid = ?
+            ''', values)
             conn.commit()
+            return cursor.rowcount > 0
 
 # Initialize database
 db = DatabaseManager()
 
+class CacheManager:
+    """Unified cache management using Redis or in-memory fallback"""
+    
+    def __init__(self):
+        self.redis_client = redis_client
+        self.memory_cache = {} if not redis_client else None
+    
+    def get(self, key):
+        """Get value from cache"""
+        if self.redis_client:
+            try:
+                value = self.redis_client.get(key)
+                return json.loads(value) if value else None
+            except:
+                return None
+        else:
+            return self.memory_cache.get(key)
+    
+    def set(self, key, value, ttl=3600):
+        """Set value in cache"""
+        if self.redis_client:
+            try:
+                self.redis_client.setex(key, ttl, json.dumps(value))
+                return True
+            except:
+                return False
+        else:
+            self.memory_cache[key] = value
+            # Simple TTL implementation for memory cache
+            threading.Timer(ttl, lambda: self.memory_cache.pop(key, None)).start()
+            return True
+    
+    def delete(self, key):
+        """Delete key from cache"""
+        if self.redis_client:
+            try:
+                self.redis_client.delete(key)
+                return True
+            except:
+                return False
+        else:
+            self.memory_cache.pop(key, None)
+            return True
+
+cache = CacheManager()
+
 class SecurityManager:
-    """Security utilities for authentication and validation"""
+    """Enhanced security management"""
     
     @staticmethod
-    def validate_email(email: str) -> bool:
-        """Validate email format"""
-        if not email or not isinstance(email, str) or len(email) > 254:
-            return False
-        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        return bool(re.match(pattern, email))
-    
-    @staticmethod
-    def validate_password(password: str) -> tuple[bool, str]:
+    def validate_password(password):
         """Validate password strength"""
-        if not password or len(password) < 8:
+        if len(password) < 8:
             return False, "Password must be at least 8 characters long"
-        if len(password) > 128:
-            return False, "Password must be less than 128 characters"
+        
         if not re.search(r'[A-Z]', password):
             return False, "Password must contain at least one uppercase letter"
+        
         if not re.search(r'[a-z]', password):
             return False, "Password must contain at least one lowercase letter"
+        
         if not re.search(r'\d', password):
             return False, "Password must contain at least one number"
+        
+        if not re.search(r'[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\?]', password):
+            return False, "Password must contain at least one special character"
+        
         return True, "Password is strong"
     
     @staticmethod
-    def hash_password(password: str) -> str:
+    def validate_email(email):
+        """Validate email format"""
+        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        return re.match(pattern, email) is not None
+    
+    @staticmethod
+    def hash_password(password):
         """Hash password with salt"""
         salt = secrets.token_hex(32)
         password_hash = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('utf-8'), 100000)
         return f"{salt}:{password_hash.hex()}"
     
     @staticmethod
-    def verify_password(password: str, stored_hash: str) -> bool:
+    def verify_password(password, stored_hash):
         """Verify password against stored hash"""
-        if not password or not stored_hash or ':' not in stored_hash:
-            return False
         try:
-            salt, hash_value = stored_hash.split(':', 1)
+            salt, hash_value = stored_hash.split(':')
             password_hash = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('utf-8'), 100000)
             return password_hash.hex() == hash_value
-        except Exception:
+        except:
             return False
 
-class EmailService:
-    """Email service for notifications"""
+class PhoneNumberManager:
+    """Manage Twilio phone numbers"""
     
     @staticmethod
-    def send_verification_email(email: str, name: str, token: str) -> bool:
-        """Send email verification"""
-        if not Config.EMAIL_ADDRESS or not Config.EMAIL_PASSWORD:
+    def generate_phone_number(user_id):
+        """Generate/assign phone number to user"""
+        # Check if user already has a phone number
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT phone_number FROM phone_numbers WHERE user_id = ?', (user_id,))
+            existing = cursor.fetchone()
+            if existing:
+                return existing['phone_number']
+        
+        # Use your actual Twilio number for all users
+        phone_number = "+16095073300"  # Your actual number
+        
+        # Store in database
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT OR REPLACE INTO phone_numbers (user_id, phone_number)
+                VALUES (?, ?)
+            ''', (user_id, phone_number))
+            conn.commit()
+        
+        return phone_number
+
+class EmailService:
+    """Email service for notifications and verification"""
+    
+    @staticmethod
+    def send_email(to_email, subject, html_body, text_body=None):
+        """Send email using SMTP"""
+        if not EMAIL_CONFIG['email'] or not EMAIL_CONFIG['password']:
             logger.warning("Email service not configured")
             return False
         
-        verification_url = f"https://{Config.DOMAIN}/verify-email?token={token}"
+        try:
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = subject
+            msg['From'] = f"{EMAIL_CONFIG['from_name']} <{EMAIL_CONFIG['email']}>"
+            msg['To'] = to_email
+            
+            if text_body:
+                text_part = MIMEText(text_body, 'plain')
+                msg.attach(text_part)
+            
+            html_part = MIMEText(html_body, 'html')
+            msg.attach(html_part)
+            
+            with smtplib.SMTP(EMAIL_CONFIG['smtp_server'], EMAIL_CONFIG['smtp_port']) as server:
+                server.starttls()
+                server.login(EMAIL_CONFIG['email'], EMAIL_CONFIG['password'])
+                server.send_message(msg)
+            
+            logger.info(f"Email sent successfully to {to_email}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to send email to {to_email}: {str(e)}")
+            return False
+    
+    @staticmethod
+    def send_verification_email(user_email, user_name, verification_token):
+        """Send email verification"""
+        verification_url = f"{request.host_url}verify-email?token={verification_token}"
         
         subject = "Welcome to Voxcord - Verify Your Email"
+        
         html_body = f"""
         <!DOCTYPE html>
         <html>
-        <head><meta charset="UTF-8"></head>
-        <body style="font-family: Inter, sans-serif; margin: 0; padding: 40px; background: #f8fafc;">
-            <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; padding: 40px;">
-                <h1 style="color: #3b82f6; text-align: center;">📡 Welcome to Voxcord!</h1>
-                <p>Hi {name},</p>
-                <p>Thanks for signing up! Click the button below to verify your email:</p>
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="{verification_url}" style="background: #3b82f6; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block;">Verify Email</a>
+        <head>
+            <meta charset="UTF-8">
+            <title>Verify Your Email - Voxcord</title>
+            <style>
+                body {{ font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }}
+                .container {{ max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }}
+                .header {{ background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%); color: white; padding: 2rem; text-align: center; }}
+                .content {{ padding: 2rem; }}
+                .button {{ display: inline-block; background: #1e40af; color: white; padding: 1rem 2rem; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 1rem 0; }}
+                .footer {{ background: #f1f5f9; padding: 1rem; text-align: center; color: #64748b; font-size: 0.875rem; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>📡 Welcome to Voxcord!</h1>
+                    <p>Enterprise AI Voice Solutions</p>
                 </div>
-                <p>Or copy this link: {verification_url}</p>
-                <p><small>This link expires in 24 hours.</small></p>
+                <div class="content">
+                    <h2>Hi {user_name},</h2>
+                    <p>Thanks for signing up for Voxcord! To verify your email address, click the button below:</p>
+                    <div style="text-align: center; margin: 2rem 0;">
+                        <a href="{verification_url}" class="button">Verify Email Address</a>
+                    </div>
+                    <p>If you can't click the button, copy this link: {verification_url}</p>
+                    <p><strong>This link expires in 24 hours.</strong></p>
+                </div>
+                <div class="footer">
+                    <p>&copy; 2025 Voxcord. All rights reserved.</p>
+                </div>
             </div>
         </body>
         </html>
         """
         
-        try:
-            msg = MIMEMultipart('alternative')
-            msg['Subject'] = subject
-            msg['From'] = f"Voxcord <{Config.EMAIL_ADDRESS}>"
-            msg['To'] = email
-            msg.attach(MIMEText(html_body, 'html'))
-            
-            with smtplib.SMTP(Config.SMTP_SERVER, Config.SMTP_PORT) as server:
-                server.starttls()
-                server.login(Config.EMAIL_ADDRESS, Config.EMAIL_PASSWORD)
-                server.send_message(msg)
-            
-            logger.info(f"Verification email sent to {email}")
-            return True
-        except Exception as e:
-            logger.error(f"Failed to send email to {email}: {e}")
-            return False
-
-class AIService:
-    """AI service for generating responses"""
-    
-    @staticmethod
-    def generate_response(user_input: str, conversation_history: list, user_config: dict) -> str:
-        """Generate AI response using OpenAI"""
-        if not services.openai:
-            return "I'm sorry, I'm currently unavailable. Please try again later."
+        text_body = f"""
+        Welcome to Voxcord!
         
-        try:
-            # Build context
-            messages = [
-                {
-                    "role": "system",
-                    "content": user_config.get('instructions', 
-                        "You are a helpful customer service assistant. Be friendly, professional, and concise. "
-                        "Keep responses under 50 words since this is a phone conversation."
-                    )
-                }
-            ]
-            
-            # Add conversation history (last 5 exchanges for context)
-            for exchange in conversation_history[-5:]:
-                messages.append({"role": "user", "content": exchange['user']})
-                messages.append({"role": "assistant", "content": exchange['assistant']})
-            
-            # Add current user input
-            messages.append({"role": "user", "content": user_input})
-            
-            # Generate response
-            response = services.openai.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=messages,
-                max_tokens=150,
-                temperature=0.7
-            )
-            
-            return response.choices[0].message.content.strip()
-            
-        except Exception as e:
-            logger.error(f"Error generating AI response: {e}")
-            return user_config.get('fallback', "I'm sorry, I didn't understand. Could you please repeat that?")
+        Hi {user_name},
+        
+        Thanks for signing up for Voxcord! To verify your email address, please visit:
+        {verification_url}
+        
+        This link will expire in 24 hours.
+        
+        If you didn't create an account, you can ignore this email.
+        
+        Best regards,
+        The Voxcord Team
+        """
+        
+        return EmailService.send_email(user_email, subject, html_body, text_body)
 
-# In-memory cache for user configurations
-user_config_cache = {}
-
-def get_user_config(user_id: str) -> dict:
-    """Get user configuration with caching"""
-    if user_id in user_config_cache:
-        return user_config_cache[user_id]
-    
-    user = db.get_user_by_id(user_id)
-    if user and user.get('settings'):
-        try:
-            config = json.loads(user['settings'])
-            user_config_cache[user_id] = config
-            return config
-        except:
-            pass
-    
-    # Default configuration
-    default_config = {
-        'voice': 'alice',
-        'greeting': DEFAULT_AI_GREETING,
-        'instructions': "You are a helpful customer service assistant. Be friendly and professional.",
-        'fallback': "I'm sorry, I didn't understand. Could you please repeat that?"
-    }
-    user_config_cache[user_id] = default_config
-    return default_config
-
-# Authentication utilities
-def create_jwt_token(user: dict) -> str:
-    """Create JWT token for user"""
+# Utility functions
+def create_session_token(user):
+    """Create JWT session token"""
     payload = {
         'user_id': user['id'],
         'email': user['email'],
         'plan': user['plan'],
         'iat': datetime.utcnow(),
-        'exp': datetime.utcnow() + timedelta(hours=Config.JWT_EXPIRY_HOURS)
+        'exp': datetime.utcnow() + timedelta(hours=24)
     }
-    return jwt.encode(payload, Config.JWT_SECRET, algorithm='HS256')
+    return jwt.encode(payload, JWT_SECRET, algorithm='HS256')
+
+def verify_session_token(token):
+    """Verify JWT session token"""
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+        return payload
+    except:
+        return None
 
 def require_auth(f):
-    """Authentication decorator"""
+    """Decorator for protected routes"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         auth_header = request.headers.get('Authorization')
@@ -641,199 +542,472 @@ def require_auth(f):
             return jsonify({'error': 'Authentication required'}), 401
         
         token = auth_header.split(' ')[1]
-        try:
-            payload = jwt.decode(token, Config.JWT_SECRET, algorithms=['HS256'])
-            request.current_user = payload
-            return f(*args, **kwargs)
-        except jwt.ExpiredSignatureError:
-            return jsonify({'error': 'Token expired'}), 401
-        except jwt.InvalidTokenError:
-            return jsonify({'error': 'Invalid token'}), 401
+        payload = verify_session_token(token)
+        if not payload:
+            return jsonify({'error': 'Invalid or expired token'}), 401
+        
+        request.current_user = payload
+        return f(*args, **kwargs)
     
     return decorated_function
 
-# Static File Routes
+def rate_limit_check(ip_address, max_attempts=5, window_minutes=15):
+    """Check rate limiting"""
+    key = f"rate_limit:{ip_address}"
+    attempts = cache.get(key) or []
+    now = datetime.utcnow()
+    
+    # Remove old attempts
+    attempts = [attempt for attempt in attempts if now - datetime.fromisoformat(attempt) < timedelta(minutes=window_minutes)]
+    
+    if len(attempts) >= max_attempts:
+        return False
+    
+    attempts.append(now.isoformat())
+    cache.set(key, attempts, ttl=window_minutes * 60)
+    return True
+
+# Routes
 @app.route('/')
 def index():
-    """Home page redirect"""
     return redirect('/landing')
-
-@app.route('/landing')
-def landing_page():
-    """Landing page"""
-    try:
-        return send_file('landing.html')
-    except:
-        return "Landing page not found", 404
-
-@app.route('/signup')
-def signup_page():
-    """Signup page"""
-    try:
-        return send_file('signup.html')
-    except:
-        return "Signup page not found", 404
-
-@app.route('/login')
-def login_page():
-    """Login page"""
-    try:
-        return send_file('login.html')
-    except:
-        return "Login page not found", 404
-
-@app.route('/dashboard')
-def dashboard_page():
-    """Dashboard page"""
-    try:
-        return send_file('dashboard.html')
-    except:
-        return "Dashboard not found", 404
 
 @app.route('/static/<path:filename>')
 def static_files(filename):
     """Serve static files"""
     try:
         return send_from_directory('static', filename)
-    except:
+    except Exception as e:
+        logger.error(f"Error serving static file {filename}: {e}")
         return "File not found", 404
 
-# API Routes
-@app.route('/api/health')
-def health_check():
-    """System health check"""
+@app.route('/landing')
+def landing_page():
     try:
-        with db.get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute('SELECT COUNT(*) as count FROM users')
-            user_count = cursor.fetchone()['count']
-        
-        return jsonify({
-            'status': 'healthy',
-            'version': '2.0.0',
-            'timestamp': datetime.utcnow().isoformat(),
-            'database': 'PostgreSQL' if db.is_postgres else 'SQLite',
-            'services': {
-                'openai': bool(services.openai),
-                'twilio': bool(services.twilio),
-                'email': bool(Config.EMAIL_ADDRESS)
-            },
-            'stats': {'total_users': user_count}
-        })
+        return send_file('landing.html')
     except Exception as e:
-        logger.error(f"Health check failed: {e}")
-        return jsonify({'status': 'unhealthy', 'error': str(e)}), 500
+        logger.error(f"Error serving landing page: {e}")
+        return "Landing page not found", 404
+
+@app.route('/signup')
+def signup_page():
+    try:
+        return send_file('signup.html')
+    except Exception as e:
+        logger.error(f"Error serving signup page: {e}")
+        return "Signup page not found", 404
+
+@app.route('/login')
+def login_page():
+    try:
+        return send_file('login.html')
+    except Exception as e:
+        logger.error(f"Error serving login page: {e}")
+        return "Login page not found", 404
+
+@app.route('/dashboard')
+def dashboard():
+    try:
+        return send_file('dashboard.html')
+    except Exception as e:
+        logger.error(f"Error serving dashboard: {e}")
+        return "Dashboard not found", 404
 
 @app.route('/api/signup', methods=['POST'])
 def api_signup():
-    """User registration endpoint"""
+    """Enhanced signup with proper email verification"""
     try:
-        data = request.get_json()
-        if not data:
-            return jsonify({'error': 'Invalid JSON data'}), 400
+        data = request.json
+        client_ip = request.remote_addr
         
-        # Validate required fields
+        # Rate limiting
+        if not rate_limit_check(client_ip):
+            return jsonify({'success': False, 'message': 'Too many attempts. Please try again later.'}), 429
+        
+        # Validate required fields - MAKE THEM OPTIONAL
         required_fields = ['firstName', 'lastName', 'email', 'password']
         for field in required_fields:
             if not data.get(field):
-                return jsonify({'error': f'{field} is required'}), 400
+                return jsonify({'success': False, 'message': f'{field} is required'}), 400
         
+        # Validate email format
         email = data['email'].lower().strip()
         if not SecurityManager.validate_email(email):
-            return jsonify({'error': 'Invalid email format'}), 400
+            return jsonify({'success': False, 'message': 'Invalid email format'}), 400
         
-        if db.get_user_by_email(email):
-            return jsonify({'error': 'Email already registered'}), 400
+        # CHECK FOR DUPLICATE EMAIL - CRITICAL FIX
+        existing_user = db.get_user_by_email(email)
+        if existing_user:
+            logger.warning(f"Duplicate signup attempt: {email}")
+            return jsonify({'success': False, 'message': 'An account with this email already exists. Please try logging in instead.'}), 400
         
-        password = str(data['password']).strip()
-        is_valid, message = SecurityManager.validate_password(password)
-        if not is_valid:
-            return jsonify({'error': message}), 400
+        # Validate password - MAKE IT SIMPLER
+        password = data['password']
+        if len(password) < 6:
+            return jsonify({'success': False, 'message': 'Password must be at least 6 characters'}), 400
         
-        # Create user
+        # Validate plan
+        plan = data.get('plan', 'free')
+        if plan not in PLAN_LIMITS:
+            return jsonify({'success': False, 'message': 'Invalid plan selected'}), 400
+        
+        # Generate user ID and hash password
+        user_id = str(uuid.uuid4())
         password_hash = SecurityManager.hash_password(password)
-        verification_token = secrets.token_urlsafe(32)
-        verification_expiry = datetime.utcnow() + timedelta(hours=24)
         
+        # Check if email service is configured
+        email_configured = EMAIL_CONFIG['email'] and EMAIL_CONFIG['password']
+        
+        # Generate verification token only if email is configured
+        verification_token = secrets.token_urlsafe(32) if email_configured else None
+        verification_expiry = (datetime.utcnow() + timedelta(hours=24)).isoformat() if email_configured else None
+        
+        # Create user account with AUTO-VERIFICATION if no email service
         user_data = {
-            'first_name': str(data['firstName']).strip(),
-            'last_name': str(data['lastName']).strip(),
+            'id': user_id,
+            'firstName': data['firstName'],
+            'lastName': data['lastName'],
             'email': email,
-            'password_hash': password_hash,
-            'company': str(data.get('company', '')).strip(),
-            'industry': str(data.get('industry', '')).strip(),
-            'plan': data.get('plan', 'free'),
-            'verification_token': verification_token,
-            'verification_expiry': verification_expiry.isoformat(),
-            'verified': False
+            'passwordHash': password_hash,
+            'company': data.get('company', ''),
+            'industry': data.get('industry', ''),
+            'phone': data.get('phone', ''),
+            'plan': plan,
+            'verificationToken': verification_token,
+            'verificationExpiry': verification_expiry,
+            'verified': not email_configured  # AUTO-VERIFY if no email service
         }
         
-        user_id = db.create_user(user_data)
-        email_sent = EmailService.send_verification_email(email, user_data['first_name'], verification_token)
+        db.create_user(user_data)
+        
+        # Send verification email only if configured
+        email_sent = False
+        if email_configured:
+            email_sent = EmailService.send_verification_email(
+                email,
+                data['firstName'],
+                verification_token
+            )
+        
+        # Generate phone number
+        phone_number = PhoneNumberManager.generate_phone_number(user_id)
+        
+        logger.info(f"New user registration: {email} - {plan} plan - Auto-verified: {not email_configured}")
+        
+        # Different messages based on email configuration
+        if email_configured:
+            message = 'Account created successfully! Please check your email to verify your account.'
+        else:
+            message = 'Account created successfully! You can now sign in immediately.'
         
         return jsonify({
             'success': True,
-            'message': 'Account created! Please check your email to verify.',
             'userId': user_id,
-            'phoneNumber': SHARED_PHONE_NUMBER,
-            'emailSent': email_sent
+            'plan': plan,
+            'phoneNumber': phone_number,
+            'message': message,
+            'emailSent': email_sent,
+            'autoVerified': not email_configured
         })
         
     except Exception as e:
-        logger.error(f"Signup error: {e}")
-        return jsonify({'error': 'Registration failed'}), 500
+        logger.error(f"Signup error: {str(e)}")
+        return jsonify({'success': False, 'message': 'Registration failed. Please try again.'}), 500
 
-@app.route('/api/login', methods=['POST'])
-def api_login():
-    """User login endpoint"""
+
+    
+@app.route('/api/signup/simple', methods=['POST'])
+def simple_signup():
+    """Simplified signup for modern frontend"""
     try:
-        data = request.get_json()
-        if not data:
-            return jsonify({'error': 'Invalid JSON data'}), 400
+        data = request.json
+        client_ip = request.remote_addr
         
-        email = data.get('email', '').lower().strip()
-        password = data.get('password', '')
+        # Rate limiting
+        if not rate_limit_check(client_ip):
+            return jsonify({'success': False, 'message': 'Too many attempts. Please try again later.'}), 429
         
-        if not email or not password:
-            return jsonify({'error': 'Email and password required'}), 400
+        # Only require essential fields
+        required_fields = ['firstName', 'lastName', 'email', 'password']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'success': False, 'message': f'{field} is required'}), 400
         
-        user = db.get_user_by_email(email)
-        if not user or not SecurityManager.verify_password(password, user['password_hash']):
-            return jsonify({'error': 'Invalid credentials'}), 401
+        email = data['email'].lower().strip()
         
-        if not user['verified']:
-            return jsonify({'error': 'Please verify your email first'}), 401
+        # Check for duplicate
+        existing_user = db.get_user_by_email(email)
+        if existing_user:
+            return jsonify({'success': False, 'message': 'An account with this email already exists. Please try logging in instead.'}), 400
         
-        token = create_jwt_token(user)
+        # Simple password validation
+        if len(data['password']) < 6:
+            return jsonify({'success': False, 'message': 'Password must be at least 6 characters'}), 400
+        
+        # Create user
+        user_id = str(uuid.uuid4())
+        password_hash = SecurityManager.hash_password(data['password'])
+        
+        user_data = {
+            'id': user_id,
+            'firstName': data['firstName'],
+            'lastName': data['lastName'],
+            'email': email,
+            'passwordHash': password_hash,
+            'company': data.get('company', ''),
+            'industry': data.get('industry', ''),
+            'phone': '',
+            'plan': data.get('plan', 'free'),
+            'verificationToken': None,
+            'verificationExpiry': None,
+            'verified': True  # Auto-verify for simplified flow
+        }
+        
+        db.create_user(user_data)
+        phone_number = PhoneNumberManager.generate_phone_number(user_id)
+        
+        session_token = create_session_token({
+            'id': user_id,
+            'email': email,
+            'plan': user_data['plan']
+        })
+        
+        logger.info(f"Simple signup completed: {email}")
         
         return jsonify({
             'success': True,
-            'token': token,
+            'sessionToken': session_token,
+            'user': {
+                'id': user_id,
+                'email': email,
+                'name': f"{data['firstName']} {data['lastName']}",
+                'plan': user_data['plan'],
+                'phoneNumber': phone_number
+            },
+            'message': 'Account created successfully! You can now use your AI assistant.'
+        })
+        
+    except Exception as e:
+        logger.error(f"Simple signup error: {str(e)}")
+        return jsonify({'success': False, 'message': 'Registration failed. Please try again.'}), 500
+    
+@app.route('/api/auth/google', methods=['POST'])
+def google_oauth():
+    """Handle Google OAuth authentication"""
+    try:
+        data = request.json
+        
+        # Extract user info from Google OAuth response
+        user_info = {
+            'email': data.get('email'),
+            'name': data.get('name'),
+            'picture': data.get('picture', ''),
+            'provider': 'google'
+        }
+        
+        if not user_info['email']:
+            return jsonify({'success': False, 'message': 'Email is required'}), 400
+        
+        email = user_info['email'].lower().strip()
+        
+        # Check if user exists
+        existing_user = db.get_user_by_email(email)
+        
+        if existing_user:
+            # User exists, log them in
+            session_token = create_session_token(existing_user)
+            phone_number = PhoneNumberManager.generate_phone_number(existing_user['id'])
+            
+            return jsonify({
+                'success': True,
+                'sessionToken': session_token,
+                'user': {
+                    'id': existing_user['id'],
+                    'email': existing_user['email'],
+                    'name': f"{existing_user['first_name']} {existing_user['last_name']}",
+                    'plan': existing_user['plan'],
+                    'phoneNumber': phone_number
+                }
+            })
+        else:
+            # Create new user from OAuth
+            user_id = str(uuid.uuid4())
+            name_parts = user_info['name'].split(' ', 1) if user_info['name'] else ['User', '']
+            first_name = name_parts[0]
+            last_name = name_parts[1] if len(name_parts) > 1 else ''
+            
+            user_data = {
+                'id': user_id,
+                'firstName': first_name,
+                'lastName': last_name,
+                'email': email,
+                'passwordHash': '',  # No password for OAuth users
+                'company': '',
+                'industry': '',
+                'phone': '',
+                'plan': 'free',
+                'verificationToken': None,
+                'verificationExpiry': None,
+                'verified': True  # OAuth users are auto-verified
+            }
+            
+            db.create_user(user_data)
+            phone_number = PhoneNumberManager.generate_phone_number(user_id)
+            
+            session_token = create_session_token({
+                'id': user_id,
+                'email': email,
+                'plan': 'free'
+            })
+            
+            logger.info(f"New OAuth user created: {email} via Google")
+            
+            return jsonify({
+                'success': True,
+                'sessionToken': session_token,
+                'user': {
+                    'id': user_id,
+                    'email': email,
+                    'name': user_info['name'] or f"{first_name} {last_name}",
+                    'plan': 'free',
+                    'phoneNumber': phone_number
+                }
+            })
+            
+    except Exception as e:
+        logger.error(f"Google OAuth error: {str(e)}")
+        return jsonify({'success': False, 'message': 'Authentication failed'}), 500
+
+@app.route('/api/auth/apple', methods=['POST'])
+def apple_oauth():
+    """Handle Apple OAuth authentication"""
+    try:
+        data = request.json
+        
+        # Similar to Google OAuth
+        user_info = {
+            'email': data.get('email'),
+            'name': data.get('name', 'Apple User'),
+            'provider': 'apple'
+        }
+        
+        # Same logic as Google OAuth
+        # ... (copy the logic from google_oauth but change provider to 'apple')
+        
+        return jsonify({
+            'success': True,
+            'message': 'Apple OAuth processed successfully'
+        })
+        
+    except Exception as e:
+        logger.error(f"Apple OAuth error: {str(e)}")
+        return jsonify({'success': False, 'message': 'Authentication failed'}), 500
+
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    """Enhanced login with proper security"""
+    try:
+        data = request.json
+        email = data.get('email', '').lower().strip()
+        password = data.get('password', '')
+        client_ip = request.remote_addr
+        
+        # Check rate limiting
+        if not rate_limit_check(client_ip, max_attempts=5):
+            return jsonify({
+                'success': False, 
+                'message': 'Too many failed attempts. Please try again in 15 minutes.'
+            }), 429
+        
+        # Find user by email
+        user = db.get_user_by_email(email)
+        
+        if not user:
+            return jsonify({'success': False, 'message': 'Invalid email or password'}), 401
+        
+        # Verify password
+        if not SecurityManager.verify_password(password, user['password_hash']):
+            return jsonify({'success': False, 'message': 'Invalid email or password'}), 401
+        
+        # Check if account is verified
+        if not user['verified']:
+            return jsonify({
+                'success': False, 
+                'message': 'Please verify your email address before signing in.'
+            }), 401
+        
+        # Create session token
+        session_token = create_session_token(user)
+        
+        # Update last login
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', (user['id'],))
+            conn.commit()
+        
+        # Get phone number
+        phone_number = PhoneNumberManager.generate_phone_number(user['id'])
+        
+        logger.info(f"Successful login: {email}")
+        
+        return jsonify({
+            'success': True,
+            'sessionToken': session_token,
             'user': {
                 'id': user['id'],
                 'firstName': user['first_name'],
                 'lastName': user['last_name'],
                 'email': user['email'],
-                'plan': user['plan']
+                'company': user['company'],
+                'plan': user['plan'],
+                'phoneNumber': phone_number
             }
         })
         
     except Exception as e:
-        logger.error(f"Login error: {e}")
-        return jsonify({'error': 'Login failed'}), 500
+        logger.error(f"Login error: {str(e)}")
+        return jsonify({'success': False, 'message': 'Login failed. Please try again.'}), 500
 
 @app.route('/verify-email')
 def verify_email():
     """Email verification endpoint"""
     token = request.args.get('token')
+    
     if not token:
-        return render_template_string(ERROR_PAGE_TEMPLATE,
+        return render_template_string(ERROR_PAGE_TEMPLATE, 
             title="Invalid Verification Link",
             message="The verification link is invalid or missing."
         )
     
-    if db.verify_user_email(token):
-        return render_template_string(SUCCESS_PAGE_TEMPLATE)
+    # Verify the token
+    if db.verify_user(token):
+        # Get user data
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT * FROM users WHERE verification_token IS NULL AND verified = TRUE ORDER BY created_at DESC LIMIT 1')
+            user = cursor.fetchone()
+        
+        if user:
+            user = dict(user)
+            # Generate phone number
+            phone_number = PhoneNumberManager.generate_phone_number(user['id'])
+            
+            # Create session token for auto-login
+            session_token = create_session_token(user)
+            
+            logger.info(f"Email verified for user: {user['email']}")
+            
+            return render_template_string(SUCCESS_PAGE_TEMPLATE,
+                user_name=user['first_name'],
+                plan=user['plan'],
+                phone_number=phone_number,
+                session_token=session_token,
+                user_data={
+                    'id': user['id'],
+                    'email': user['email'],
+                    'plan': user['plan']
+                }
+            )
     
     return render_template_string(ERROR_PAGE_TEMPLATE,
         title="Verification Failed",
@@ -849,8 +1023,9 @@ def verify_session():
 @app.route('/phone_info')
 @require_auth
 def phone_info():
-    """Get user's phone number info"""
-    return jsonify({'phone_number': SHARED_PHONE_NUMBER})
+    """Get user's phone number"""
+    # Return your actual Twilio number
+    return jsonify({'phone_number': '+1 (609) 507-3300'})
 
 @app.route('/active_calls')
 def active_calls():
@@ -858,18 +1033,13 @@ def active_calls():
     try:
         calls = db.get_active_calls()
         
+        # Format the response
         formatted_calls = []
         for call in calls:
             conversation_history = json.loads(call.get('conversation_history', '[]'))
-            started_at = call['started_at']
-            if isinstance(started_at, str):
-                started_at = datetime.fromisoformat(started_at).timestamp()
-            elif hasattr(started_at, 'timestamp'):
-                started_at = started_at.timestamp()
-            
             formatted_calls.append({
                 'call_sid': call['call_sid'],
-                'started_at': started_at,
+                'started_at': time.mktime(datetime.fromisoformat(call['started_at']).timetuple()),
                 'message_count': len(conversation_history),
                 'status': call['status']
             })
@@ -883,18 +1053,23 @@ def active_calls():
 def call_summary(call_sid):
     """Get call summary and transcript"""
     try:
-        call = db.get_call_by_sid(call_sid)
-        if not call:
-            return jsonify({'error': 'Call not found'}), 404
-        
-        conversation_history = json.loads(call.get('conversation_history', '[]'))
-        
-        return jsonify({
-            'call_sid': call['call_sid'],
-            'started_at': call['started_at'],
-            'conversation_history': conversation_history,
-            'status': call['status']
-        })
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT * FROM call_sessions WHERE call_sid = ?', (call_sid,))
+            call = cursor.fetchone()
+            
+            if not call:
+                return jsonify({'error': 'Call not found'}), 404
+            
+            call_dict = dict(call)
+            conversation_history = json.loads(call_dict.get('conversation_history', '[]'))
+            
+            return jsonify({
+                'call_sid': call_dict['call_sid'],
+                'started_at': call_dict['started_at'],
+                'conversation_history': conversation_history,
+                'status': call_dict['status']
+            })
     except Exception as e:
         logger.error(f"Error fetching call summary: {e}")
         return jsonify({'error': 'Failed to fetch call summary'}), 500
@@ -904,26 +1079,21 @@ def call_summary(call_sid):
 def update_config():
     """Update AI configuration"""
     try:
-        data = request.get_json()
+        data = request.json
         user_id = request.current_user['user_id']
         
-        # Update user settings in database
+        # Store configuration in database
         with db.get_connection() as conn:
             cursor = conn.cursor()
-            
-            if db.is_postgres:
-                cursor.execute('''
-                    UPDATE users SET settings = %s WHERE id = %s
-                ''', (json.dumps(data), user_id))
-            else:
-                cursor.execute('''
-                    UPDATE users SET settings = ? WHERE id = ?
-                ''', (json.dumps(data), user_id))
-            
+            cursor.execute('''
+                UPDATE users 
+                SET settings = ? 
+                WHERE id = ?
+            ''', (json.dumps(data), user_id))
             conn.commit()
         
-        # Update cache
-        user_config_cache[user_id] = data
+        # Cache the configuration
+        cache.set(f"config:{user_id}", data, ttl=86400)  # 24 hours
         
         logger.info(f"Configuration updated for user: {user_id}")
         return jsonify({'success': True})
@@ -932,84 +1102,46 @@ def update_config():
         logger.error(f"Error updating configuration: {e}")
         return jsonify({'success': False, 'error': 'Failed to update configuration'}), 500
 
-# Twilio Voice Routes
 @app.route('/api/twilio/voice', methods=['POST'])
 def handle_voice_call():
-    """Handle incoming Twilio voice calls"""
+    """Handle incoming Twilio voice calls - FIXED VERSION"""
     try:
         call_sid = request.form.get('CallSid')
         from_number = request.form.get('From')
         to_number = request.form.get('To')
         
-        logger.info(f"Incoming call: {call_sid} from {from_number} to {to_number}")
+        logger.info(f"Incoming call - CallSid: {call_sid}, From: {from_number}, To: {to_number}")
         
-        # Extract routing key from caller's input or use default
-        # For now, we'll use a simple approach - the caller will need to provide their routing key
-        response = VoiceResponse()
+        # SIMPLIFIED APPROACH - Since everyone uses the same number (+16095073300)
+        # We don't need to find a specific user, just handle the call generically
         
-        # Ask for routing key
-        gather = Gather(
-            input='dtmf',
-            action=f'/api/twilio/route/{call_sid}',
-            method='POST',
-            num_digits=8,
-            timeout=10
-        )
-        gather.say("Welcome to Voxcord! Please enter your 8-digit routing key followed by the pound key.")
-        response.append(gather)
-        
-        # Fallback if no input
-        response.say("I didn't receive your routing key. Please call back and enter your 8-digit routing key. Goodbye!")
-        
-        return str(response)
-        
-    except Exception as e:
-        logger.error(f"Error handling voice call: {e}")
-        response = VoiceResponse()
-        response.say("I'm sorry, there was an error processing your call. Please try again later.")
-        return str(response)
-
-@app.route('/api/twilio/route/<call_sid>', methods=['POST'])
-def route_call(call_sid):
-    """Route call to appropriate user based on routing key"""
-    try:
-        routing_key = request.form.get('Digits')
-        from_number = request.form.get('From')
-        
-        if not routing_key or len(routing_key) != 8:
-            response = VoiceResponse()
-            response.say("Invalid routing key. Please call back with a valid 8-digit routing key. Goodbye!")
-            return str(response)
-        
-        # Find user by routing key
-        user = db.get_user_by_routing_key(routing_key)
-        
-        if not user:
-            response = VoiceResponse()
-            response.say("Routing key not found. Please check your routing key and try again. Goodbye!")
-            return str(response)
-        
-        # Create call session
+        # Create a generic call session for tracking
         call_data = {
+            'id': str(uuid.uuid4()),
+            'user_id': 'system',  # Generic system user
             'call_sid': call_sid,
-            'user_id': user['id'],
-            'caller_number': from_number,
             'metadata': {
-                'routing_key': routing_key,
-                'to_number': request.form.get('To')
+                'from_number': from_number,
+                'to_number': to_number,
+                'timestamp': datetime.utcnow().isoformat()
             }
         }
         
-        db.create_call_session(call_data)
+        # Try to create call session (don't fail if it doesn't work)
+        try:
+            db.create_call_session(call_data)
+            logger.info(f"Call session created for: {call_sid}")
+        except Exception as e:
+            logger.warning(f"Could not create call session: {e}")
         
-        # Get user configuration
-        config = get_user_config(user['id'])
-        
-        # Create initial response
+        # Create TwiML response - THIS IS THE IMPORTANT PART
         response = VoiceResponse()
         
-        greeting = config.get('greeting', DEFAULT_AI_GREETING)
-        response.say(greeting, voice=config.get('voice', 'alice'))
+        # Default greeting - you can customize this
+        greeting = "Hello! Thank you for calling Voxcord, your AI voice assistant platform. How can I help you today?"
+        
+        # Say the greeting
+        response.say(greeting, voice='alice')
         
         # Set up for conversation
         gather = Gather(
@@ -1019,20 +1151,98 @@ def route_call(call_sid):
             speech_timeout='auto',
             language='en-US'
         )
-        gather.say("How can I help you today?", voice=config.get('voice', 'alice'))
+        gather.say("Please tell me what you need assistance with.", voice='alice')
         response.append(gather)
         
-        # Fallback
-        response.say("Thank you for calling. Have a great day!")
+        # Fallback if no speech detected
+        response.say("I didn't hear anything. Please call back when you're ready to talk. Thank you!")
         
-        logger.info(f"Call routed: {call_sid} to user {user['id']}")
+        logger.info(f"TwiML response sent for call: {call_sid}")
         return str(response)
         
     except Exception as e:
-        logger.error(f"Error routing call: {e}")
+        logger.error(f"Error handling voice call: {e}")
+        
+        # ALWAYS return a valid TwiML response, even on error
         response = VoiceResponse()
-        response.say("I'm sorry, there was an error routing your call. Please try again later.")
+        response.say("I'm sorry, there was a technical issue. Please try calling back in a few minutes.")
         return str(response)
+
+@app.route('/debug/users')
+def debug_users():
+    """Debug route to check users in database"""
+    try:
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT id, email, verified, plan, created_at FROM users ORDER BY created_at DESC LIMIT 10')
+            users = [dict(row) for row in cursor.fetchall()]
+            
+            cursor.execute('SELECT COUNT(*) as total FROM users')
+            total_count = cursor.fetchone()['total']
+            
+            return jsonify({
+                'success': True,
+                'total_users': total_count,
+                'recent_users': users,
+                'database_path': db.db_path
+            })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'database_path': getattr(db, 'db_path', 'Unknown')
+        })
+
+@app.route('/debug/phone')
+def debug_phone():
+    """Debug phone number assignments"""
+    try:
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT * FROM phone_numbers ORDER BY created_at DESC LIMIT 10')
+            phone_records = [dict(row) for row in cursor.fetchall()]
+            
+            return jsonify({
+                'success': True,
+                'phone_records': phone_records,
+                'expected_number': '+16095073300'
+            })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        })
+
+@app.route('/test')
+def test_system():
+    """Test system functionality"""
+    try:
+        # Test database connection
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT COUNT(*) as count FROM users')
+            user_count = cursor.fetchone()['count']
+            
+            # Test phone number generation
+            test_phone = PhoneNumberManager.generate_phone_number('test-user')
+        
+        return jsonify({
+            'status': 'OK',
+            'database': 'Connected',
+            'user_count': user_count,
+            'phone_number_test': test_phone,
+            'expected_phone': '+16095073300',
+            'openai_configured': bool(openai_client),
+            'twilio_configured': bool(twilio_client),
+            'email_configured': bool(EMAIL_CONFIG['email'])
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'ERROR',
+            'error': str(e)
+        }), 500
+
 
 @app.route('/api/twilio/gather/<call_sid>', methods=['POST'])
 def handle_speech_input(call_sid):
@@ -1054,20 +1264,36 @@ def handle_speech_input(call_sid):
             return str(response)
         
         # Get call session
-        call = db.get_call_by_sid(call_sid)
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT * FROM call_sessions WHERE call_sid = ?', (call_sid,))
+            call = cursor.fetchone()
+        
         if not call:
             response = VoiceResponse()
             response.say("Sorry, there was an error with your call.")
             return str(response)
         
+        call = dict(call)
         user_id = call['user_id']
+        
+        # Get conversation history
         conversation_history = json.loads(call.get('conversation_history', '[]'))
         
-        # Get user configuration
-        config = get_user_config(user_id)
+        # Get user's AI configuration
+        config = cache.get(f"config:{user_id}")
+        if not config:
+            with db.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute('SELECT settings FROM users WHERE id = ?', (user_id,))
+                user_settings = cursor.fetchone()
+                if user_settings and user_settings['settings']:
+                    config = json.loads(user_settings['settings'])
+                else:
+                    config = {}
         
         # Generate AI response
-        ai_response = AIService.generate_response(speech_result, conversation_history, config)
+        ai_response = generate_ai_response(speech_result, conversation_history, config)
         
         # Update conversation history
         conversation_history.append({
@@ -1076,14 +1302,16 @@ def handle_speech_input(call_sid):
             'timestamp': time.time()
         })
         
-        # Update database
-        db.update_call_conversation(call_sid, conversation_history)
+        # Update call session
+        db.update_call_session(call_sid, {
+            'conversation_history': json.dumps(conversation_history)
+        })
         
         # Create TwiML response
         response = VoiceResponse()
         response.say(ai_response, voice=config.get('voice', 'alice'))
         
-        # Continue conversation
+        # Continue listening
         gather = Gather(
             input='speech',
             action=f'/api/twilio/gather/{call_sid}',
@@ -1091,13 +1319,12 @@ def handle_speech_input(call_sid):
             speech_timeout='auto',
             language='en-US'
         )
-        gather.say("Is there anything else I can help you with?", voice=config.get('voice', 'alice'))
+        gather.say("Is there anything else I can help you with?")
         response.append(gather)
         
         # Fallback
         response.say("Thank you for calling. Have a great day!")
         
-        logger.info(f"Speech processed for call: {call_sid}")
         return str(response)
         
     except Exception as e:
@@ -1105,6 +1332,75 @@ def handle_speech_input(call_sid):
         response = VoiceResponse()
         response.say("I'm sorry, I'm having trouble understanding. Please try again.")
         return str(response)
+
+def generate_ai_response(user_input, conversation_history, config):
+    """Generate AI response using OpenAI"""
+    try:
+        if not openai_client:
+            return "I'm sorry, I'm currently unavailable. Please try again later."
+        
+        # Build context from conversation history
+        messages = [
+            {
+                "role": "system",
+                "content": config.get('instructions', 
+                    "You are a helpful customer service assistant. Be friendly, professional, and concise. "
+                    "Keep responses under 50 words since this is a phone conversation."
+                )
+            }
+        ]
+        
+        # Add conversation history
+        for exchange in conversation_history[-5:]:  # Last 5 exchanges for context
+            messages.append({"role": "user", "content": exchange['user']})
+            messages.append({"role": "assistant", "content": exchange['assistant']})
+        
+        # Add current user input
+        messages.append({"role": "user", "content": user_input})
+        
+        # Generate response
+        response = openai_client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+            max_tokens=150,
+            temperature=0.7
+        )
+        
+        return response.choices[0].message.content.strip()
+        
+    except Exception as e:
+        logger.error(f"Error generating AI response: {e}")
+        return config.get('fallback', "I'm sorry, I didn't understand. Could you please repeat that?")
+
+@app.route('/health')
+def health_check():
+    """System health check"""
+    active_calls_count = len(db.get_active_calls())
+    
+    with db.get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT COUNT(*) as total FROM users')
+        total_users = cursor.fetchone()['total']
+        
+        cursor.execute('SELECT COUNT(*) as verified FROM users WHERE verified = TRUE')
+        verified_users = cursor.fetchone()['verified']
+        
+        cursor.execute('SELECT plan, COUNT(*) as count FROM users GROUP BY plan')
+        plan_distribution = {row['plan']: row['count'] for row in cursor.fetchall()}
+    
+    return jsonify({
+        "status": "healthy",
+        "version": "2.0.0",
+        "timestamp": datetime.utcnow().isoformat(),
+        "openai_configured": bool(openai_client),
+        "twilio_configured": bool(twilio_client),
+        "email_configured": bool(EMAIL_CONFIG['email']),
+        "redis_available": bool(redis_client),
+        "total_users": total_users,
+        "verified_users": verified_users,
+        "active_calls": active_calls_count,
+        "plan_distribution": plan_distribution
+    })
 
 # Error handlers
 @app.errorhandler(404)
@@ -1116,53 +1412,19 @@ def internal_error(error):
     logger.error(f"Internal server error: {error}")
     return jsonify({'error': 'Internal server error'}), 500
 
-@app.errorhandler(400)
-def bad_request(error):
-    return jsonify({'error': 'Bad request'}), 400
-
-@app.errorhandler(401)
-def unauthorized(error):
-    return jsonify({'error': 'Unauthorized'}), 401
-
-# HTML Templates
+# Template constants
 ERROR_PAGE_TEMPLATE = """
 <!DOCTYPE html>
 <html>
 <head>
     <title>{{ title }} - Voxcord</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/styles.css">
     <style>
-        body { 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
-            background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%); 
-            min-height: 100vh; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            margin: 0; 
-        }
-        .container { 
-            background: white; 
-            padding: 3rem; 
-            border-radius: 20px; 
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
-            max-width: 500px; 
-            text-align: center; 
-        }
+        body { background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; }
+        .container { background: white; padding: 3rem; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 500px; text-align: center; }
         .error-icon { font-size: 4rem; margin-bottom: 1rem; }
         h1 { color: #e74c3c; margin-bottom: 1rem; }
-        .btn { 
-            background: #1e40af; 
-            color: white; 
-            padding: 1rem 2rem; 
-            border: none; 
-            border-radius: 8px; 
-            text-decoration: none; 
-            display: inline-block; 
-            margin: 1rem 0.5rem; 
-            font-weight: 600; 
-        }
+        .btn { background: #1e40af; color: white; padding: 1rem 2rem; border: none; border-radius: 8px; text-decoration: none; display: inline-block; margin-top: 1rem; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -1182,78 +1444,60 @@ SUCCESS_PAGE_TEMPLATE = """
 <html>
 <head>
     <title>Email Verified - Voxcord</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/styles.css">
     <style>
-        body { 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
-            background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%); 
-            min-height: 100vh; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            margin: 0; 
-        }
-        .container { 
-            background: white; 
-            padding: 3rem; 
-            border-radius: 20px; 
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
-            max-width: 500px; 
-            text-align: center; 
-        }
+        body { background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; }
+        .container { background: white; padding: 3rem; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 500px; text-align: center; }
         .success-icon { font-size: 4rem; margin-bottom: 1rem; }
         h1 { color: #10b981; margin-bottom: 1rem; }
-        .btn { 
-            background: #1e40af; 
-            color: white; 
-            padding: 1rem 2rem; 
-            border: none; 
-            border-radius: 8px; 
-            text-decoration: none; 
-            display: inline-block; 
-            margin-top: 1rem; 
-            font-weight: 600; 
-        }
-        .info-box { 
-            background: #f0f9ff; 
-            padding: 1rem; 
-            border-radius: 8px; 
-            margin: 1rem 0; 
-            border-left: 4px solid #0ea5e9; 
-        }
+        .btn { background: #1e40af; color: white; padding: 1rem 2rem; border: none; border-radius: 8px; text-decoration: none; display: inline-block; margin-top: 1rem; font-weight: 600; }
+        .info-box { background: #f0f9ff; padding: 1rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid #0ea5e9; }
     </style>
+    <script>
+        setTimeout(() => {
+            localStorage.setItem('sessionToken', '{{ session_token }}');
+            localStorage.setItem('user', JSON.stringify({{ user_data | tojson }}));
+            window.location.href = '/dashboard';
+        }, 3000);
+    </script>
 </head>
 <body>
     <div class="container">
         <div class="success-icon">✅</div>
         <h1>Email Verified!</h1>
-        <p>Your account has been successfully verified. You can now sign in to your Voxcord dashboard.</p>
+        <p>Welcome to Voxcord, {{ user_name }}!</p>
         
         <div class="info-box">
+            <p><strong>Plan:</strong> {{ plan.title() }}</p>
             <p><strong>Phone Number:</strong> {{ phone_number }}</p>
-            <p><small>Use this number to test your AI assistant</small></p>
         </div>
         
-        <a href="/login" class="btn">Sign In to Dashboard</a>
+        <p>Your account is now active. Redirecting to dashboard...</p>
+        <a href="/dashboard" class="btn">Go to Dashboard Now</a>
     </div>
 </body>
 </html>
 """
 
-# WSGI application object for production servers
-application = app
-
 if __name__ == '__main__':
-    # Development server
-    logger.info("Starting Voxcord development server...")
-    logger.info(f"Database: {'PostgreSQL' if db.is_postgres else 'SQLite'}")
-    logger.info(f"OpenAI: {'Configured' if services.openai else 'Not configured'}")
-    logger.info(f"Twilio: {'Configured' if services.twilio else 'Not configured'}")
-    logger.info(f"Email: {'Configured' if Config.EMAIL_ADDRESS else 'Not configured'}")
+    # Validate environment variables
+    required_vars = ['OPENAI_API_KEY']
+    missing_vars = [var for var in required_vars if not os.getenv(var)]
     
-    app.run(
-        host=Config.HOST,
-        port=Config.PORT,
-        debug=Config.DEBUG
-    )
+    if missing_vars:
+        logger.error(f"Missing required environment variables: {missing_vars}")
+        exit(1)
+    
+    # Check configurations
+    if not EMAIL_CONFIG['email']:
+        logger.warning("Email service not configured - verification emails will not be sent")
+    
+    if not twilio_client:
+        logger.warning("Twilio not configured - voice calls will not work")
+    
+    logger.info("Starting Voxcord backend server...")
+    logger.info(f"Email service: {'Configured' if EMAIL_CONFIG['email'] else 'Not configured'}")
+    logger.info(f"Twilio service: {'Configured' if twilio_client else 'Not configured'}")
+    logger.info(f"Redis cache: {'Available' if redis_client else 'Using in-memory storage'}")
+    
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=os.getenv('DEBUG', 'False').lower() == 'true')
