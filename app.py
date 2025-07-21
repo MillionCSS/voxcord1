@@ -207,16 +207,20 @@ class DatabaseManager:
         """Create a new user"""
         with self.get_connection() as conn:
             cursor = conn.cursor()
+            
+            # Handle the verified field - THIS IS THE KEY FIX
+            verified = user_data.get('verified', False)
+            
             cursor.execute('''
                 INSERT INTO users (
                     id, first_name, last_name, email, password_hash, company, 
-                    industry, phone, plan, verification_token, verification_expiry
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    industry, phone, plan, verification_token, verification_expiry, verified
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 user_data['id'], user_data['firstName'], user_data['lastName'],
                 user_data['email'], user_data['passwordHash'], user_data['company'],
                 user_data['industry'], user_data['phone'], user_data['plan'],
-                user_data['verificationToken'], user_data['verificationExpiry']
+                user_data['verificationToken'], user_data['verificationExpiry'], verified
             ))
             conn.commit()
             return cursor.lastrowid
@@ -620,8 +624,8 @@ def api_signup():
         if not rate_limit_check(client_ip):
             return jsonify({'success': False, 'message': 'Too many attempts. Please try again later.'}), 429
         
-        # Validate required fields
-        required_fields = ['firstName', 'lastName', 'email', 'password', 'company', 'industry', 'phone', 'plan']
+        # Validate required fields - MAKE THEM OPTIONAL
+        required_fields = ['firstName', 'lastName', 'email', 'password']
         for field in required_fields:
             if not data.get(field):
                 return jsonify({'success': False, 'message': f'{field} is required'}), 400
@@ -631,16 +635,16 @@ def api_signup():
         if not SecurityManager.validate_email(email):
             return jsonify({'success': False, 'message': 'Invalid email format'}), 400
         
-        # Check if email already exists
+        # CHECK FOR DUPLICATE EMAIL - CRITICAL FIX
         existing_user = db.get_user_by_email(email)
         if existing_user:
-            return jsonify({'success': False, 'message': 'Email already registered'}), 400
+            logger.warning(f"Duplicate signup attempt: {email}")
+            return jsonify({'success': False, 'message': 'An account with this email already exists. Please try logging in instead.'}), 400
         
-        # Validate password strength
+        # Validate password - MAKE IT SIMPLER
         password = data['password']
-        is_valid, message = SecurityManager.validate_password(password)
-        if not is_valid:
-            return jsonify({'success': False, 'message': message}), 400
+        if len(password) < 6:
+            return jsonify({'success': False, 'message': 'Password must be at least 6 characters'}), 400
         
         # Validate plan
         plan = data.get('plan', 'free')
@@ -651,50 +655,140 @@ def api_signup():
         user_id = str(uuid.uuid4())
         password_hash = SecurityManager.hash_password(password)
         
-        # Generate verification token
-        verification_token = secrets.token_urlsafe(32)
-        verification_expiry = (datetime.utcnow() + timedelta(hours=24)).isoformat()
+        # Check if email service is configured
+        email_configured = EMAIL_CONFIG['email'] and EMAIL_CONFIG['password']
         
-        # Create user account
+        # Generate verification token only if email is configured
+        verification_token = secrets.token_urlsafe(32) if email_configured else None
+        verification_expiry = (datetime.utcnow() + timedelta(hours=24)).isoformat() if email_configured else None
+        
+        # Create user account with AUTO-VERIFICATION if no email service
         user_data = {
             'id': user_id,
             'firstName': data['firstName'],
             'lastName': data['lastName'],
             'email': email,
             'passwordHash': password_hash,
-            'company': data['company'],
-            'industry': data['industry'],
-            'phone': data['phone'],
+            'company': data.get('company', ''),
+            'industry': data.get('industry', ''),
+            'phone': data.get('phone', ''),
             'plan': plan,
             'verificationToken': verification_token,
-            'verificationExpiry': verification_expiry
+            'verificationExpiry': verification_expiry,
+            'verified': not email_configured  # AUTO-VERIFY if no email service
         }
         
         db.create_user(user_data)
         
-        # Send verification email
-        email_sent = EmailService.send_verification_email(
-            email,
-            data['firstName'],
-            verification_token
-        )
+        # Send verification email only if configured
+        email_sent = False
+        if email_configured:
+            email_sent = EmailService.send_verification_email(
+                email,
+                data['firstName'],
+                verification_token
+            )
         
         # Generate phone number
         phone_number = PhoneNumberManager.generate_phone_number(user_id)
         
-        logger.info(f"New user registration: {data['company']} ({email}) - {plan} plan")
+        logger.info(f"New user registration: {email} - {plan} plan - Auto-verified: {not email_configured}")
+        
+        # Different messages based on email configuration
+        if email_configured:
+            message = 'Account created successfully! Please check your email to verify your account.'
+        else:
+            message = 'Account created successfully! You can now sign in immediately.'
         
         return jsonify({
             'success': True,
             'userId': user_id,
             'plan': plan,
             'phoneNumber': phone_number,
-            'message': 'Account created successfully! Please check your email to verify your account.',
-            'emailSent': email_sent
+            'message': message,
+            'emailSent': email_sent,
+            'autoVerified': not email_configured
         })
         
     except Exception as e:
         logger.error(f"Signup error: {str(e)}")
+        return jsonify({'success': False, 'message': 'Registration failed. Please try again.'}), 500
+
+
+    
+@app.route('/api/signup/simple', methods=['POST'])
+def simple_signup():
+    """Simplified signup for modern frontend"""
+    try:
+        data = request.json
+        client_ip = request.remote_addr
+        
+        # Rate limiting
+        if not rate_limit_check(client_ip):
+            return jsonify({'success': False, 'message': 'Too many attempts. Please try again later.'}), 429
+        
+        # Only require essential fields
+        required_fields = ['firstName', 'lastName', 'email', 'password']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'success': False, 'message': f'{field} is required'}), 400
+        
+        email = data['email'].lower().strip()
+        
+        # Check for duplicate
+        existing_user = db.get_user_by_email(email)
+        if existing_user:
+            return jsonify({'success': False, 'message': 'An account with this email already exists. Please try logging in instead.'}), 400
+        
+        # Simple password validation
+        if len(data['password']) < 6:
+            return jsonify({'success': False, 'message': 'Password must be at least 6 characters'}), 400
+        
+        # Create user
+        user_id = str(uuid.uuid4())
+        password_hash = SecurityManager.hash_password(data['password'])
+        
+        user_data = {
+            'id': user_id,
+            'firstName': data['firstName'],
+            'lastName': data['lastName'],
+            'email': email,
+            'passwordHash': password_hash,
+            'company': data.get('company', ''),
+            'industry': data.get('industry', ''),
+            'phone': '',
+            'plan': data.get('plan', 'free'),
+            'verificationToken': None,
+            'verificationExpiry': None,
+            'verified': True  # Auto-verify for simplified flow
+        }
+        
+        db.create_user(user_data)
+        phone_number = PhoneNumberManager.generate_phone_number(user_id)
+        
+        session_token = create_session_token({
+            'id': user_id,
+            'email': email,
+            'plan': user_data['plan']
+        })
+        
+        logger.info(f"Simple signup completed: {email}")
+        
+        return jsonify({
+            'success': True,
+            'sessionToken': session_token,
+            'user': {
+                'id': user_id,
+                'email': email,
+                'name': f"{data['firstName']} {data['lastName']}",
+                'plan': user_data['plan'],
+                'phoneNumber': phone_number
+            },
+            'message': 'Account created successfully! You can now use your AI assistant.'
+        })
+        
+    except Exception as e:
+        logger.error(f"Simple signup error: {str(e)}")
         return jsonify({'success': False, 'message': 'Registration failed. Please try again.'}), 500
     
 @app.route('/api/auth/google', methods=['POST'])
@@ -1010,57 +1104,44 @@ def update_config():
 
 @app.route('/api/twilio/voice', methods=['POST'])
 def handle_voice_call():
-    """Handle incoming Twilio voice calls"""
+    """Handle incoming Twilio voice calls - FIXED VERSION"""
     try:
         call_sid = request.form.get('CallSid')
         from_number = request.form.get('From')
         to_number = request.form.get('To')
         
-        # Find user by phone number
-        with db.get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute('SELECT user_id FROM phone_numbers WHERE phone_number = ?', (to_number,))
-            phone_record = cursor.fetchone()
+        logger.info(f"Incoming call - CallSid: {call_sid}, From: {from_number}, To: {to_number}")
         
-        if not phone_record:
-            # Default response for unknown numbers
-            response = VoiceResponse()
-            response.say("Thank you for calling. This number is not configured.")
-            return str(response)
+        # SIMPLIFIED APPROACH - Since everyone uses the same number (+16095073300)
+        # We don't need to find a specific user, just handle the call generically
         
-        user_id = phone_record['user_id']
-        
-        # Create call session
+        # Create a generic call session for tracking
         call_data = {
             'id': str(uuid.uuid4()),
-            'user_id': user_id,
+            'user_id': 'system',  # Generic system user
             'call_sid': call_sid,
             'metadata': {
                 'from_number': from_number,
-                'to_number': to_number
+                'to_number': to_number,
+                'timestamp': datetime.utcnow().isoformat()
             }
         }
         
-        db.create_call_session(call_data)
+        # Try to create call session (don't fail if it doesn't work)
+        try:
+            db.create_call_session(call_data)
+            logger.info(f"Call session created for: {call_sid}")
+        except Exception as e:
+            logger.warning(f"Could not create call session: {e}")
         
-        # Get user's AI configuration
-        config = cache.get(f"config:{user_id}")
-        if not config:
-            with db.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute('SELECT settings FROM users WHERE id = ?', (user_id,))
-                user_settings = cursor.fetchone()
-                if user_settings and user_settings['settings']:
-                    config = json.loads(user_settings['settings'])
-                else:
-                    config = {}
-        
-        # Create TwiML response
+        # Create TwiML response - THIS IS THE IMPORTANT PART
         response = VoiceResponse()
         
-        # Use configured greeting or default
-        greeting = config.get('greeting', 'Hello! Thank you for calling. How can I help you today?')
-        response.say(greeting, voice=config.get('voice', 'alice'))
+        # Default greeting - you can customize this
+        greeting = "Hello! Thank you for calling Voxcord, your AI voice assistant platform. How can I help you today?"
+        
+        # Say the greeting
+        response.say(greeting, voice='alice')
         
         # Set up for conversation
         gather = Gather(
@@ -1070,20 +1151,98 @@ def handle_voice_call():
             speech_timeout='auto',
             language='en-US'
         )
-        gather.say(greeting, voice=config.get('voice', 'alice'))
+        gather.say("Please tell me what you need assistance with.", voice='alice')
         response.append(gather)
         
         # Fallback if no speech detected
-        response.say("I didn't hear anything. Please call back when you're ready to talk!")
+        response.say("I didn't hear anything. Please call back when you're ready to talk. Thank you!")
         
-        logger.info(f"Handled voice call: {call_sid} for user: {user_id}")
+        logger.info(f"TwiML response sent for call: {call_sid}")
         return str(response)
         
     except Exception as e:
         logger.error(f"Error handling voice call: {e}")
+        
+        # ALWAYS return a valid TwiML response, even on error
         response = VoiceResponse()
-        response.say("I'm sorry, there was an error processing your call. Please try again later.")
+        response.say("I'm sorry, there was a technical issue. Please try calling back in a few minutes.")
         return str(response)
+
+@app.route('/debug/users')
+def debug_users():
+    """Debug route to check users in database"""
+    try:
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT id, email, verified, plan, created_at FROM users ORDER BY created_at DESC LIMIT 10')
+            users = [dict(row) for row in cursor.fetchall()]
+            
+            cursor.execute('SELECT COUNT(*) as total FROM users')
+            total_count = cursor.fetchone()['total']
+            
+            return jsonify({
+                'success': True,
+                'total_users': total_count,
+                'recent_users': users,
+                'database_path': db.db_path
+            })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'database_path': getattr(db, 'db_path', 'Unknown')
+        })
+
+@app.route('/debug/phone')
+def debug_phone():
+    """Debug phone number assignments"""
+    try:
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT * FROM phone_numbers ORDER BY created_at DESC LIMIT 10')
+            phone_records = [dict(row) for row in cursor.fetchall()]
+            
+            return jsonify({
+                'success': True,
+                'phone_records': phone_records,
+                'expected_number': '+16095073300'
+            })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        })
+
+@app.route('/test')
+def test_system():
+    """Test system functionality"""
+    try:
+        # Test database connection
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT COUNT(*) as count FROM users')
+            user_count = cursor.fetchone()['count']
+            
+            # Test phone number generation
+            test_phone = PhoneNumberManager.generate_phone_number('test-user')
+        
+        return jsonify({
+            'status': 'OK',
+            'database': 'Connected',
+            'user_count': user_count,
+            'phone_number_test': test_phone,
+            'expected_phone': '+16095073300',
+            'openai_configured': bool(openai_client),
+            'twilio_configured': bool(twilio_client),
+            'email_configured': bool(EMAIL_CONFIG['email'])
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'ERROR',
+            'error': str(e)
+        }), 500
+
 
 @app.route('/api/twilio/gather/<call_sid>', methods=['POST'])
 def handle_speech_input(call_sid):
