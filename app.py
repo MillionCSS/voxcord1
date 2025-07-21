@@ -522,4 +522,4 @@ if __name__ == '__main__':
         logger.warning("OPENAI_API_KEY not set - AI responses will be limited")
     
     logger.info("Starting Voxcord server...")
-    app.run(host='0.0.0.0', port=Config.PORT, debug=False)
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=False)
