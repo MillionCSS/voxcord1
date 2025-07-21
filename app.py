@@ -386,48 +386,39 @@ def get_calls():
 # Twilio Voice Webhook
 @app.route('/api/twilio/voice', methods=['POST'])
 def handle_voice_call():
-    """Handle incoming Twilio voice calls"""
     try:
         call_sid = request.form.get('CallSid')
         from_number = request.form.get('From')
         
-        logger.info(f"Incoming call: {call_sid} from {from_number}")
+        # Get user settings (default to echo voice)
+        default_greeting = "Hello! Welcome to Voxcord. How can I help you today?"
+        voice_settings = {'voice': 'echo', 'greeting': default_greeting}
         
         # Create call session
-        call_data = {
-            'id': str(uuid.uuid4()),
-            'call_sid': call_sid,
-            'caller_number': from_number
-        }
+        call_data = {'id': str(uuid.uuid4()), 'call_sid': call_sid, 'caller_number': from_number}
         db.create_call_session(call_data)
-        
-        # Initialize conversation in memory
         active_calls[call_sid] = []
         
-        # Create TwiML response
+        # Create TwiML with proper voice
         response = VoiceResponse()
-        response.say("Hello! Welcome to Voxcord. How can I help you today?", voice='alice')
+        response.say(voice_settings['greeting'], voice='Polly.Joanna')  # Using Polly voice
         
-        # Gather user input
         gather = Gather(
             input='speech',
             action=f'/api/twilio/gather/{call_sid}',
             method='POST',
-            speech_timeout='auto',
-            language='en-US'
+            speech_timeout='auto'
         )
-        gather.say("Please tell me what you need.", voice='alice')
+        gather.say("Please tell me what you need.", voice='Polly.Joanna')
         response.append(gather)
         
-        # Fallback
         response.say("I didn't hear anything. Please call back. Goodbye!")
-        
         return str(response)
         
     except Exception as e:
         logger.error(f"Voice call error: {e}")
         response = VoiceResponse()
-        response.say("Sorry, I'm having technical difficulties. Please try again later.")
+        response.say("Sorry, technical difficulties. Try again later.")
         return str(response)
 
 @app.route('/api/twilio/gather/<call_sid>', methods=['POST'])
