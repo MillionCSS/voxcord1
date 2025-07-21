@@ -388,33 +388,32 @@ def get_calls():
 def handle_voice_call():
     try:
         call_sid = request.form.get('CallSid')
-        from_number = request.form.get('From')
         
-        # Get user settings (default to echo voice)
-        default_greeting = "Hello! Welcome to Voxcord. How can I help you today?"
-        voice_settings = {'voice': 'echo', 'greeting': default_greeting}
+        if openai_client:
+            # Generate natural speech with OpenAI
+            audio_response = openai_client.audio.speech.create(
+                model="tts-1",
+                voice="echo",
+                input="Hello! Welcome to Voxcord. How can I help you today?"
+            )
+            
+            # Save audio temporarily 
+            audio_path = f"/tmp/{call_sid}_greeting.mp3"
+            audio_response.stream_to_file(audio_path)
+            
+            # Use the generated audio in TwiML
+            response = VoiceResponse()
+            response.play(f"https://yourapp.com/audio/{call_sid}_greeting.mp3")
+        else:
+            # Fallback to Twilio voice
+            response = VoiceResponse()
+            response.say("Hello! Welcome to Voxcord.", voice='Polly.Joanna')
         
-        # Create call session
-        call_data = {'id': str(uuid.uuid4()), 'call_sid': call_sid, 'caller_number': from_number}
-        db.create_call_session(call_data)
-        active_calls[call_sid] = []
-        
-        # Create TwiML with proper voice
-        response = VoiceResponse()
-        response.say(voice_settings['greeting'], voice='Polly.Joanna')  # Using Polly voice
-        
-        gather = Gather(
-            input='speech',
-            action=f'/api/twilio/gather/{call_sid}',
-            method='POST',
-            speech_timeout='auto'
-        )
-        gather.say("Please tell me what you need.", voice='Polly.Joanna')
+        # Continue with speech gathering...
+        gather = Gather(input='speech', action=f'/api/twilio/gather/{call_sid}')
         response.append(gather)
         
-        response.say("I didn't hear anything. Please call back. Goodbye!")
         return str(response)
-        
     except Exception as e:
         logger.error(f"Voice call error: {e}")
         response = VoiceResponse()
