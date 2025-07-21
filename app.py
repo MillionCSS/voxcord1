@@ -46,23 +46,14 @@ class Config:
 app.config['SECRET_KEY'] = Config.SECRET_KEY
 
 # Initialize OpenAI
-try:
-    if Config.OPENAI_API_KEY:
-        openai_client = OpenAI(
-            api_key=Config.OPENAI_API_KEY,
-            timeout=30.0,
-            max_retries=3
-        )
-        logger.info("OpenAI client initialized")
-    else:
-        openai_client = None
-        logger.warning("OpenAI API key not provided")
-except Exception as e:
-    logger.error(f"OpenAI initialization failed: {e}")
-    openai_client = None
+openai_client = OpenAI(api_key=Config.OPENAI_API_KEY) if Config.OPENAI_API_KEY else None
 
 # Constants
 SHARED_PHONE_NUMBER = "+16095073300"
+
+# Create directories
+AUDIO_DIR = Path("audio_files")
+AUDIO_DIR.mkdir(exist_ok=True)
 
 # Database Manager
 class DatabaseManager:
@@ -237,6 +228,14 @@ def dashboard_page():
 def static_files(filename):
     return send_from_directory('static', filename)
 
+@app.route('/audio/<filename>')
+def serve_audio(filename):
+    """Serve generated audio files"""
+    try:
+        return send_from_directory('audio_files', filename)
+    except:
+        return "Audio not found", 404
+
 # API Routes
 @app.route('/api/health')
 def health_check():
@@ -384,19 +383,10 @@ def get_calls():
     
     return jsonify(formatted_calls)
 
-@app.route('/audio/<filename>')
-def serve_audio(filename):
-    """Serve audio files"""
-    try:
-        return send_from_directory('audio_files', filename)
-    except:
-        return "Audio not found", 404
-
-AUDIO_DIR = Path("audio_files")
-
 # Twilio Voice Webhook
-app.route('/api/twilio/voice', methods=['POST'])
+@app.route('/api/twilio/voice', methods=['POST'])
 def handle_voice_call():
+    """Handle incoming Twilio voice calls with OpenAI voices"""
     try:
         call_sid = request.form.get('CallSid')
         from_number = request.form.get('From')
@@ -404,56 +394,95 @@ def handle_voice_call():
         logger.info(f"Incoming call: {call_sid} from {from_number}")
         
         # Create call session
-        call_data = {'id': str(uuid.uuid4()), 'call_sid': call_sid, 'caller_number': from_number}
+        call_data = {
+            'id': str(uuid.uuid4()),
+            'call_sid': call_sid,
+            'caller_number': from_number
+        }
         db.create_call_session(call_data)
+        
+        # Initialize conversation in memory
         active_calls[call_sid] = []
         
-        if openai_client:
-            # Generate audio with OpenAI
-            audio_response = openai_client.audio.speech.create(
-                model="tts-1",
-                voice="echo",
-                input="Hello! Welcome to Voxcord. How can I help you today?"
-            )
-            
-            # Save to audio_files folder
-            audio_filename = f"{call_sid}_greeting.mp3"
-            audio_path = AUDIO_DIR / audio_filename
-            
-            # Fix deprecated method
-            with open(audio_path, 'wb') as f:
-                f.write(audio_response.content)
-            
-            # Play the generated audio
-            response = VoiceResponse()
-            audio_url = f"https://yourapp.ondigitalocean.app/audio/{audio_filename}"
-            response.play(audio_url)
-        else:
-            response = VoiceResponse()
-            response.say("Hello! Welcome to Voxcord.", voice='Polly.Joanna')
+        # Get user settings (default to echo voice)
+        greeting_text = "Hello! Welcome to Voxcord. How can I help you today?"
+        voice_model = "echo"  # Default OpenAI voice
         
-        # Continue with gathering
-        gather = Gather(input='speech', action=f'/api/twilio/gather/{call_sid}')
-        gather.say("Please tell me what you need.", voice='Polly.Joanna')
+        response = VoiceResponse()
+        
+        # Try to generate OpenAI audio
+        if openai_client:
+            try:
+                # Generate greeting with OpenAI TTS
+                audio_response = openai_client.audio.speech.create(
+                    model="tts-1",
+                    voice=voice_model,
+                    input=greeting_text,
+                    speed=1.0
+                )
+                
+                # Save audio file
+                audio_filename = f"{call_sid}_greeting.mp3"
+                audio_path = AUDIO_DIR / audio_filename
+                
+                # Write audio content to file
+                with open(audio_path, 'wb') as f:
+                    for chunk in audio_response.iter_bytes(chunk_size=1024):
+                        f.write(chunk)
+                
+                # Get the domain from request
+                domain = request.headers.get('Host', 'localhost:5000')
+                if not domain.startswith('http'):
+                    protocol = 'https' if 'ondigitalocean' in domain else 'http'
+                    domain = f"{protocol}://{domain}"
+                
+                # Play the OpenAI generated audio
+                audio_url = f"{domain}/audio/{audio_filename}"
+                response.play(audio_url)
+                
+                logger.info(f"Playing OpenAI audio: {audio_url}")
+                
+            except Exception as e:
+                logger.error(f"OpenAI TTS failed: {e}")
+                # Fallback to Twilio voice
+                response.say(greeting_text, voice='Polly.Joanna', language='en-US')
+        else:
+            # No OpenAI client, use Twilio voice
+            response.say(greeting_text, voice='Polly.Joanna', language='en-US')
+        
+        # Gather user input
+        gather = Gather(
+            input='speech',
+            action=f'/api/twilio/gather/{call_sid}',
+            method='POST',
+            speech_timeout='auto',
+            language='en-US'
+        )
+        gather.say("Please tell me what you need assistance with.", voice='Polly.Joanna')
         response.append(gather)
+        
+        # Fallback if no speech detected
+        response.say("I didn't hear anything. Please call back when you're ready to talk. Thank you!")
         
         return str(response)
         
     except Exception as e:
         logger.error(f"Voice call error: {e}")
+        
+        # Always return a valid TwiML response
         response = VoiceResponse()
-        response.say("Sorry, technical difficulties.")
+        response.say("I'm sorry, there was a technical issue. Please try calling back in a few minutes.")
         return str(response)
 
 @app.route('/api/twilio/gather/<call_sid>', methods=['POST'])
 def handle_speech(call_sid):
-    """Handle speech input from call"""
+    """Handle speech input from call with OpenAI voice responses"""
     try:
         speech_result = request.form.get('SpeechResult')
         
         if not speech_result:
             response = VoiceResponse()
-            response.say("I didn't catch that. Please try again.")
+            response.say("I didn't catch that. Please try again.", voice='Polly.Joanna')
             return str(response)
         
         # Get conversation from memory
@@ -473,18 +502,54 @@ def handle_speech(call_sid):
         # Save to database
         db.update_call_conversation(call_sid, conversation)
         
-        # Create TwiML response
         response = VoiceResponse()
-        response.say(ai_response, voice='alice')
+        
+        # Try to generate OpenAI voice response
+        if openai_client:
+            try:
+                # Generate AI response with OpenAI TTS
+                audio_response = openai_client.audio.speech.create(
+                    model="tts-1",
+                    voice="echo",
+                    input=ai_response,
+                    speed=1.0
+                )
+                
+                # Save audio file
+                audio_filename = f"{call_sid}_response_{len(conversation)}.mp3"
+                audio_path = AUDIO_DIR / audio_filename
+                
+                # Write audio content
+                with open(audio_path, 'wb') as f:
+                    for chunk in audio_response.iter_bytes(chunk_size=1024):
+                        f.write(chunk)
+                
+                # Get domain and play audio
+                domain = request.headers.get('Host', 'localhost:5000')
+                if not domain.startswith('http'):
+                    protocol = 'https' if 'ondigitalocean' in domain else 'http'
+                    domain = f"{protocol}://{domain}"
+                
+                audio_url = f"{domain}/audio/{audio_filename}"
+                response.play(audio_url)
+                
+            except Exception as e:
+                logger.error(f"OpenAI TTS failed for response: {e}")
+                # Fallback to Twilio voice
+                response.say(ai_response, voice='Polly.Joanna')
+        else:
+            # No OpenAI, use Twilio voice
+            response.say(ai_response, voice='Polly.Joanna')
         
         # Continue conversation
         gather = Gather(
             input='speech',
             action=f'/api/twilio/gather/{call_sid}',
             method='POST',
-            speech_timeout='auto'
+            speech_timeout='auto',
+            language='en-US'
         )
-        gather.say("Is there anything else I can help you with?", voice='alice')
+        gather.say("Is there anything else I can help you with?", voice='Polly.Joanna')
         response.append(gather)
         
         # End call option
@@ -495,7 +560,7 @@ def handle_speech(call_sid):
     except Exception as e:
         logger.error(f"Speech handling error: {e}")
         response = VoiceResponse()
-        response.say("I'm having trouble understanding. Please try again.")
+        response.say("I'm having trouble understanding. Please try again.", voice='Polly.Joanna')
         return str(response)
 
 def generate_ai_response(user_input, conversation_history):
@@ -550,4 +615,4 @@ if __name__ == '__main__':
         logger.warning("OPENAI_API_KEY not set - AI responses will be limited")
     
     logger.info("Starting Voxcord server...")
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=False)
+    app.run(host='0.0.0.0', port=Config.PORT, debug=False)
