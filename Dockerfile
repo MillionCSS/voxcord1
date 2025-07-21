@@ -9,16 +9,26 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     libpq-dev \
     gcc \
+    g++ \
+    gfortran \
+    libopenblas-dev \
+    liblapack-dev \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 # Create virtual environment
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
+# Upgrade pip and install wheel first
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# Install numpy first to avoid compilation issues
+RUN pip install --no-cache-dir numpy==1.24.3
+
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Production stage
 FROM python:3.11-slim
@@ -27,11 +37,13 @@ FROM python:3.11-slim
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PATH="/opt/venv/bin:$PATH" \
-    PORT=8080
+    PORT=8080 \
+    PYTHONPATH=/app
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
     libpq5 \
+    libopenblas0 \
     curl \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd -r voxcord \
@@ -46,8 +58,9 @@ WORKDIR /app
 # Copy application code
 COPY . .
 
-# Create necessary directories
+# Create necessary directories and set permissions
 RUN mkdir -p static audio_files logs \
+    && touch voxcord.db \
     && chown -R voxcord:voxcord /app
 
 # Switch to non-root user
