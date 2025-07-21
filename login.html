@@ -3,33 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In - Voxcord Enterprise Voice AI</title>
+    <title>Sign In - Voxcord</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #0066cc;
-            --primary-dark: #004499;
-            --primary-light: #3388dd;
-            --secondary: #0099ff;
-            --accent: #00ccff;
-            --success: #00b894;
-            --warning: #fdcb6e;
-            --error: #e74c3c;
-            --gray-50: #f8fafc;
-            --gray-100: #f1f5f9;
-            --gray-200: #e2e8f0;
-            --gray-300: #cbd5e1;
-            --gray-400: #94a3b8;
-            --gray-500: #64748b;
-            --gray-600: #475569;
-            --gray-700: #334155;
-            --gray-800: #1e293b;
-            --gray-900: #0f172a;
-            --telecom-blue: #1e40af;
-            --telecom-cyan: #0891b2;
-            --telecom-indigo: #3730a3;
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-tertiary: #1a1a1a;
+            --bg-card: #141414;
+            --bg-hover: #1f1f1f;
+            --border-primary: #2a2a2a;
+            --border-hover: #3a3a3a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #6a6a6a;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
         }
 
         * {
@@ -40,724 +34,579 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, var(--telecom-blue) 0%, var(--telecom-indigo) 50%, var(--telecom-cyan) 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 20s ease infinite;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
+            overflow-x: hidden;
         }
 
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
+        /* Animated background */
         body::before {
             content: '';
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="circuit" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M0 20h20M20 0v20M20 20h20M40 20v20" stroke="white" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23circuit)"/></svg>');
-            pointer-events: none;
-        }
-
-        .login-container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-            width: 100%;
-            max-width: 400px;
-            margin: 2rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .login-header {
-            background: linear-gradient(135deg, var(--telecom-blue) 0%, var(--telecom-indigo) 100%);
-            padding: 2rem;
-            text-align: center;
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .login-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: rotate 20s linear infinite;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(245, 158, 11, 0.05) 0%, transparent 50%);
+            animation: backgroundShift 20s ease infinite;
+            z-index: -1;
         }
 
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        @keyframes backgroundShift {
+            0%, 100% { transform: translate(-10%, -10%) rotate(0deg); }
+            33% { transform: translate(-5%, -15%) rotate(1deg); }
+            66% { transform: translate(-15%, -5%) rotate(-1deg); }
+        }
+
+        .container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            border-radius: 24px;
+            padding: 48px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 
+                0 20px 25px -5px rgba(0, 0, 0, 0.3),
+                0 10px 10px -5px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            position: relative;
+            z-index: 1;
         }
 
         .logo {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.75rem;
-            font-size: 1.75rem;
-            font-weight: 800;
-            margin-bottom: 1rem;
-            position: relative;
-            z-index: 1;
+            gap: 12px;
+            margin-bottom: 32px;
         }
 
         .logo-icon {
-            width: 42px;
-            height: 42px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
+            font-size: 24px;
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
         }
 
-        .login-header h1 {
-            font-size: 1.5rem;
+        .logo-text {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 24px;
             font-weight: 700;
-            margin-bottom: 0.5rem;
-            position: relative;
-            z-index: 1;
+            margin-bottom: 8px;
+            color: var(--text-primary);
         }
 
-        .login-header p {
-            opacity: 0.9;
-            position: relative;
-            z-index: 1;
+        .header p {
+            color: var(--text-secondary);
+            font-size: 14px;
         }
 
-        .login-form {
-            padding: 2rem;
+        .auth-methods {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .oauth-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 16px 20px;
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .oauth-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .oauth-button:hover::before {
+            left: 100%;
+        }
+
+        .oauth-button:hover {
+            border-color: var(--border-hover);
+            background: var(--bg-hover);
+            transform: translateY(-1px);
+        }
+
+        .oauth-button.google {
+            background: #1a1a1a;
+        }
+
+        .oauth-button.google:hover {
+            background: #2a2a2a;
+            border-color: #4285f4;
+        }
+
+        .oauth-button.apple {
+            background: #1a1a1a;
+            color: var(--text-primary);
+        }
+
+        .oauth-button.apple:hover {
+            background: #2a2a2a;
+            border-color: #a0a0a0;
+        }
+
+        .oauth-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 24px 0;
+            color: var(--text-muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-primary);
+        }
+
+        .divider span {
+            padding: 0 16px;
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 20px;
         }
 
         .form-label {
             display: block;
+            font-size: 13px;
             font-weight: 600;
-            color: var(--gray-700);
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .form-input {
             width: 100%;
-            padding: 1rem;
-            border: 2px solid var(--gray-200);
+            padding: 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
             border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            font-family: inherit;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
         }
 
         .form-input:focus {
             outline: none;
-            border-color: var(--telecom-blue);
-            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: var(--bg-tertiary);
         }
 
-        .form-input.error {
-            border-color: var(--error);
-        }
-
-        .error-message {
-            color: var(--error);
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-            display: none;
-        }
-
-        .form-options {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .remember-me {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .remember-me input[type="checkbox"] {
-            margin: 0;
-        }
-
-        .remember-me label {
-            font-size: 0.9rem;
-            color: var(--gray-600);
-        }
-
-        .forgot-password {
-            color: var(--telecom-blue);
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .forgot-password:hover {
-            text-decoration: underline;
+        .form-input:hover {
+            border-color: var(--border-hover);
         }
 
         .submit-btn {
             width: 100%;
-            background: linear-gradient(135deg, var(--telecom-blue) 0%, var(--telecom-cyan) 100%);
-            color: white;
-            padding: 1rem;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
             border: none;
             border-radius: 8px;
-            font-size: 1rem;
+            color: white;
             font-weight: 600;
+            font-size: 14px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.2);
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 24px;
         }
 
-        .submit-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(30, 64, 175, 0.3);
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
         }
 
         .submit-btn:disabled {
-            opacity: 0.7;
+            opacity: 0.6;
             cursor: not-allowed;
+            transform: none;
         }
 
         .loading-spinner {
             display: none;
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        .security-notice {
-            background: var(--gray-50);
-            border: 1px solid var(--gray-200);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            font-size: 0.875rem;
-            color: var(--gray-600);
+        .footer-links {
+            text-align: center;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-primary);
         }
 
-        .security-notice h4 {
-            color: var(--gray-800);
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            margin: 0 16px;
+            transition: color 0.2s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+
+        .status-message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .status-message.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .status-message.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: var(--error);
+        }
+
+        .features-preview {
+            margin-top: 32px;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+        }
+
+        .features-preview h3 {
+            font-size: 14px;
             font-weight: 600;
-            margin-bottom: 0.5rem;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .features-list {
+            list-style: none;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .features-list li {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 8px;
+            margin-bottom: 6px;
         }
 
-        .signup-link {
-            text-align: center;
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--gray-200);
-        }
-
-        .signup-link a {
-            color: var(--telecom-blue);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .signup-link a:hover {
-            text-decoration: underline;
-        }
-
-        .failed-attempts {
-            background: rgba(231, 76, 60, 0.1);
-            border: 1px solid rgba(231, 76, 60, 0.3);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            color: var(--error);
-            font-size: 0.875rem;
-            display: none;
-        }
-
-        .success-message {
-            background: rgba(0, 184, 148, 0.1);
-            border: 1px solid rgba(0, 184, 148, 0.3);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
+        .features-list .check {
             color: var(--success);
-            font-size: 0.875rem;
-            display: none;
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            opacity: 0.6;
-            transition: opacity 0.3s ease;
-        }
-
-        .password-toggle:hover {
-            opacity: 1;
-        }
-
-        .password-field {
-            position: relative;
-        }
-
-        .password-field .form-input {
-            padding-right: 45px;
+            font-weight: bold;
         }
 
         /* Responsive */
         @media (max-width: 480px) {
-            .login-container {
-                margin: 1rem;
+            .container {
+                margin: 20px;
+                padding: 32px 24px;
             }
+            
+            .oauth-button {
+                padding: 14px 16px;
+            }
+            
+            .form-input, .submit-btn {
+                padding: 14px;
+            }
+        }
 
-            .login-header, .login-form {
-                padding: 1.5rem;
-            }
+        /* Glassmorphism effect */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 24px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            z-index: -1;
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-header">
-            <div class="logo">
-                <div class="logo-icon">📡</div>
-                Voxcord
-            </div>
-            <h1>Welcome Back</h1>
-            <p>Sign in to your enterprise account</p>
+    <div class="container">
+        <div class="logo">
+            <div class="logo-icon">📡</div>
+            <div class="logo-text">Voxcord</div>
         </div>
 
-        <form class="login-form" id="loginForm">
-            <div class="failed-attempts" id="failedAttempts">
-                <strong>Security Alert:</strong> Multiple failed login attempts detected. Please verify your credentials or contact support.
-            </div>
+        <div class="header">
+            <h1>Welcome back</h1>
+            <p>Sign in to your AI voice platform</p>
+        </div>
 
-            <div class="success-message" id="successMessage">
-                Login successful! Redirecting to your dashboard...
-            </div>
+        <div class="status-message" id="statusMessage"></div>
 
+        <div class="auth-methods">
+            <a href="#" class="oauth-button google" onclick="loginWithGoogle()">
+                <svg class="oauth-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                Continue with Google
+            </a>
+
+            <a href="#" class="oauth-button apple" onclick="loginWithApple()">
+                <svg class="oauth-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z"/>
+                </svg>
+                Continue with Apple
+            </a>
+        </div>
+
+        <div class="divider">
+            <span>Or continue with email</span>
+        </div>
+
+        <form id="loginForm">
             <div class="form-group">
-                <label class="form-label" for="email">Email Address</label>
-                <input type="email" class="form-input" id="email" name="email" required autocomplete="email">
-                <div class="error-message" id="email-error"></div>
+                <label class="form-label" for="email">Email</label>
+                <input type="email" class="form-input" id="email" name="email" placeholder="Enter your email address" required>
             </div>
 
             <div class="form-group">
                 <label class="form-label" for="password">Password</label>
-                <div class="password-field">
-                    <input type="password" class="form-input" id="password" name="password" required autocomplete="current-password">
-                    <button type="button" class="password-toggle" id="passwordToggle">👁️</button>
-                </div>
-                <div class="error-message" id="password-error"></div>
-            </div>
-
-            <div class="form-options">
-                <div class="remember-me">
-                    <input type="checkbox" id="rememberMe" name="rememberMe">
-                    <label for="rememberMe">Remember me for 30 days</label>
-                </div>
-                <a href="/forgot-password" class="forgot-password">Forgot password?</a>
-            </div>
-
-            <div class="security-notice">
-                <h4>🔒 Secure Login</h4>
-                <p>Your connection is encrypted and secured with enterprise-grade SSL. We monitor all login attempts for suspicious activity.</p>
+                <input type="password" class="form-input" id="password" name="password" placeholder="Enter your password" required>
             </div>
 
             <button type="submit" class="submit-btn" id="submitBtn">
                 <div class="loading-spinner" id="loadingSpinner"></div>
                 <span id="btnText">Sign In</span>
             </button>
-
-            <div class="signup-link">
-                Don't have an account? <a href="/signup">Start your free trial</a>
-            </div>
         </form>
+
+        <div class="footer-links">
+            <a href="/signup">Create account</a>
+            <a href="/forgot">Forgot password?</a>
+            <a href="/help">Need help?</a>
+        </div>
+
+        <div class="features-preview">
+            <h3>🚀 What you'll get access to:</h3>
+            <ul class="features-list">
+                <li><span class="check">✓</span> AI-powered voice assistants</li>
+                <li><span class="check">✓</span> Real-time call analytics</li>
+                <li><span class="check">✓</span> Enterprise-grade security</li>
+                <li><span class="check">✓</span> 99.9% uptime SLA</li>
+            </ul>
+        </div>
     </div>
 
     <script>
-        // Form elements
-        const form = document.getElementById('loginForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        const btnText = document.getElementById('btnText');
-        const failedAttempts = document.getElementById('failedAttempts');
-        const successMessage = document.getElementById('successMessage');
-
-        // Security tracking
-        let loginAttempts = parseInt(localStorage.getItem('loginAttempts') || '0');
-        let lastAttemptTime = parseInt(localStorage.getItem('lastAttemptTime') || '0');
-        let isRateLimited = false;
-
-        // Check for rate limiting
-        function checkRateLimit() {
-            const now = Date.now();
-            const timeSinceLastAttempt = now - lastAttemptTime;
+        // OAuth login functions
+        async function loginWithGoogle() {
+            showStatus('Redirecting to Google...', 'success');
             
-            // Reset attempts after 15 minutes
-            if (timeSinceLastAttempt > 15 * 60 * 1000) {
-                loginAttempts = 0;
-                localStorage.setItem('loginAttempts', '0');
-            }
-            
-            // Show warning after 3 failed attempts
-            if (loginAttempts >= 3) {
-                failedAttempts.style.display = 'block';
-            }
-            
-            // Rate limit after 5 attempts
-            if (loginAttempts >= 5 && timeSinceLastAttempt < 15 * 60 * 1000) {
-                isRateLimited = true;
-                const remainingTime = Math.ceil((15 * 60 * 1000 - timeSinceLastAttempt) / 1000 / 60);
-                failedAttempts.innerHTML = `<strong>Account Temporarily Locked:</strong> Too many failed attempts. Please try again in ${remainingTime} minutes.`;
-                failedAttempts.style.display = 'block';
-                submitBtn.disabled = true;
-                return false;
-            }
-            
-            return true;
+            // In production, this would redirect to your OAuth endpoint
+            // For now, simulate the flow
+            setTimeout(() => {
+                // Simulate successful OAuth
+                const userData = {
+                    email: 'user@gmail.com',
+                    name: 'Demo User',
+                    provider: 'google'
+                };
+                handleOAuthSuccess(userData);
+            }, 1500);
         }
 
-        // Initialize rate limiting check
-        checkRateLimit();
-
-        // Real-time validation
-        const validators = {
-            email: (value) => {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                return emailRegex.test(value) ? null : 'Please enter a valid email address';
-            },
-            password: (value) => {
-                return value.length >= 1 ? null : 'Password is required';
-            }
-        };
-
-        // Add validation event listeners
-        Object.keys(validators).forEach(fieldName => {
-            const field = document.getElementById(fieldName);
-            const errorElement = document.getElementById(`${fieldName}-error`);
+        async function loginWithApple() {
+            showStatus('Redirecting to Apple...', 'success');
             
-            if (field && errorElement) {
-                field.addEventListener('blur', () => validateField(fieldName));
-                field.addEventListener('input', () => {
-                    if (field.classList.contains('error')) {
-                        validateField(fieldName);
-                    }
-                });
-            }
-        });
-
-        function validateField(fieldName) {
-            const field = document.getElementById(fieldName);
-            const errorElement = document.getElementById(`${fieldName}-error`);
-            const validator = validators[fieldName];
-            
-            if (!field || !errorElement || !validator) return true;
-            
-            const error = validator(field.value);
-            
-            if (error) {
-                field.classList.add('error');
-                errorElement.textContent = error;
-                errorElement.style.display = 'block';
-                return false;
-            } else {
-                field.classList.remove('error');
-                errorElement.style.display = 'none';
-                return true;
-            }
+            // Similar OAuth flow for Apple
+            setTimeout(() => {
+                const userData = {
+                    email: 'user@icloud.com',
+                    name: 'Demo User',
+                    provider: 'apple'
+                };
+                handleOAuthSuccess(userData);
+            }, 1500);
         }
 
-        // Password visibility toggle
-        const passwordToggle = document.getElementById('passwordToggle');
-        const passwordField = document.getElementById('password');
+        function handleOAuthSuccess(userData) {
+            showStatus('Login successful! Redirecting...', 'success');
+            
+            // Store user data and redirect
+            localStorage.setItem('user', JSON.stringify(userData));
+            
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 1000);
+        }
 
-        passwordToggle.addEventListener('click', function() {
-            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordField.setAttribute('type', type);
-            this.textContent = type === 'password' ? '👁️' : '🙈';
-        });
-
-        // Form submission
-        form.addEventListener('submit', async function(e) {
+        // Traditional email/password login
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // Check rate limiting
-            if (!checkRateLimit()) {
-                return;
-            }
-            
-            // Validate all fields
-            let isValid = true;
-            Object.keys(validators).forEach(fieldName => {
-                if (!validateField(fieldName)) {
-                    isValid = false;
-                }
-            });
-            
-            if (!isValid) {
-                return;
-            }
+            const submitBtn = document.getElementById('submitBtn');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const btnText = document.getElementById('btnText');
             
             // Show loading state
             submitBtn.disabled = true;
             loadingSpinner.style.display = 'inline-block';
-            btnText.textContent = 'Signing In...';
+            btnText.textContent = 'Signing in...';
             
             try {
-                // Collect form data
-                const formData = new FormData(form);
+                const formData = new FormData(this);
                 const data = Object.fromEntries(formData.entries());
                 
-                // Add security data
-                data.userAgent = navigator.userAgent;
-                data.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                data.timestamp = new Date().toISOString();
-                data.fingerprint = generateFingerprint();
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 1500));
                 
-                // Send to backend
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify(data)
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok) {
-                    showSuccess(result);
+                // For demo - accept any email/password
+                if (data.email && data.password) {
+                    showStatus('Login successful!', 'success');
+                    
+                    const userData = {
+                        email: data.email,
+                        name: data.email.split('@')[0],
+                        provider: 'email'
+                    };
+                    
+                    localStorage.setItem('user', JSON.stringify(userData));
+                    
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1000);
                 } else {
-                    handleLoginError(result);
+                    throw new Error('Invalid credentials');
                 }
                 
             } catch (error) {
-                console.error('Login error:', error);
-                handleLoginError({ message: 'Network error. Please check your connection and try again.' });
-                
+                showStatus('Invalid credentials. Please try again.', 'error');
             } finally {
-                // Reset button state if not successful
-                if (!successMessage.style.display || successMessage.style.display === 'none') {
-                    submitBtn.disabled = false;
-                    loadingSpinner.style.display = 'none';
-                    btnText.textContent = 'Sign In';
-                }
+                // Reset button state
+                submitBtn.disabled = false;
+                loadingSpinner.style.display = 'none';
+                btnText.textContent = 'Sign In';
             }
         });
 
-        function showSuccess(result) {
-            // Reset failed attempts
-            loginAttempts = 0;
-            localStorage.setItem('loginAttempts', '0');
-            failedAttempts.style.display = 'none';
+        function showStatus(message, type) {
+            const statusMessage = document.getElementById('statusMessage');
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type}`;
+            statusMessage.style.display = 'block';
             
-            // Show success message
-            successMessage.style.display = 'block';
-            btnText.textContent = 'Success!';
-            
-            // Store session data
-            if (result.sessionToken) {
-                localStorage.setItem('sessionToken', result.sessionToken);
-            }
-            if (result.user) {
-                localStorage.setItem('user', JSON.stringify(result.user));
-            }
-            
-            // Redirect after delay
-            setTimeout(() => {
-                const redirectUrl = new URLSearchParams(window.location.search).get('redirect') || '/dashboard';
-                window.location.href = redirectUrl;
-            }, 1500);
-        }
-
-        function handleLoginError(result) {
-            // Increment failed attempts
-            loginAttempts++;
-            lastAttemptTime = Date.now();
-            localStorage.setItem('loginAttempts', loginAttempts.toString());
-            localStorage.setItem('lastAttemptTime', lastAttemptTime.toString());
-            
-            // Show appropriate error
-            if (result.field) {
-                showError(result.field, result.message);
-            } else {
-                // Generic error - could be credentials
-                showError('password', result.message || 'Invalid email or password');
-            }
-            
-            // Update rate limiting
-            checkRateLimit();
-        }
-
-        function showError(field, message) {
-            const errorElement = document.getElementById(`${field}-error`);
-            const fieldElement = document.getElementById(field);
-            
-            if (errorElement && fieldElement) {
-                fieldElement.classList.add('error');
-                errorElement.textContent = message;
-                errorElement.style.display = 'block';
-                
-                // Focus the field with error
-                fieldElement.focus();
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusMessage.style.display = 'none';
+                }, 3000);
             }
         }
 
-        // Generate browser fingerprint for security
-        function generateFingerprint() {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            ctx.textBaseline = 'top';
-            ctx.font = '14px Arial';
-            ctx.fillText('Browser fingerprint', 2, 2);
-            
-            return btoa(JSON.stringify({
-                screen: `${screen.width}x${screen.height}`,
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                language: navigator.language,
-                platform: navigator.platform,
-                canvas: canvas.toDataURL(),
-                plugins: Array.from(navigator.plugins).map(p => p.name).join(','),
-                cookieEnabled: navigator.cookieEnabled,
-                doNotTrack: navigator.doNotTrack
-            }));
-        }
+        // Auto-focus email field
+        document.getElementById('email').focus();
 
-        // Check for existing session
-        function checkExistingSession() {
-            const sessionToken = localStorage.getItem('sessionToken');
-            if (sessionToken) {
-                // Verify session is still valid
-                fetch('/api/verify-session', {
-                    headers: {
-                        'Authorization': `Bearer ${sessionToken}`
-                    }
-                })
-                .then(response => {
-                    if (response.ok) {
-                        // User is already logged in, redirect to dashboard
-                        const redirectUrl = new URLSearchParams(window.location.search).get('redirect') || '/dashboard';
-                        window.location.href = redirectUrl;
-                    } else {
-                        // Session expired, clear it
-                        localStorage.removeItem('sessionToken');
-                        localStorage.removeItem('user');
-                    }
-                })
-                .catch(() => {
-                    // Network error, assume session is invalid
-                    localStorage.removeItem('sessionToken');
-                    localStorage.removeItem('user');
-                });
-            }
-        }
-
-        // Initialize
-        checkExistingSession();
-
-        // Form auto-complete enhancement
-        if (localStorage.getItem('rememberedEmail')) {
-            document.getElementById('email').value = localStorage.getItem('rememberedEmail');
-            document.getElementById('password').focus();
-        } else {
-            document.getElementById('email').focus();
-        }
-
-        // Remember email on successful login
-        form.addEventListener('submit', function() {
-            if (document.getElementById('rememberMe').checked) {
-                localStorage.setItem('rememberedEmail', document.getElementById('email').value);
-            } else {
-                localStorage.removeItem('rememberedEmail');
-            }
-        });
-
-        // Security: Clear form on page unload
-        window.addEventListener('beforeunload', function() {
-            document.getElementById('password').value = '';
-        });
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            // Ctrl+Enter to submit
-            if (e.ctrlKey && e.key === 'Enter') {
+        // Handle Enter key navigation
+        document.getElementById('email').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
                 e.preventDefault();
-                form.dispatchEvent(new Event('submit'));
+                document.getElementById('password').focus();
             }
-        });
-
-        // Activity detection for session management
-        let lastActivity = Date.now();
-        ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(event => {
-            document.addEventListener(event, () => {
-                lastActivity = Date.now();
-            }, { passive: true });
-        });
-
-        // Auto-logout on inactivity (30 minutes)
-        setInterval(() => {
-            if (Date.now() - lastActivity > 30 * 60 * 1000) {
-                localStorage.removeItem('sessionToken');
-                localStorage.removeItem('user');
-                alert('You have been logged out due to inactivity.');
-                window.location.reload();
-            }
-        }, 60 * 1000); // Check every minute
-
-        // Prevent multiple tabs login
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'sessionToken' && e.newValue && e.newValue !== e.oldValue) {
-                // Another tab logged in, refresh this page
-                window.location.reload();
-            }
-        });
-
-        // Auto-fill detection
-        document.querySelectorAll('.form-input').forEach(input => {
-            input.addEventListener('animationstart', function(e) {
-                if (e.animationName === 'onautofillstart') {
-                    this.classList.add('autofilled');
-                }
-            });
         });
     </script>
 </body>
