@@ -45,7 +45,20 @@ class Config:
 app.config['SECRET_KEY'] = Config.SECRET_KEY
 
 # Initialize OpenAI
-openai_client = OpenAI(api_key=Config.OPENAI_API_KEY) if Config.OPENAI_API_KEY else None
+try:
+    if Config.OPENAI_API_KEY:
+        openai_client = OpenAI(
+            api_key=Config.OPENAI_API_KEY,
+            timeout=30.0,
+            max_retries=3
+        )
+        logger.info("OpenAI client initialized")
+    else:
+        openai_client = None
+        logger.warning("OpenAI API key not provided")
+except Exception as e:
+    logger.error(f"OpenAI initialization failed: {e}")
+    openai_client = None
 
 # Constants
 SHARED_PHONE_NUMBER = "+16095073300"
