@@ -3,31 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voxcord - AI Voice Assistants for Modern Business</title>
-    <meta name="description" content="Deploy intelligent AI voice assistants in minutes. Enterprise-grade reliability, simple setup, powerful results.">
+    <title>Voxcord</title>
+    <meta name="description" content="Enterprise-grade AI voice assistants that redefine customer experience. Deploy in seconds, scale infinitely.">
     
+    <!-- Premium fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #111111;
-            --bg-tertiary: #1a1a1a;
-            --bg-card: #141414;
-            --bg-hover: #1f1f1f;
-            --border-primary: #2a2a2a;
-            --border-hover: #3a3a3a;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0a0;
-            --text-muted: #6a6a6a;
-            --accent: #3b82f6;
-            --accent-hover: #2563eb;
-            --success: #10b981;
-            --purple: #8b5cf6;
-            --cyan: #06b6d4;
-            --yellow: #f59e0b;
+            --primary: #007AFF;
+            --primary-dark: #0056CC;
+            --primary-light: #40A9FF;
+            --accent: #5856D6;
+            --success: #30D158;
+            --warning: #FF9F0A;
+            --error: #FF453A;
+            
+            --background: #FAFAFA;
+            --surface: #FFFFFF;
+            --surface-elevated: rgba(255, 255, 255, 0.95);
+            --surface-glass: rgba(255, 255, 255, 0.72);
+            
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --text-tertiary: #C7C7CC;
+            
+            --shadow-soft: 0 2px 20px rgba(0, 0, 0, 0.08);
+            --shadow-medium: 0 8px 40px rgba(0, 0, 0, 0.12);
+            --shadow-strong: 0 20px 60px rgba(0, 0, 0, 0.16);
+            
+            --border-light: rgba(0, 0, 0, 0.06);
+            --border-medium: rgba(0, 0, 0, 0.12);
+            
+            --gradient-primary: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+            --gradient-surface: linear-gradient(145deg, #FFFFFF 0%, #F5F5F7 100%);
+            --gradient-hero: linear-gradient(180deg, #FAFAFA 0%, #F5F5F7 100%);
+            
+            --font-display: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            
+            --radius-xs: 8px;
+            --radius-sm: 12px;
+            --radius-md: 16px;
+            --radius-lg: 20px;
+            --radius-xl: 24px;
+            --radius-2xl: 32px;
+            
+            --spacing-xs: 8px;
+            --spacing-sm: 16px;
+            --spacing-md: 24px;
+            --spacing-lg: 32px;
+            --spacing-xl: 48px;
+            --spacing-2xl: 64px;
+            --spacing-3xl: 96px;
         }
 
         * {
@@ -36,36 +67,19 @@
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+        }
+
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-primary);
+            font-family: var(--font-body);
+            background: var(--background);
             color: var(--text-primary);
             line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
             overflow-x: hidden;
-        }
-
-        /* Animated background */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 200%;
-            height: 200%;
-            background: 
-                radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 50% 30%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 70% 70%, rgba(245, 158, 11, 0.08) 0%, transparent 50%);
-            animation: backgroundShift 25s ease infinite;
-            z-index: -1;
-        }
-
-        @keyframes backgroundShift {
-            0%, 100% { transform: translate(-10%, -10%) rotate(0deg); }
-            25% { transform: translate(-5%, -15%) rotate(0.5deg); }
-            50% { transform: translate(-15%, -5%) rotate(-0.5deg); }
-            75% { transform: translate(-8%, -12%) rotate(0.3deg); }
         }
 
         /* Navigation */
@@ -74,20 +88,27 @@
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border-primary);
             z-index: 1000;
-            padding: 16px 0;
+            background: var(--surface-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-light);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .navbar.scrolled {
+            background: var(--surface-elevated);
+            box-shadow: var(--shadow-soft);
         }
 
         .nav-container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 0 32px;
+            padding: 0 var(--spacing-md);
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            height: 72px;
         }
 
         .logo {
@@ -95,33 +116,33 @@
             align-items: center;
             gap: 12px;
             text-decoration: none;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--text-primary);
+            transition: transform 0.2s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.02);
         }
 
         .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
-            border-radius: 10px;
+            width: 36px;
+            height: 36px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-xs);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            font-size: 18px;
+            box-shadow: var(--shadow-soft);
         }
 
-        .logo-text {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .nav-menu {
+        .nav-links {
             display: flex;
-            gap: 32px;
             align-items: center;
+            gap: var(--spacing-lg);
             list-style: none;
         }
 
@@ -129,10 +150,10 @@
             color: var(--text-secondary);
             text-decoration: none;
             font-weight: 500;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            padding: 8px 0;
+            font-size: 15px;
+            padding: var(--spacing-xs) 0;
             position: relative;
+            transition: color 0.3s ease;
         }
 
         .nav-link:hover {
@@ -142,12 +163,13 @@
         .nav-link::after {
             content: '';
             position: absolute;
-            bottom: 0;
+            bottom: -4px;
             left: 0;
             width: 0;
             height: 2px;
-            background: linear-gradient(90deg, var(--accent), var(--purple));
-            transition: width 0.3s ease;
+            background: var(--primary);
+            border-radius: 1px;
+            transition: width 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
         .nav-link:hover::after {
@@ -156,22 +178,25 @@
 
         .nav-cta {
             display: flex;
-            gap: 12px;
             align-items: center;
+            gap: var(--spacing-sm);
         }
 
+        /* Buttons */
         .btn {
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            border: 1px solid transparent;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 12px 20px;
+            border-radius: var(--radius-xs);
+            font-family: var(--font-body);
+            font-weight: 600;
+            font-size: 15px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             position: relative;
             overflow: hidden;
         }
@@ -183,8 +208,8 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: left 0.5s ease;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
         }
 
         .btn:hover::before {
@@ -192,55 +217,84 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
+            background: var(--gradient-primary);
             color: white;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            box-shadow: var(--shadow-soft);
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-medium);
         }
 
-        .btn-ghost {
-            background: transparent;
+        .btn-secondary {
+            background: var(--surface);
             color: var(--text-primary);
-            border-color: var(--border-primary);
+            border: 1px solid var(--border-light);
         }
 
-        .btn-ghost:hover {
-            background: var(--bg-card);
-            border-color: var(--border-hover);
+        .btn-secondary:hover {
+            background: var(--surface-elevated);
+            border-color: var(--border-medium);
+        }
+
+        .btn-large {
+            padding: 16px 32px;
+            font-size: 17px;
+            border-radius: var(--radius-sm);
+        }
+
+        .btn-xl {
+            padding: 20px 40px;
+            font-size: 18px;
+            border-radius: var(--radius-md);
         }
 
         /* Hero Section */
         .hero {
-            padding: 120px 0 80px;
-            text-align: center;
+            padding: 140px 0 var(--spacing-3xl);
+            background: var(--gradient-hero);
             position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(0, 122, 255, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(88, 86, 214, 0.08) 0%, transparent 40%);
+            pointer-events: none;
         }
 
         .hero-container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 0 32px;
+            padding: 0 var(--spacing-md);
+            text-align: center;
+            position: relative;
+            z-index: 1;
         }
 
         .hero-badge {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            background: rgba(59, 130, 246, 0.1);
-            border: 1px solid rgba(59, 130, 246, 0.2);
+            gap: var(--spacing-xs);
+            background: var(--surface-glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-light);
             padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
+            border-radius: 100px;
+            font-size: 14px;
             font-weight: 600;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 32px;
-            animation: float 6s ease-in-out infinite;
+            color: var(--primary);
+            margin-bottom: var(--spacing-xl);
+            animation: float 3s ease-in-out infinite;
         }
 
         @keyframes float {
@@ -249,223 +303,244 @@
         }
 
         .hero-title {
-            font-size: clamp(48px, 8vw, 72px);
-            font-weight: 900;
-            line-height: 1.1;
-            margin-bottom: 24px;
-            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 30%, var(--accent) 70%, var(--purple) 100%);
+            font-family: var(--font-display);
+            font-size: clamp(48px, 8vw, 84px);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            margin-bottom: var(--spacing-lg);
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
         .hero-subtitle {
-            font-size: 20px;
+            font-size: 22px;
+            font-weight: 400;
             color: var(--text-secondary);
             max-width: 600px;
-            margin: 0 auto 48px;
-            line-height: 1.6;
+            margin: 0 auto var(--spacing-xl);
+            line-height: 1.5;
         }
 
-        .hero-cta {
+        .hero-actions {
             display: flex;
-            gap: 16px;
+            align-items: center;
             justify-content: center;
-            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-3xl);
             flex-wrap: wrap;
-            margin-bottom: 64px;
         }
 
-        .btn-hero {
-            padding: 16px 32px;
-            font-size: 16px;
-            border-radius: 12px;
-        }
-
-        .hero-demo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .hero-demo:hover {
-            color: var(--text-primary);
-            transform: translateX(4px);
-        }
-
-        .hero-visual {
-            margin-top: 80px;
+        /* Interactive Demo Section */
+        .demo-section {
             position: relative;
+            margin-top: var(--spacing-3xl);
         }
 
-        .dashboard-preview {
-            max-width: 1000px;
+        .demo-container {
+            background: var(--surface);
+            border-radius: var(--radius-2xl);
+            padding: var(--spacing-xl);
+            box-shadow: var(--shadow-strong);
+            border: 1px solid var(--border-light);
+            max-width: 800px;
             margin: 0 auto;
-            background: var(--bg-card);
-            border: 1px solid var(--border-primary);
-            border-radius: 20px;
-            padding: 24px;
-            box-shadow: 
-                0 20px 60px rgba(0, 0, 0, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
             position: relative;
             overflow: hidden;
         }
 
-        .dashboard-preview::before {
+        .demo-container::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--accent) 0%, var(--purple) 50%, var(--cyan) 100%);
+            height: 4px;
+            background: var(--gradient-primary);
         }
 
-        .dashboard-header {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .window-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
-        .dot-red { background: #ff5f57; }
-        .dot-yellow { background: #ffbd2e; }
-        .dot-green { background: #28ca42; }
-
-        .dashboard-content {
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 32px;
-            min-height: 400px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-            align-items: start;
-        }
-
-        .preview-card {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-primary);
-            border-radius: 12px;
-            padding: 20px;
-            position: relative;
-        }
-
-        .preview-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .preview-value {
-            font-size: 32px;
-            font-weight: 800;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .preview-change {
-            font-size: 12px;
-            color: var(--success);
+        .demo-header {
             display: flex;
             align-items: center;
-            gap: 4px;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-lg);
         }
 
-        /* Stats Section */
-        .stats {
-            padding: 80px 0;
-            text-align: center;
-        }
-
-        .stats-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 32px;
-        }
-
-        .stats-title {
-            font-size: 36px;
-            font-weight: 800;
-            margin-bottom: 16px;
+        .demo-title {
+            font-family: var(--font-display);
+            font-size: 24px;
+            font-weight: 700;
             color: var(--text-primary);
         }
 
-        .stats-subtitle {
-            font-size: 18px;
-            color: var(--text-secondary);
-            margin-bottom: 64px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 48px;
-        }
-
-        .stat-item {
+        .demo-phone {
+            background: var(--gradient-surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
             text-align: center;
+            margin-bottom: var(--spacing-lg);
         }
 
-        .stat-number {
-            font-size: 48px;
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            display: block;
-            margin-bottom: 12px;
-            line-height: 1;
+        .phone-number {
+            font-family: var(--font-display);
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xs);
         }
 
-        .stat-label {
+        .phone-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        .demo-simulator {
+            background: var(--gradient-surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .simulator-title {
             font-size: 16px;
-            color: var(--text-secondary);
-            font-weight: 500;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .conversation {
+            min-height: 200px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: var(--spacing-md);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            line-height: 1.4;
+        }
+
+        .message.user .message-bubble {
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-bubble {
+            background: var(--surface-elevated);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+            border-bottom-left-radius: 4px;
+        }
+
+        .demo-input {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .demo-input input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-xs);
+            font-size: 15px;
+            background: var(--surface);
+            transition: border-color 0.2s ease;
+        }
+
+        .demo-input input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .demo-input button {
+            padding: 12px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-xs);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .demo-input button:hover {
+            background: var(--primary-dark);
+        }
+
+        .demo-input button:disabled {
+            background: var(--text-tertiary);
+            cursor: not-allowed;
         }
 
         /* Features Section */
         .features {
-            padding: 80px 0;
+            padding: var(--spacing-3xl) 0;
+            background: var(--surface);
         }
 
         .features-container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 0 32px;
+            padding: 0 var(--spacing-md);
         }
 
         .features-header {
             text-align: center;
-            margin-bottom: 80px;
+            margin-bottom: var(--spacing-3xl);
         }
 
         .features-title {
-            font-size: 36px;
-            font-weight: 800;
-            margin-bottom: 16px;
+            font-family: var(--font-display);
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: var(--spacing-md);
             color: var(--text-primary);
         }
 
         .features-subtitle {
-            font-size: 18px;
+            font-size: 20px;
             color: var(--text-secondary);
             max-width: 600px;
             margin: 0 auto;
@@ -474,58 +549,33 @@
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 32px;
+            gap: var(--spacing-xl);
+            margin-top: var(--spacing-3xl);
         }
 
-        .feature-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-primary);
-            border-radius: 20px;
-            padding: 32px;
+        .feature-item {
             text-align: center;
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, var(--accent), var(--purple), var(--cyan));
-            transform: scaleX(0);
-            transition: transform 0.4s ease;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-8px);
-            border-color: var(--border-hover);
-        }
-
-        .feature-card:hover::before {
-            transform: scaleX(1);
+            padding: var(--spacing-xl);
         }
 
         .feature-icon {
             width: 80px;
             height: 80px;
-            background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
-            border-radius: 20px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-lg);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
-            margin: 0 auto 24px;
-            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+            font-size: 36px;
+            margin: 0 auto var(--spacing-lg);
+            box-shadow: var(--shadow-medium);
         }
 
         .feature-title {
+            font-family: var(--font-display);
             font-size: 24px;
             font-weight: 700;
-            margin-bottom: 16px;
+            margin-bottom: var(--spacing-sm);
             color: var(--text-primary);
         }
 
@@ -535,89 +585,116 @@
             line-height: 1.6;
         }
 
-        /* CTA Section */
-        .cta {
-            padding: 100px 0;
-            text-align: center;
-            position: relative;
+        /* Stats Section */
+        .stats {
+            padding: var(--spacing-3xl) 0;
+            background: var(--gradient-hero);
         }
 
-        .cta::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
-            border-radius: 40px;
-            margin: 0 32px;
+        .stats-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 var(--spacing-md);
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-xl);
+        }
+
+        .stat-item {
+            padding: var(--spacing-lg);
+        }
+
+        .stat-number {
+            font-family: var(--font-display);
+            font-size: 54px;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+            margin-bottom: var(--spacing-sm);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 16px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* CTA Section */
+        .cta {
+            padding: var(--spacing-3xl) 0;
+            background: var(--surface);
+            text-align: center;
         }
 
         .cta-container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 0 32px;
-            position: relative;
-            z-index: 1;
+            padding: 0 var(--spacing-md);
         }
 
         .cta-title {
+            font-family: var(--font-display);
             font-size: 48px;
-            font-weight: 900;
-            margin-bottom: 24px;
-            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-weight: 700;
+            margin-bottom: var(--spacing-md);
+            color: var(--text-primary);
         }
 
         .cta-subtitle {
             font-size: 20px;
             color: var(--text-secondary);
-            margin-bottom: 48px;
-            line-height: 1.6;
+            margin-bottom: var(--spacing-xl);
+            line-height: 1.5;
         }
 
-        .cta-buttons {
+        .cta-actions {
             display: flex;
-            gap: 20px;
+            align-items: center;
             justify-content: center;
+            gap: var(--spacing-md);
             flex-wrap: wrap;
         }
 
         /* Footer */
         .footer {
-            padding: 80px 0 32px;
-            border-top: 1px solid var(--border-primary);
-            margin-top: 80px;
+            padding: var(--spacing-3xl) 0 var(--spacing-lg);
+            background: var(--text-primary);
+            color: white;
         }
 
         .footer-container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 0 32px;
+            padding: 0 var(--spacing-md);
         }
 
         .footer-content {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 48px;
-            margin-bottom: 48px;
+            gap: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
         }
 
         .footer-brand {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 16px;
+            margin-bottom: var(--spacing-md);
         }
 
-        .footer-brand-icon {
+        .footer-logo {
             width: 32px;
             height: 32px;
-            background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
-            border-radius: 8px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-xs);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -625,22 +702,21 @@
         }
 
         .footer-brand-text {
+            font-family: var(--font-display);
             font-size: 20px;
-            font-weight: 800;
-            color: var(--text-primary);
+            font-weight: 700;
         }
 
         .footer-description {
-            color: var(--text-secondary);
+            color: rgba(255, 255, 255, 0.7);
             line-height: 1.6;
-            margin-bottom: 24px;
+            margin-bottom: var(--spacing-md);
         }
 
         .footer-section h4 {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 16px;
+            font-family: var(--font-display);
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
         }
 
         .footer-links {
@@ -648,135 +724,71 @@
         }
 
         .footer-links li {
-            margin-bottom: 12px;
+            margin-bottom: var(--spacing-sm);
         }
 
         .footer-links a {
-            color: var(--text-secondary);
+            color: rgba(255, 255, 255, 0.7);
             text-decoration: none;
-            transition: color 0.3s ease;
+            transition: color 0.2s ease;
         }
 
         .footer-links a:hover {
-            color: var(--accent);
+            color: white;
         }
 
         .footer-bottom {
-            padding-top: 32px;
-            border-top: 1px solid var(--border-primary);
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
-            color: var(--text-muted);
+            color: rgba(255, 255, 255, 0.5);
             font-size: 14px;
         }
 
-        /* Mobile Menu */
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        .mobile-menu {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-primary);
-            z-index: 2000;
-            padding: 80px 32px 32px;
-        }
-
-        .mobile-menu.active {
-            display: block;
-        }
-
-        .mobile-nav {
-            list-style: none;
-        }
-
-        .mobile-nav li {
-            margin-bottom: 24px;
-        }
-
-        .mobile-nav a {
-            color: var(--text-primary);
-            text-decoration: none;
-            font-size: 24px;
-            font-weight: 600;
-        }
-
-        .mobile-close {
-            position: absolute;
-            top: 32px;
-            right: 32px;
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 32px;
-            cursor: pointer;
-        }
-
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .nav-container {
-                padding: 0 24px;
-            }
-
-            .hero-container,
-            .stats-container,
-            .features-container,
-            .cta-container {
-                padding: 0 24px;
-            }
-
-            .nav-menu {
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .nav-links {
                 display: none;
             }
 
-            .mobile-menu-btn {
-                display: block;
-            }
-
-            .dashboard-content {
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
-        }
-
-        @media (max-width: 768px) {
             .hero {
-                padding: 100px 0 60px;
+                padding: 120px 0 var(--spacing-2xl);
             }
 
             .hero-title {
-                font-size: 40px;
+                font-size: 42px;
             }
 
             .hero-subtitle {
                 font-size: 18px;
             }
 
-            .hero-cta {
+            .hero-actions {
                 flex-direction: column;
+            }
+
+            .demo-container {
+                margin: 0 var(--spacing-md);
+                padding: var(--spacing-md);
+            }
+
+            .features-title {
+                font-size: 36px;
             }
 
             .features-grid {
                 grid-template-columns: 1fr;
+                gap: var(--spacing-lg);
             }
 
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 32px;
+                gap: var(--spacing-lg);
             }
 
             .footer-content {
                 grid-template-columns: 1fr;
-                gap: 32px;
+                gap: var(--spacing-lg);
             }
 
             .cta-title {
@@ -784,120 +796,107 @@
             }
         }
 
-        @media (max-width: 480px) {
-            .hero-title {
-                font-size: 32px;
+        /* Smooth scrolling and performance optimizations */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
             }
+        }
 
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
 
-            .hero-container,
-            .stats-container,
-            .features-container,
-            .cta-container,
-            .footer-container {
-                padding: 0 16px;
-            }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar">
+    <nav class="navbar" id="navbar">
         <div class="nav-container">
             <a href="#" class="logo">
                 <div class="logo-icon">📡</div>
-                <div class="logo-text">Voxcord</div>
+                <span>Voxcord</span>
             </a>
             
-            <ul class="nav-menu">
+            <ul class="nav-links">
+                <li><a href="#demo" class="nav-link">Demo</a></li>
                 <li><a href="#features" class="nav-link">Features</a></li>
                 <li><a href="#pricing" class="nav-link">Pricing</a></li>
-                <li><a href="#about" class="nav-link">About</a></li>
-                <li><a href="#contact" class="nav-link">Contact</a></li>
+                <li><a href="#enterprise" class="nav-link">Enterprise</a></li>
             </ul>
             
             <div class="nav-cta">
-                <a href="/login" class="btn btn-ghost">Sign In</a>
-                <a href="/signup" class="btn btn-primary">Start Free</a>
+                <a href="/login" class="btn btn-secondary">Sign In</a>
+                <a href="/signup" class="btn btn-primary">Get Started</a>
             </div>
-
-            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
         </div>
     </nav>
-
-    <!-- Mobile Menu -->
-    <div class="mobile-menu" id="mobileMenu">
-        <button class="mobile-close" onclick="toggleMobileMenu()">×</button>
-        <ul class="mobile-nav">
-            <li><a href="#features" onclick="toggleMobileMenu()">Features</a></li>
-            <li><a href="#pricing" onclick="toggleMobileMenu()">Pricing</a></li>
-            <li><a href="#about" onclick="toggleMobileMenu()">About</a></li>
-            <li><a href="#contact" onclick="toggleMobileMenu()">Contact</a></li>
-            <li><a href="/login" onclick="toggleMobileMenu()">Sign In</a></li>
-            <li><a href="/signup" onclick="toggleMobileMenu()">Start Free</a></li>
-        </ul>
-    </div>
 
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-container">
             <div class="hero-badge">
                 <span>✨</span>
-                Now with Advanced AI
+                <span>Now with GPT-4 Voice</span>
             </div>
             
-            <h1 class="hero-title">AI Voice Assistants<br>That Actually Work</h1>
+            <h1 class="hero-title">Voice AI.<br>Reimagined.</h1>
             
             <p class="hero-subtitle">
-                Deploy intelligent voice assistants in minutes, not months. Enterprise-grade reliability meets startup simplicity.
+                The most advanced AI voice assistant platform. Deploy enterprise-grade voice experiences in seconds, not months.
             </p>
             
-            <div class="hero-cta">
-                <a href="/signup" class="btn btn-primary btn-hero">
-                    Get Started Free
-                    <span>→</span>
-                </a>
-                
-                <a href="tel:+16095073300" class="hero-demo">
+            <div class="hero-actions">
+                <a href="/signup" class="btn btn-primary btn-xl">Start Free Trial</a>
+                <a href="tel:+16095073300" class="btn btn-secondary btn-large">
                     <span>📞</span>
-                    Try Demo Call
+                    <span>Try Live Demo</span>
                 </a>
             </div>
-            
-            <div class="hero-visual">
-                <div class="dashboard-preview">
-                    <div class="dashboard-header">
-                        <div class="window-dot dot-red"></div>
-                        <div class="window-dot dot-yellow"></div>
-                        <div class="window-dot dot-green"></div>
+
+            <!-- Interactive Demo -->
+            <div class="demo-section" id="demo">
+                <div class="demo-container">
+                    <div class="demo-header">
+                        <h3 class="demo-title">Live AI Assistant</h3>
+                        <div class="phone-status">
+                            <div class="status-dot"></div>
+                            <span>Ready</span>
+                        </div>
                     </div>
-                    
-                    <div class="dashboard-content">
-                        <div class="preview-card">
-                            <div class="preview-title">Total Calls</div>
-                            <div class="preview-value">1,247</div>
-                            <div class="preview-change">
-                                <span>↗</span> +23% this week
+
+                    <div class="demo-phone">
+                        <div class="phone-number">+1 (609) 507-3300</div>
+                        <div class="phone-status">
+                            <div class="status-dot"></div>
+                            <span>AI Assistant Active</span>
+                        </div>
+                    </div>
+
+                    <div class="demo-simulator">
+                        <h4 class="simulator-title">Try the AI Assistant</h4>
+                        <div class="conversation" id="conversation">
+                            <div class="message assistant">
+                                <div class="message-bubble">
+                                    Hello! I'm Voxcord's AI assistant. Ask me anything about our voice AI platform!
+                                </div>
                             </div>
                         </div>
-                        
-                        <div class="preview-card">
-                            <div class="preview-title">Success Rate</div>
-                            <div class="preview-value">98.5%</div>
-                            <div class="preview-change">
-                                <span>↗</span> Industry leading
-                            </div>
-                        </div>
-                        
-                        <div class="preview-card">
-                            <div class="preview-title">Avg Response</div>
-                            <div class="preview-value">1.2s</div>
-                            <div class="preview-change">
-                                <span>↗</span> Lightning fast
-                            </div>
+                        <div class="demo-input">
+                            <input type="text" id="demoInput" placeholder="Type your message here..." maxlength="200">
+                            <button id="sendBtn" onclick="sendDemoMessage()">Send</button>
                         </div>
                     </div>
                 </div>
@@ -908,25 +907,22 @@
     <!-- Stats Section -->
     <section class="stats">
         <div class="stats-container">
-            <h2 class="stats-title">Trusted by Modern Businesses</h2>
-            <p class="stats-subtitle">Join thousands of companies transforming their customer experience</p>
-            
             <div class="stats-grid">
                 <div class="stat-item">
-                    <span class="stat-number">10K+</span>
+                    <span class="stat-number" data-count="10000">0</span>
                     <span class="stat-label">Active Users</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number">50M+</span>
+                    <span class="stat-number" data-count="50000000">0</span>
                     <span class="stat-label">Calls Processed</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number">99.9%</span>
-                    <span class="stat-label">Uptime</span>
+                    <span class="stat-number" data-count="99.9">0</span>
+                    <span class="stat-label">Uptime %</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number">1.2s</span>
-                    <span class="stat-label">Avg Response</span>
+                    <span class="stat-number" data-count="1.2">0</span>
+                    <span class="stat-label">Avg Response (s)</span>
                 </div>
             </div>
         </div>
@@ -936,65 +932,74 @@
     <section class="features" id="features">
         <div class="features-container">
             <div class="features-header">
-                <h2 class="features-title">Everything You Need</h2>
-                <p class="features-subtitle">Powerful features designed for modern businesses that want results, not complexity</p>
+                <h2 class="features-title">Built for the Future</h2>
+                <p class="features-subtitle">
+                    Every feature designed with enterprise performance and consumer simplicity in mind.
+                </p>
             </div>
             
             <div class="features-grid">
-                <div class="feature-card">
+                <div class="feature-item">
                     <div class="feature-icon">🚀</div>
-                    <h3 class="feature-title">Deploy in Minutes</h3>
-                    <p class="feature-description">Get your AI voice assistant live in under 5 minutes. No technical setup required—just sign up and start talking to customers.</p>
+                    <h3 class="feature-title">Instant Deployment</h3>
+                    <p class="feature-description">
+                        Deploy production-ready AI voice assistants in under 60 seconds. No infrastructure, no complexity, just results.
+                    </p>
                 </div>
                 
-                <div class="feature-card">
+                <div class="feature-item">
                     <div class="feature-icon">🧠</div>
-                    <h3 class="feature-title">Advanced AI</h3>
-                    <p class="feature-description">Powered by the latest language models, our AI understands context, handles complex conversations, and learns from every interaction.</p>
+                    <h3 class="feature-title">GPT-4 Powered</h3>
+                    <p class="feature-description">
+                        Latest OpenAI models with natural conversation flow, context awareness, and human-like responses.
+                    </p>
                 </div>
                 
-                <div class="feature-card">
-                    <div class="feature-icon">📱</div>
-                    <h3 class="feature-title">Works Everywhere</h3>
-                    <p class="feature-description">Integrate with your existing phone system, website chat, or mobile app. One AI assistant, multiple touchpoints.</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">📊</div>
-                    <h3 class="feature-title">Real-time Analytics</h3>
-                    <p class="feature-description">Track performance, understand customer needs, and optimize conversations with detailed insights and reports.</p>
-                </div>
-                
-                <div class="feature-card">
+                <div class="feature-item">
                     <div class="feature-icon">🔒</div>
                     <h3 class="feature-title">Enterprise Security</h3>
-                    <p class="feature-description">SOC 2 compliant, end-to-end encrypted, with enterprise-grade security that scales with your business needs.</p>
+                    <p class="feature-description">
+                        SOC 2 Type II compliance, end-to-end encryption, and GDPR-ready infrastructure that scales with confidence.
+                    </p>
                 </div>
                 
-                <div class="feature-card">
+                <div class="feature-item">
                     <div class="feature-icon">⚡</div>
-                    <h3 class="feature-title">Lightning Fast</h3>
-                    <p class="feature-description">Sub-second response times with global edge infrastructure. Your customers never wait, your business never slows down.</p>
+                    <h3 class="feature-title">Sub-Second Response</h3>
+                    <p class="feature-description">
+                        Global edge infrastructure delivers lightning-fast responses with 99.9% uptime guarantee.
+                    </p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">Real-time Analytics</h3>
+                    <p class="feature-description">
+                        Deep insights into every conversation with sentiment analysis, intent recognition, and performance metrics.
+                    </p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">🌐</div>
+                    <h3 class="feature-title">Global Scale</h3>
+                    <p class="feature-description">
+                        Multi-region deployment with automatic scaling handles millions of concurrent conversations.
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- CTA Section -->
-    <section class="cta">
+    <section class="cta" id="pricing">
         <div class="cta-container">
             <h2 class="cta-title">Ready to Transform Your Business?</h2>
-            <p class="cta-subtitle">Join thousands of companies using Voxcord to deliver exceptional customer experiences with AI voice assistants.</p>
-            
-            <div class="cta-buttons">
-                <a href="/signup" class="btn btn-primary btn-hero">
-                    Start Free Trial
-                    <span>→</span>
-                </a>
-                
-                <a href="tel:+16095073300" class="btn btn-ghost btn-hero">
-                    📞 Call (609) 507-3300
-                </a>
+            <p class="cta-subtitle">
+                Join thousands of companies delivering exceptional customer experiences with Voxcord's AI voice platform.
+            </p>
+            <div class="cta-actions">
+                <a href="/signup" class="btn btn-primary btn-xl">Start Free Trial</a>
+                <a href="#enterprise" class="btn btn-secondary btn-large">Enterprise Sales</a>
             </div>
         </div>
     </section>
@@ -1005,11 +1010,11 @@
             <div class="footer-content">
                 <div class="footer-about">
                     <div class="footer-brand">
-                        <div class="footer-brand-icon">📡</div>
-                        <div class="footer-brand-text">Voxcord</div>
+                        <div class="footer-logo">📡</div>
+                        <span class="footer-brand-text">Voxcord</span>
                     </div>
                     <p class="footer-description">
-                        Enterprise-grade AI voice assistants that help businesses deliver exceptional customer experiences at scale.
+                        The future of AI voice technology. Empowering businesses to deliver exceptional customer experiences at scale.
                     </p>
                 </div>
                 
@@ -1017,9 +1022,9 @@
                     <h4>Product</h4>
                     <ul class="footer-links">
                         <li><a href="#features">Features</a></li>
-                        <li><a href="/signup">Pricing</a></li>
-                        <li><a href="#integrations">Integrations</a></li>
-                        <li><a href="#api">API Docs</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="/signup">Free Trial</a></li>
+                        <li><a href="#enterprise">Enterprise</a></li>
                     </ul>
                 </div>
                 
@@ -1027,8 +1032,8 @@
                     <h4>Company</h4>
                     <ul class="footer-links">
                         <li><a href="#about">About</a></li>
-                        <li><a href="#blog">Blog</a></li>
                         <li><a href="#careers">Careers</a></li>
+                        <li><a href="#blog">Blog</a></li>
                         <li><a href="#contact">Contact</a></li>
                     </ul>
                 </div>
@@ -1036,28 +1041,100 @@
                 <div class="footer-section">
                     <h4>Support</h4>
                     <ul class="footer-links">
-                        <li><a href="#help">Help Center</a></li>
+                        <li><a href="#docs">Documentation</a></li>
+                        <li><a href="#api">API Reference</a></li>
                         <li><a href="#status">Status</a></li>
-                        <li><a href="#privacy">Privacy</a></li>
-                        <li><a href="#terms">Terms</a></li>
+                        <li><a href="#help">Help Center</a></li>
                     </ul>
                 </div>
             </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2025 Voxcord. All rights reserved. Built with ❤️ for modern businesses.</p>
+                <p>&copy; 2025 Voxcord. All rights reserved. Designed in California.</p>
             </div>
         </div>
     </footer>
 
     <script>
-        // Mobile menu toggle
-        function toggleMobileMenu() {
-            const mobileMenu = document.getElementById('mobileMenu');
-            mobileMenu.classList.toggle('active');
+        // Enhanced interactive demo
+        const demoResponses = [
+            "Voxcord can handle thousands of concurrent calls with enterprise-grade reliability and sub-second response times.",
+            "Our AI uses advanced GPT-4 models with voice synthesis to create natural, human-like conversations that adapt to your business needs.",
+            "Getting started is simple - sign up, configure your assistant in minutes, and start receiving calls immediately. No technical expertise required.",
+            "Yes! Voxcord integrates with popular CRM systems, support platforms, and business tools through our comprehensive API.",
+            "We offer 24/7 enterprise support, dedicated account managers, custom integrations, and white-label solutions for larger organizations.",
+            "Absolutely. We're SOC 2 Type II compliant with end-to-end encryption, GDPR compliance, and enterprise-grade security infrastructure.",
+            "Our pricing scales with your usage - from free trials to enterprise solutions. Contact our team for custom pricing based on your needs."
+        ];
+
+        let messageCount = 0;
+        let isTyping = false;
+
+        function sendDemoMessage() {
+            const input = document.getElementById('demoInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const conversation = document.getElementById('conversation');
+            
+            if (input.value.trim() === '' || isTyping) return;
+            
+            const userMessage = input.value.trim();
+            input.value = '';
+            
+            // Add user message
+            addMessage(userMessage, 'user');
+            
+            // Disable input while AI responds
+            isTyping = true;
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<div class="loading"></div>';
+            
+            // Simulate AI typing delay
+            setTimeout(() => {
+                const response = demoResponses[messageCount % demoResponses.length];
+                addMessage(response, 'assistant');
+                messageCount++;
+                
+                // Re-enable input
+                isTyping = false;
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send';
+            }, 1000 + Math.random() * 1500);
         }
 
-        // Smooth scrolling for navigation links
+        function addMessage(text, sender) {
+            const conversation = document.getElementById('conversation');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'message-bubble';
+            bubbleDiv.textContent = text;
+            
+            messageDiv.appendChild(bubbleDiv);
+            conversation.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            conversation.scrollTop = conversation.scrollHeight;
+        }
+
+        // Enter key to send message
+        document.getElementById('demoInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !isTyping) {
+                sendDemoMessage();
+            }
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -1071,120 +1148,95 @@
             });
         });
 
-        // Navbar background on scroll
-        let lastScrollY = window.scrollY;
-        window.addEventListener('scroll', () => {
-            const navbar = document.querySelector('.navbar');
-            if (window.scrollY > 100) {
-                navbar.style.background = 'rgba(10, 10, 10, 0.98)';
-            } else {
-                navbar.style.background = 'rgba(10, 10, 10, 0.95)';
-            }
-        });
+        // Animated counters for stats
+        function animateCounter(element, target, duration = 2000) {
+            let start = 0;
+            const increment = target / (duration / 16);
+            let current = start;
+            
+            const updateCounter = () => {
+                current += increment;
+                if (current < target) {
+                    if (target >= 1000000) {
+                        element.textContent = (current / 1000000).toFixed(1) + 'M+';
+                    } else if (target >= 1000) {
+                        element.textContent = (current / 1000).toFixed(0) + 'K+';
+                    } else {
+                        element.textContent = current.toFixed(1);
+                    }
+                    requestAnimationFrame(updateCounter);
+                } else {
+                    if (target >= 1000000) {
+                        element.textContent = (target / 1000000).toFixed(0) + 'M+';
+                    } else if (target >= 1000) {
+                        element.textContent = (target / 1000).toFixed(0) + 'K+';
+                    } else {
+                        element.textContent = target.toString();
+                    }
+                }
+            };
+            updateCounter();
+        }
 
-        // Animate stats on scroll
+        // Intersection Observer for animations
         const observerOptions = {
-            threshold: 0.7,
+            threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
         };
 
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    const counter = entry.target;
-                    const target = counter.textContent;
-                    const isNumber = !isNaN(parseFloat(target));
+                    const target = entry.target;
                     
-                    if (isNumber) {
-                        animateCounter(counter, parseFloat(target.replace(/[^\d.]/g, '')), target);
+                    if (target.classList.contains('stat-number')) {
+                        const count = parseInt(target.dataset.count);
+                        animateCounter(target, count);
+                        observer.unobserve(target);
                     }
                     
-                    observer.unobserve(counter);
+                    if (target.classList.contains('feature-item')) {
+                        target.style.opacity = '1';
+                        target.style.transform = 'translateY(0)';
+                    }
                 }
             });
         }, observerOptions);
 
-        document.querySelectorAll('.stat-number').forEach(counter => {
-            observer.observe(counter);
-        });
-
-        function animateCounter(element, target, originalText) {
-            const duration = 2000;
-            const increment = target / (duration / 16);
-            let current = 0;
-            const suffix = originalText.replace(/[\d.]/g, '');
-
-            const updateCounter = () => {
-                current += increment;
-                if (current < target) {
-                    element.textContent = formatNumber(current) + suffix;
-                    requestAnimationFrame(updateCounter);
-                } else {
-                    element.textContent = originalText;
-                }
-            };
-
-            updateCounter();
-        }
-
-        function formatNumber(num) {
-            if (num >= 1000000) {
-                return (num / 1000000).toFixed(1) + 'M';
-            } else if (num >= 1000) {
-                return (num / 1000).toFixed(0) + 'K';
-            } else if (num % 1 !== 0) {
-                return num.toFixed(1);
-            }
-            return Math.floor(num).toString();
-        }
-
-        // Feature card hover effects
-        document.querySelectorAll('.feature-card').forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                card.style.transform = 'translateY(-12px)';
-            });
+        // Observe elements for animation
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.stat-number').forEach(el => observer.observe(el));
             
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'translateY(-8px)';
+            document.querySelectorAll('.feature-item').forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+                observer.observe(el);
             });
         });
 
-        // CTA phone number click tracking
-        document.querySelectorAll('a[href^="tel:"]').forEach(phoneLink => {
-            phoneLink.addEventListener('click', () => {
-                // Track phone click for analytics if needed
-                console.log('Phone number clicked:', phoneLink.getAttribute('href'));
-            });
-        });
-
-        // Prevent mobile menu from staying open on resize
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 1024) {
-                document.getElementById('mobileMenu').classList.remove('active');
-            }
-        });
-
-        // Close mobile menu when clicking outside
-        document.getElementById('mobileMenu').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) {
-                toggleMobileMenu();
-            }
-        });
-
-        // Performance optimization: Reduce motion for users who prefer it
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            document.documentElement.style.setProperty('--transition-duration', '0s');
+        // Performance optimization
+        let ticking = false;
+        function updateOnScroll() {
+            // Navbar scroll effect here if needed
+            ticking = false;
         }
 
-        // Error handling for missing elements
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                requestAnimationFrame(updateOnScroll);
+                ticking = true;
+            }
+        });
+
+        // Prevent layout shift
+        window.addEventListener('load', () => {
+            document.body.style.visibility = 'visible';
+        });
+
+        // Error handling
         window.addEventListener('error', (e) => {
             console.warn('Non-critical error:', e.error?.message || e.message);
-        });
-
-        // Ensure all external links work correctly
-        document.querySelectorAll('a[href^="http"], a[href^="//"]').forEach(link => {
-            link.setAttribute('target', '_blank');
-            link.setAttribute('rel', 'noopener noreferrer');
         });
     </script>
 </body>
