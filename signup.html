@@ -7,80 +7,24 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
     <style>
-        :root {
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #111111;
-            --bg-tertiary: #1a1a1a;
-            --bg-card: #141414;
-            --bg-hover: #1f1f1f;
-            --border-primary: #2a2a2a;
-            --border-hover: #3a3a3a;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0a0;
-            --text-muted: #6a6a6a;
-            --accent: #3b82f6;
-            --accent-hover: #2563eb;
-            --success: #10b981;
-            --error: #ef4444;
-            --warning: #f59e0b;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
-            overflow-x: hidden;
             padding: 20px;
-        }
-
-        /* Animated background */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 200%;
-            height: 200%;
-            background: 
-                radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 60%, rgba(245, 158, 11, 0.05) 0%, transparent 50%);
-            animation: backgroundShift 20s ease infinite;
-            z-index: -1;
-        }
-
-        @keyframes backgroundShift {
-            0%, 100% { transform: translate(-10%, -10%) rotate(0deg); }
-            33% { transform: translate(-5%, -15%) rotate(1deg); }
-            66% { transform: translate(-15%, -5%) rotate(-1deg); }
+            background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%);
         }
 
         .container {
-            background: var(--bg-card);
-            border: 1px solid var(--border-primary);
+            background: white;
             border-radius: 24px;
             padding: 48px;
             width: 100%;
             max-width: 480px;
-            box-shadow: 
-                0 20px 25px -5px rgba(0, 0, 0, 0.3),
-                0 10px 10px -5px rgba(0, 0, 0, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            position: relative;
-            z-index: 1;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
 
         .logo {
@@ -94,22 +38,18 @@
         .logo-icon {
             width: 48px;
             height: 48px;
-            background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 24px;
-            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
         }
 
         .logo-text {
             font-size: 28px;
             font-weight: 800;
-            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #1e40af;
         }
 
         .header {
@@ -121,93 +61,7 @@
             font-size: 24px;
             font-weight: 700;
             margin-bottom: 8px;
-            color: var(--text-primary);
-        }
-
-        .header p {
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        .auth-methods {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin-bottom: 32px;
-        }
-
-        .oauth-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            padding: 16px 20px;
-            border: 1px solid var(--border-primary);
-            border-radius: 12px;
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .oauth-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .oauth-button:hover::before {
-            left: 100%;
-        }
-
-        .oauth-button:hover {
-            border-color: var(--border-hover);
-            background: var(--bg-hover);
-            transform: translateY(-1px);
-        }
-
-        .oauth-button.google:hover {
-            border-color: #4285f4;
-        }
-
-        .oauth-button.apple:hover {
-            border-color: #a0a0a0;
-        }
-
-        .oauth-icon {
-            width: 20px;
-            height: 20px;
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 24px 0;
-            color: var(--text-muted);
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border-primary);
-        }
-
-        .divider span {
-            padding: 0 16px;
+            color: #1f2937;
         }
 
         .form-group {
@@ -224,7 +78,7 @@
             display: block;
             font-size: 13px;
             font-weight: 600;
-            color: var(--text-secondary);
+            color: #374151;
             margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -233,42 +87,26 @@
         .form-input, .form-select {
             width: 100%;
             padding: 16px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-primary);
+            background: #f8fafc;
+            border: 2px solid #e5e7eb;
             border-radius: 8px;
-            color: var(--text-primary);
+            color: #1f2937;
             font-size: 14px;
             transition: all 0.2s ease;
         }
 
-        .form-input::placeholder {
-            color: var(--text-muted);
-        }
-
         .form-input:focus, .form-select:focus {
             outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-            background: var(--bg-tertiary);
-        }
-
-        .form-input:hover, .form-select:hover {
-            border-color: var(--border-hover);
+            border-color: #3b82f6;
+            background: white;
         }
 
         .plan-selector {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-primary);
+            background: #f8fafc;
+            border: 2px solid #e5e7eb;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 24px;
-        }
-
-        .plan-selector h3 {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            color: var(--text-primary);
         }
 
         .plan-options {
@@ -281,53 +119,35 @@
             align-items: center;
             gap: 12px;
             padding: 16px;
-            background: var(--bg-tertiary);
-            border: 2px solid var(--border-primary);
+            background: white;
+            border: 2px solid #e5e7eb;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
-        .plan-option:hover {
-            border-color: var(--border-hover);
-        }
-
         .plan-option.selected {
-            border-color: var(--accent);
-            background: rgba(59, 130, 246, 0.1);
-        }
-
-        .plan-option input[type="radio"] {
-            accent-color: var(--accent);
-        }
-
-        .plan-details {
-            flex: 1;
+            border-color: #3b82f6;
+            background: #eff6ff;
         }
 
         .plan-name {
             font-weight: 600;
-            color: var(--text-primary);
+            color: #1f2937;
             font-size: 14px;
             margin-bottom: 4px;
         }
 
         .plan-price {
-            color: var(--accent);
+            color: #3b82f6;
             font-weight: 700;
             font-size: 12px;
-        }
-
-        .plan-description {
-            color: var(--text-muted);
-            font-size: 11px;
-            margin-top: 4px;
         }
 
         .submit-btn {
             width: 100%;
             padding: 16px;
-            background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
             border: none;
             border-radius: 8px;
             color: white;
@@ -335,24 +155,7 @@
             font-size: 14px;
             cursor: pointer;
             transition: all 0.2s ease;
-            position: relative;
-            overflow: hidden;
             margin-bottom: 24px;
-        }
-
-        .submit-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .submit-btn:hover::before {
-            left: 100%;
         }
 
         .submit-btn:hover {
@@ -364,39 +167,6 @@
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
-        }
-
-        .loading-spinner {
-            display: none;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s linear infinite;
-            margin-right: 8px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .footer-links {
-            text-align: center;
-            padding-top: 24px;
-            border-top: 1px solid var(--border-primary);
-        }
-
-        .footer-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 13px;
-            margin: 0 16px;
-            transition: color 0.2s ease;
-        }
-
-        .footer-links a:hover {
-            color: var(--accent);
         }
 
         .status-message {
@@ -411,40 +181,33 @@
         .status-message.success {
             background: rgba(16, 185, 129, 0.1);
             border: 1px solid rgba(16, 185, 129, 0.2);
-            color: var(--success);
+            color: #065f46;
         }
 
         .status-message.error {
             background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.2);
-            color: var(--error);
+            color: #991b1b;
         }
 
-        .terms-checkbox {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 24px;
-            font-size: 12px;
-            color: var(--text-muted);
-            line-height: 1.5;
+        .footer-links {
+            text-align: center;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
         }
 
-        .terms-checkbox input[type="checkbox"] {
-            accent-color: var(--accent);
-            margin-top: 2px;
-        }
-
-        .terms-checkbox a {
-            color: var(--accent);
+        .footer-links a {
+            color: #6b7280;
             text-decoration: none;
+            font-size: 13px;
+            margin: 0 16px;
+            transition: color 0.2s ease;
         }
 
-        .terms-checkbox a:hover {
-            text-decoration: underline;
+        .footer-links a:hover {
+            color: #3b82f6;
         }
 
-        /* Responsive */
         @media (max-width: 580px) {
             .container {
                 padding: 32px 24px;
@@ -453,30 +216,6 @@
             .form-row {
                 grid-template-columns: 1fr;
             }
-            
-            .oauth-button {
-                padding: 14px 16px;
-            }
-            
-            .form-input, .submit-btn {
-                padding: 14px;
-            }
-        }
-
-        /* Glassmorphism effect */
-        .container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border-radius: 24px;
-            padding: 1px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask-composite: exclude;
-            z-index: -1;
         }
     </style>
 </head>
@@ -493,29 +232,6 @@
         </div>
 
         <div class="status-message" id="statusMessage"></div>
-
-        <div class="auth-methods">
-            <a href="#" class="oauth-button google" onclick="signupWithGoogle()">
-                <svg class="oauth-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-                Continue with Google
-            </a>
-
-            <a href="#" class="oauth-button apple" onclick="signupWithApple()">
-                <svg class="oauth-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z"/>
-                </svg>
-                Continue with Apple
-            </a>
-        </div>
-
-        <div class="divider">
-            <span>Or create with email</span>
-        </div>
 
         <form id="signupForm">
             <div class="plan-selector">
@@ -564,41 +280,29 @@
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label" for="company">Company</label>
-                    <input type="text" class="form-input" id="company" name="company" placeholder="Acme Inc" required>
+                    <input type="text" class="form-input" id="company" name="company" placeholder="Acme Inc">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="industry">Industry</label>
-                    <select class="form-select" id="industry" name="industry" required>
+                    <select class="form-select" id="industry" name="industry">
                         <option value="">Select industry</option>
                         <option value="technology">Technology</option>
                         <option value="healthcare">Healthcare</option>
                         <option value="finance">Financial Services</option>
                         <option value="retail">Retail & E-commerce</option>
-                        <option value="professional">Professional Services</option>
-                        <option value="real-estate">Real Estate</option>
-                        <option value="legal">Legal</option>
                         <option value="other">Other</option>
                     </select>
                 </div>
             </div>
 
-            <div class="terms-checkbox">
-                <input type="checkbox" id="terms" name="terms" required>
-                <label for="terms">
-                    I agree to the <a href="/terms" target="_blank">Terms of Service</a> and 
-                    <a href="/privacy" target="_blank">Privacy Policy</a>. I understand that I can cancel anytime.
-                </label>
-            </div>
-
             <button type="submit" class="submit-btn" id="submitBtn">
-                <div class="loading-spinner" id="loadingSpinner"></div>
                 <span id="btnText">Create Account</span>
             </button>
         </form>
 
         <div class="footer-links">
             <a href="/login">Already have an account?</a>
-            <a href="/help">Need help?</a>
+            <a href="#help">Need help?</a>
         </div>
     </div>
 
@@ -621,56 +325,15 @@
             });
         });
 
-        // OAuth signup functions
-        async function signupWithGoogle() {
-            showStatus('Redirecting to Google...', 'success');
-            
-            setTimeout(() => {
-                const userData = {
-                    email: 'user@gmail.com',
-                    name: 'Demo User',
-                    provider: 'google',
-                    plan: 'free'
-                };
-                handleOAuthSuccess(userData);
-            }, 1500);
-        }
-
-        async function signupWithApple() {
-            showStatus('Redirecting to Apple...', 'success');
-            
-            setTimeout(() => {
-                const userData = {
-                    email: 'user@icloud.com',
-                    name: 'Demo User',
-                    provider: 'apple',
-                    plan: 'free'
-                };
-                handleOAuthSuccess(userData);
-            }, 1500);
-        }
-
-        function handleOAuthSuccess(userData) {
-            showStatus('Account created successfully!', 'success');
-            
-            localStorage.setItem('user', JSON.stringify(userData));
-            
-            setTimeout(() => {
-                window.location.href = '/dashboard';
-            }, 1500);
-        }
-
-        // Email/password signup
+        // Form submission
         document.getElementById('signupForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const submitBtn = document.getElementById('submitBtn');
-            const loadingSpinner = document.getElementById('loadingSpinner');
             const btnText = document.getElementById('btnText');
             
             // Show loading state
             submitBtn.disabled = true;
-            loadingSpinner.style.display = 'inline-block';
             btnText.textContent = 'Creating Account...';
             
             try {
@@ -678,41 +341,37 @@
                 const data = Object.fromEntries(formData.entries());
                 
                 // Basic validation
-                if (!data.terms) {
-                    throw new Error('Please accept the terms and conditions');
-                }
-                
                 if (data.password.length < 6) {
                     throw new Error('Password must be at least 6 characters');
                 }
                 
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                // Make API call to backend
+                const response = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
                 
-                showStatus('Account created successfully! Redirecting...', 'success');
+                const result = await response.json();
                 
-                const userData = {
-                    email: data.email,
-                    name: `${data.firstName} ${data.lastName}`,
-                    company: data.company,
-                    industry: data.industry,
-                    plan: data.plan,
-                    provider: 'email'
-                };
+                if (!response.ok) {
+                    throw new Error(result.error || 'Registration failed');
+                }
                 
-                localStorage.setItem('user', JSON.stringify(userData));
+                showStatus('Account created successfully! You can now sign in.', 'success');
                 
+                // Redirect to login page after delay
                 setTimeout(() => {
-                    window.location.href = '/dashboard';
-                }, 1500);
+                    window.location.href = '/login';
+                }, 2000);
                 
             } catch (error) {
-                showStatus(error.message || 'Failed to create account. Please try again.', 'error');
+                showStatus(error.message, 'error');
             } finally {
                 // Reset button state
                 submitBtn.disabled = false;
-                loadingSpinner.style.display = 'none';
-                
                 const selectedPlan = document.querySelector('input[name="plan"]:checked').value;
                 btnText.textContent = selectedPlan === 'free' ? 'Create Free Account' : 'Start Free Trial';
             }
@@ -724,6 +383,7 @@
             statusMessage.className = `status-message ${type}`;
             statusMessage.style.display = 'block';
             
+            // Auto-hide error messages after 5 seconds
             if (type === 'error') {
                 setTimeout(() => {
                     statusMessage.style.display = 'none';

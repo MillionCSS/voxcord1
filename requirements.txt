@@ -1,26 +1,7 @@
-# Minimal requirements.txt for Voxcord - Production Ready
-# Use this version if you're getting dependency conflicts
+# Voxcord - Minimal Production Requirements
+# Only essential dependencies for Digital Ocean App Platform
 
-# Core Flask
 Flask==3.0.0
-
-# Production server
-gunicorn==21.2.0
-
-# Essential dependencies
-numpy==1.24.3
-psycopg2-binary==2.9.9
-redis==5.0.1
-
-# External services
+PyJWT==2.8.0
 twilio==8.12.0
 openai==1.51.0
-
-# Security and auth
-PyJWT==2.8.0
-python-dotenv==1.0.0
-
-# HTTP requests
-requests==2.31.0
-
-# Let pip resolve other dependencies automatically

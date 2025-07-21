@@ -7,27 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
     <style>
-        :root {
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #111111;
-            --bg-tertiary: #1a1a1a;
-            --bg-card: #141414;
-            --bg-hover: #1f1f1f;
-            --border-primary: #2a2a2a;
-            --border-hover: #3a3a3a;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0a0;
-            --text-muted: #6a6a6a;
-            --accent: #3b82f6;
-            --accent-hover: #2563eb;
-            --success: #10b981;
-            --error: #ef4444;
-            --warning: #f59e0b;
-            --purple: #8b5cf6;
-            --cyan: #06b6d4;
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -36,8 +17,8 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
+            background: #f8fafc;
+            color: #1f2937;
             line-height: 1.5;
         }
 
@@ -48,10 +29,11 @@
             left: 0;
             width: 280px;
             height: 100vh;
-            background: var(--bg-card);
-            border-right: 1px solid var(--border-primary);
+            background: white;
+            border-right: 1px solid #e5e7eb;
             padding: 32px 24px;
             z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
 
         .sidebar-header {
@@ -64,7 +46,7 @@
         .sidebar-logo {
             width: 40px;
             height: 40px;
-            background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -75,7 +57,7 @@
         .sidebar-title {
             font-size: 20px;
             font-weight: 800;
-            color: var(--text-primary);
+            color: #1f2937;
         }
 
         .sidebar-nav {
@@ -92,7 +74,7 @@
             gap: 12px;
             padding: 12px 16px;
             border-radius: 8px;
-            color: var(--text-secondary);
+            color: #6b7280;
             text-decoration: none;
             font-weight: 500;
             transition: all 0.2s ease;
@@ -100,20 +82,15 @@
         }
 
         .nav-link:hover {
-            background: var(--bg-hover);
-            color: var(--text-primary);
-            border-color: var(--border-primary);
+            background: #f3f4f6;
+            color: #1f2937;
+            border-color: #e5e7eb;
         }
 
         .nav-link.active {
             background: rgba(59, 130, 246, 0.1);
-            color: var(--accent);
-            border-color: var(--accent);
-        }
-
-        .nav-icon {
-            width: 18px;
-            height: 18px;
+            color: #3b82f6;
+            border-color: #3b82f6;
         }
 
         .user-profile {
@@ -122,8 +99,8 @@
             left: 24px;
             right: 24px;
             padding: 16px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-primary);
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
             border-radius: 12px;
         }
 
@@ -136,24 +113,14 @@
         .user-avatar {
             width: 36px;
             height: 36px;
-            background: linear-gradient(135deg, var(--success) 0%, var(--cyan) 100%);
+            background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 600;
             font-size: 14px;
-        }
-
-        .user-details h4 {
-            font-size: 14px;
-            color: var(--text-primary);
-            margin-bottom: 2px;
-        }
-
-        .user-details p {
-            font-size: 12px;
-            color: var(--text-muted);
+            color: white;
         }
 
         /* Main Content */
@@ -174,14 +141,11 @@
             font-size: 28px;
             font-weight: 800;
             margin-bottom: 4px;
-            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #1f2937;
         }
 
         .header-left p {
-            color: var(--text-secondary);
+            color: #6b7280;
             font-size: 14px;
         }
 
@@ -205,7 +169,7 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
             color: white;
         }
 
@@ -215,14 +179,14 @@
         }
 
         .btn-secondary {
-            background: var(--bg-card);
-            color: var(--text-primary);
-            border-color: var(--border-primary);
+            background: white;
+            color: #3b82f6;
+            border-color: #3b82f6;
         }
 
         .btn-secondary:hover {
-            background: var(--bg-hover);
-            border-color: var(--border-hover);
+            background: #3b82f6;
+            color: white;
         }
 
         /* Stats Grid */
@@ -234,12 +198,13 @@
         }
 
         .stat-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-primary);
+            background: white;
+            border: 1px solid #e5e7eb;
             border-radius: 16px;
             padding: 24px;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .stat-card::before {
@@ -249,28 +214,22 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, var(--accent) 0%, var(--purple) 50%, var(--cyan) 100%);
-        }
-
-        .stat-header {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            margin-bottom: 16px;
+            background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%);
         }
 
         .stat-title {
             font-size: 14px;
             font-weight: 600;
-            color: var(--text-secondary);
+            color: #6b7280;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin-bottom: 8px;
         }
 
         .stat-value {
             font-size: 32px;
             font-weight: 800;
-            color: var(--text-primary);
+            color: #1f2937;
             margin-bottom: 8px;
         }
 
@@ -282,11 +241,7 @@
         }
 
         .stat-change.positive {
-            color: var(--success);
-        }
-
-        .stat-change.negative {
-            color: var(--error);
+            color: #10b981;
         }
 
         /* Content Grid */
@@ -298,10 +253,11 @@
         }
 
         .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-primary);
+            background: white;
+            border: 1px solid #e5e7eb;
             border-radius: 16px;
             overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .card-header {
@@ -314,7 +270,7 @@
         .card-title {
             font-size: 18px;
             font-weight: 700;
-            color: var(--text-primary);
+            color: #1f2937;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -327,19 +283,18 @@
         .empty-state {
             text-align: center;
             padding: 48px 24px;
-            color: var(--text-muted);
+            color: #6b7280;
         }
 
         .empty-state-icon {
-            width: 64px;
-            height: 64px;
-            margin: 0 auto 16px;
+            font-size: 48px;
+            margin-bottom: 16px;
             opacity: 0.5;
         }
 
         .call-item {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-primary);
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 16px;
@@ -348,14 +303,9 @@
         }
 
         .call-item:hover {
-            background: var(--bg-hover);
-            border-color: var(--border-hover);
+            background: #f1f5f9;
+            border-color: #d1d5db;
             transform: translateX(2px);
-        }
-
-        .call-item.active {
-            border-color: var(--accent);
-            background: rgba(59, 130, 246, 0.05);
         }
 
         .call-header {
@@ -368,7 +318,7 @@
         .call-id {
             font-size: 14px;
             font-weight: 600;
-            color: var(--text-primary);
+            color: #1f2937;
         }
 
         .call-status {
@@ -380,32 +330,66 @@
             letter-spacing: 0.5px;
         }
 
-        .status-active {
-            background: rgba(16, 185, 129, 0.2);
-            color: var(--success);
-        }
-
         .status-completed {
             background: rgba(107, 114, 128, 0.2);
-            color: var(--text-muted);
+            color: #6b7280;
         }
 
         .call-meta {
-            color: var(--text-secondary);
+            color: #6b7280;
             font-size: 12px;
             margin-bottom: 8px;
         }
 
         .call-preview {
-            color: var(--text-muted);
+            color: #6b7280;
             font-size: 13px;
             line-height: 1.4;
         }
 
+        .phone-display {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .phone-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+            font-family: 'Monaco', monospace;
+        }
+
+        .phone-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #10b981;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
         /* Settings Panel */
         .settings-panel {
-            background: var(--bg-card);
-            border: 1px solid var(--border-primary);
+            background: white;
+            border: 1px solid #e5e7eb;
             border-radius: 16px;
             padding: 24px;
         }
@@ -421,7 +405,7 @@
         .section-title {
             font-size: 16px;
             font-weight: 700;
-            color: var(--text-primary);
+            color: #1f2937;
             margin-bottom: 16px;
             display: flex;
             align-items: center;
@@ -436,7 +420,7 @@
             display: block;
             font-size: 13px;
             font-weight: 600;
-            color: var(--text-secondary);
+            color: #6b7280;
             margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -445,17 +429,17 @@
         .form-input, .form-select, .form-textarea {
             width: 100%;
             padding: 12px 16px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-primary);
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
             border-radius: 8px;
-            color: var(--text-primary);
+            color: #1f2937;
             font-size: 14px;
             transition: all 0.2s ease;
         }
 
         .form-input:focus, .form-select:focus, .form-textarea:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
@@ -464,80 +448,13 @@
             min-height: 100px;
         }
 
-        .voice-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 12px;
+        /* Tab Content */
+        .tab-content {
+            display: none;
         }
 
-        .voice-option {
-            background: var(--bg-secondary);
-            border: 2px solid var(--border-primary);
-            border-radius: 12px;
-            padding: 16px 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .voice-option:hover {
-            border-color: var(--border-hover);
-        }
-
-        .voice-option.selected {
-            border-color: var(--accent);
-            background: rgba(59, 130, 246, 0.1);
-        }
-
-        .voice-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 4px;
-        }
-
-        .voice-desc {
-            font-size: 11px;
-            color: var(--text-muted);
-        }
-
-        .phone-display {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-primary);
-            border-radius: 8px;
-            padding: 16px;
-            text-align: center;
-            margin-bottom: 16px;
-        }
-
-        .phone-number {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-            font-family: 'Monaco', monospace;
-        }
-
-        .phone-status {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-size: 12px;
-            color: var(--success);
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--success);
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .tab-content.active {
+            display: block;
         }
 
         /* Responsive */
@@ -578,10 +495,6 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
-
-            .voice-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
         }
     </style>
 </head>
@@ -597,34 +510,26 @@
             <ul>
                 <li class="nav-item">
                     <a href="#" class="nav-link active" data-tab="dashboard">
-                        <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-                        </svg>
+                        <span>📊</span>
                         Dashboard
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="#" class="nav-link" data-tab="calls">
-                        <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
-                        </svg>
+                        <span>📞</span>
                         Voice Calls
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link" data-tab="analytics">
-                        <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
-                        </svg>
-                        Analytics
+                    <a href="#" class="nav-link" data-tab="settings">
+                        <span>⚙️</span>
+                        Settings
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link" data-tab="settings">
-                        <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"/>
-                        </svg>
-                        Settings
+                    <a href="#" class="nav-link" onclick="logout()">
+                        <span>🚪</span>
+                        Logout
                     </a>
                 </li>
             </ul>
@@ -651,18 +556,11 @@
                     <p>Monitor your AI voice assistant performance</p>
                 </div>
                 <div class="header-actions">
-                    <a href="#" class="btn btn-secondary">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-                        </svg>
-                        Test Call
+                    <a href="tel:+16095073300" class="btn btn-secondary">
+                        📞 Test Call
                     </a>
                     <a href="#" class="btn btn-primary">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-                        </svg>
-                        New Assistant
+                        ✨ New Assistant
                     </a>
                 </div>
             </div>
@@ -673,28 +571,28 @@
                     <div class="stat-title">Total Calls</div>
                     <div class="stat-value" id="totalCalls">0</div>
                     <div class="stat-change positive">
-                        <span>↗</span> +12% from last week
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-title">Active Now</div>
-                    <div class="stat-value" id="activeCalls">0</div>
-                    <div class="stat-change">
-                        Real-time monitoring
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-title">Avg Duration</div>
-                    <div class="stat-value" id="avgDuration">0s</div>
-                    <div class="stat-change positive">
-                        <span>↗</span> Improved efficiency
+                        <span>↗</span> Ready to receive calls
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">Success Rate</div>
                     <div class="stat-value">98%</div>
                     <div class="stat-change positive">
-                        <span>↗</span> AI-powered insights
+                        <span>↗</span> AI-powered responses
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Response Time</div>
+                    <div class="stat-value">1.2s</div>
+                    <div class="stat-change positive">
+                        <span>↗</span> Lightning fast
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Plan Status</div>
+                    <div class="stat-value" id="planStatus">Free</div>
+                    <div class="stat-change">
+                        Active and ready
                     </div>
                 </div>
             </div>
@@ -704,10 +602,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">
-                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
-                            </svg>
-                            Recent Calls
+                            📞 Recent Calls
                         </h2>
                         <button class="btn btn-secondary" onclick="refreshCalls()">Refresh</button>
                     </div>
@@ -725,21 +620,18 @@
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">
-                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
-                            </svg>
-                            Phone Number
+                            📱 Phone Number
                         </h2>
                     </div>
                     <div class="card-body">
                         <div class="phone-display">
-                            <div class="phone-number" id="phoneNumber">+1 (555) 123-4567</div>
+                            <div class="phone-number">+1 (609) 507-3300</div>
                             <div class="phone-status">
                                 <div class="status-dot"></div>
                                 Active & Ready
                             </div>
                         </div>
-                        <p style="color: var(--text-muted); font-size: 13px; text-align: center; line-height: 1.4;">
+                        <p style="color: #6b7280; font-size: 13px; text-align: center; line-height: 1.4;">
                             This is your AI voice assistant's phone number. Share it with customers or integrate with your existing systems.
                         </p>
                     </div>
@@ -756,10 +648,7 @@
                 </div>
                 <div class="header-actions">
                     <button class="btn btn-primary" onclick="saveSettings()">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M15.854.146a.5.5 0 0 1 0 .708L14.5 2.207l-1.354-1.353L14.5.5a.5.5 0 0 1 .708 0l.646.646zM13.793 1.5l1.353 1.354-1.353 1.353L12.44 2.854 13.793 1.5zm-2.207 2.207L12.44 2.854 2.854 12.44l-.854.853-.853-.854L12.44 1.146l-.854.854z"/>
-                        </svg>
-                        Save Changes
+                        💾 Save Changes
                     </button>
                 </div>
             </div>
@@ -767,50 +656,7 @@
             <div class="settings-panel">
                 <div class="settings-section">
                     <h3 class="section-title">
-                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        Voice & Personality
-                    </h3>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Assistant Voice</label>
-                        <div class="voice-grid">
-                            <div class="voice-option selected" data-voice="echo">
-                                <div class="voice-name">Echo</div>
-                                <div class="voice-desc">Deep, resonant</div>
-                            </div>
-                            <div class="voice-option" data-voice="nova">
-                                <div class="voice-name">Nova</div>
-                                <div class="voice-desc">Bright, upbeat</div>
-                            </div>
-                            <div class="voice-option" data-voice="alloy">
-                                <div class="voice-name">Alloy</div>
-                                <div class="voice-desc">Balanced, neutral</div>
-                            </div>
-                            <div class="voice-option" data-voice="onyx">
-                                <div class="voice-name">Onyx</div>
-                                <div class="voice-desc">Authoritative</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Speaking Speed</label>
-                        <select class="form-select" id="speakingSpeed">
-                            <option value="0.8">Slow</option>
-                            <option value="1.0" selected>Normal</option>
-                            <option value="1.2">Fast</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="settings-section">
-                    <h3 class="section-title">
-                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
-                        </svg>
-                        Business Information
+                        🎤 AI Assistant Configuration
                     </h3>
                     
                     <div class="form-group">
@@ -829,15 +675,6 @@
                             <option value="other">Other</option>
                         </select>
                     </div>
-                </div>
-
-                <div class="settings-section">
-                    <h3 class="section-title">
-                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z"/>
-                        </svg>
-                        Assistant Instructions
-                    </h3>
                     
                     <div class="form-group">
                         <label class="form-label">Custom Instructions</label>
@@ -854,8 +691,45 @@
     </main>
 
     <script>
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            initDashboard();
+            loadSettings();
+        });
+
+        // Authentication check
+        function checkAuth() {
+            const token = localStorage.getItem('authToken');
+            const user = localStorage.getItem('user');
+            
+            if (!token || !user) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            try {
+                const userData = JSON.parse(user);
+                loadUserData(userData);
+            } catch (e) {
+                console.error('Invalid user data');
+                window.location.href = '/login';
+            }
+        }
+
+        // Load user data into UI
+        function loadUserData(userData) {
+            document.getElementById('userName').textContent = `${userData.firstName} ${userData.lastName}`;
+            document.getElementById('userPlan').textContent = `${userData.plan.charAt(0).toUpperCase() + userData.plan.slice(1)} Plan`;
+            document.getElementById('planStatus').textContent = userData.plan.charAt(0).toUpperCase() + userData.plan.slice(1);
+            
+            // Generate initials for avatar
+            const initials = `${userData.firstName[0]}${userData.lastName[0]}`.toUpperCase();
+            document.getElementById('userAvatar').textContent = initials;
+        }
+
         // Tab switching
-        document.querySelectorAll('.nav-link').forEach(link => {
+        document.querySelectorAll('.nav-link[data-tab]').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 
@@ -868,81 +742,41 @@
                 
                 // Show corresponding tab
                 const tabId = link.getAttribute('data-tab') + '-tab';
-                document.getElementById(tabId).classList.add('active');
+                const tab = document.getElementById(tabId);
+                if (tab) {
+                    tab.classList.add('active');
+                }
             });
         });
 
-        // Voice selection
-        document.querySelectorAll('.voice-option').forEach(option => {
-            option.addEventListener('click', () => {
-                document.querySelectorAll('.voice-option').forEach(o => o.classList.remove('selected'));
-                option.classList.add('selected');
-            });
-        });
-
-        // Load user data from localStorage
-        function loadUserData() {
-            const userData = JSON.parse(localStorage.getItem('user') || '{}');
-            
-            if (userData.name) {
-                document.getElementById('userName').textContent = userData.name;
-                
-                // Generate initials for avatar
-                const initials = userData.name.split(' ').map(n => n[0]).join('').toUpperCase();
-                document.getElementById('userAvatar').textContent = initials;
-            }
-            
-            if (userData.plan) {
-                const planName = userData.plan.charAt(0).toUpperCase() + userData.plan.slice(1);
-                document.getElementById('userPlan').textContent = `${planName} Plan`;
-            }
-            
-            if (userData.company) {
-                document.getElementById('businessName').value = userData.company;
-            }
-            
-            if (userData.industry) {
-                document.getElementById('industry').value = userData.industry;
-            }
+        // Initialize dashboard
+        function initDashboard() {
+            refreshCalls();
         }
 
-        // Mock data functions
-        function refreshCalls() {
-            // Simulate loading
+        // Refresh calls list
+        async function refreshCalls() {
             const callsList = document.getElementById('callsList');
-            callsList.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading...</div>';
+            const token = localStorage.getItem('authToken');
             
-            setTimeout(() => {
-                // Mock call data
-                const calls = [
-                    {
-                        id: 'call_001',
-                        duration: '2m 34s',
-                        time: '5 minutes ago',
-                        status: 'completed',
-                        preview: 'Customer inquiry about pricing and features'
-                    },
-                    {
-                        id: 'call_002', 
-                        duration: '1m 15s',
-                        time: '12 minutes ago',
-                        status: 'completed',
-                        preview: 'Support request for technical integration'
+            if (!token) return;
+            
+            try {
+                callsList.innerHTML = '<div style="text-align: center; padding: 2rem; color: #6b7280;">Loading...</div>';
+                
+                const response = await fetch('/api/calls', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
                     }
-                ];
-
-                if (calls.length > 0) {
-                    callsList.innerHTML = calls.map(call => `
-                        <div class="call-item">
-                            <div class="call-header">
-                                <div class="call-id">Call ${call.id.substring(5)}</div>
-                                <div class="call-status status-${call.status}">${call.status}</div>
-                            </div>
-                            <div class="call-meta">${call.time} • ${call.duration}</div>
-                            <div class="call-preview">${call.preview}</div>
-                        </div>
-                    `).join('');
-                } else {
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch calls');
+                }
+                
+                const calls = await response.json();
+                
+                if (calls.length === 0) {
                     callsList.innerHTML = `
                         <div class="empty-state">
                             <div class="empty-state-icon">📞</div>
@@ -950,66 +784,104 @@
                             <p>Your AI assistant is ready and waiting for customer calls</p>
                         </div>
                     `;
+                } else {
+                    callsList.innerHTML = calls.map(call => `
+                        <div class="call-item">
+                            <div class="call-header">
+                                <div class="call-id">Call ${call.id.substring(0, 8)}</div>
+                                <div class="call-status status-${call.status}">${call.status}</div>
+                            </div>
+                            <div class="call-meta">${call.time} • ${call.duration}</div>
+                            <div class="call-preview">${call.preview}</div>
+                        </div>
+                    `).join('');
+                    
+                    // Update total calls stat
+                    document.getElementById('totalCalls').textContent = calls.length;
                 }
-            }, 1000);
+            } catch (error) {
+                console.error('Error fetching calls:', error);
+                callsList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">❌</div>
+                        <h3>Error loading calls</h3>
+                        <p>Please try refreshing the page</p>
+                    </div>
+                `;
+            }
         }
 
-        function saveSettings() {
-            // Collect form data
+        // Load settings
+        async function loadSettings() {
+            const token = localStorage.getItem('authToken');
+            if (!token) return;
+            
+            try {
+                const response = await fetch('/api/user/settings', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const settings = await response.json();
+                    
+                    if (settings.businessName) document.getElementById('businessName').value = settings.businessName;
+                    if (settings.industry) document.getElementById('industry').value = settings.industry;
+                    if (settings.instructions) document.getElementById('customInstructions').value = settings.instructions;
+                    if (settings.greeting) document.getElementById('greetingMessage').value = settings.greeting;
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        }
+
+        // Save settings
+        async function saveSettings() {
+            const token = localStorage.getItem('authToken');
+            if (!token) return;
+            
             const settings = {
-                voice: document.querySelector('.voice-option.selected')?.dataset.voice || 'echo',
-                speed: document.getElementById('speakingSpeed').value,
                 businessName: document.getElementById('businessName').value,
                 industry: document.getElementById('industry').value,
                 instructions: document.getElementById('customInstructions').value,
                 greeting: document.getElementById('greetingMessage').value
             };
             
-            // Save to localStorage
-            localStorage.setItem('voxcord-settings', JSON.stringify(settings));
-            
-            // Show success message
-            alert('Settings saved successfully!');
-        }
-
-        // Initialize dashboard
-        function initDashboard() {
-            loadUserData();
-            refreshCalls();
-            
-            // Animate stats
-            setTimeout(() => {
-                document.getElementById('totalCalls').textContent = '247';
-                document.getElementById('activeCalls').textContent = '3';
-                document.getElementById('avgDuration').textContent = '2m 15s';
-            }, 500);
-        }
-
-        // Load settings
-        function loadSettings() {
-            const settings = JSON.parse(localStorage.getItem('voxcord-settings') || '{}');
-            
-            if (settings.voice) {
-                document.querySelectorAll('.voice-option').forEach(option => {
-                    option.classList.remove('selected');
-                    if (option.dataset.voice === settings.voice) {
-                        option.classList.add('selected');
-                    }
+            try {
+                const response = await fetch('/api/user/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(settings)
                 });
+                
+                if (response.ok) {
+                    alert('Settings saved successfully!');
+                } else {
+                    throw new Error('Failed to save settings');
+                }
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                alert('Failed to save settings. Please try again.');
             }
-            
-            if (settings.speed) document.getElementById('speakingSpeed').value = settings.speed;
-            if (settings.businessName) document.getElementById('businessName').value = settings.businessName;
-            if (settings.industry) document.getElementById('industry').value = settings.industry;
-            if (settings.instructions) document.getElementById('customInstructions').value = settings.instructions;
-            if (settings.greeting) document.getElementById('greetingMessage').value = settings.greeting;
         }
 
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            initDashboard();
-            loadSettings();
-        });
+        // Logout function
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        }
+
+        // Auto-refresh calls every 30 seconds
+        setInterval(() => {
+            if (document.getElementById('dashboard-tab').classList.contains('active')) {
+                refreshCalls();
+            }
+        }, 30000);
     </script>
 </body>
 </html>

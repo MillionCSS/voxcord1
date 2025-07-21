@@ -669,6 +669,58 @@
             font-size: 14px;
         }
 
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            z-index: 2000;
+            padding: 80px 32px 32px;
+        }
+
+        .mobile-menu.active {
+            display: block;
+        }
+
+        .mobile-nav {
+            list-style: none;
+        }
+
+        .mobile-nav li {
+            margin-bottom: 24px;
+        }
+
+        .mobile-nav a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .mobile-close {
+            position: absolute;
+            top: 32px;
+            right: 32px;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 32px;
+            cursor: pointer;
+        }
+
         /* Responsive */
         @media (max-width: 1024px) {
             .nav-container {
@@ -684,6 +736,10 @@
 
             .nav-menu {
                 display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
             }
 
             .dashboard-content {
@@ -727,6 +783,24 @@
                 font-size: 36px;
             }
         }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 32px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-container,
+            .stats-container,
+            .features-container,
+            .cta-container,
+            .footer-container {
+                padding: 0 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -749,8 +823,23 @@
                 <a href="/login" class="btn btn-ghost">Sign In</a>
                 <a href="/signup" class="btn btn-primary">Start Free</a>
             </div>
+
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
         </div>
     </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <button class="mobile-close" onclick="toggleMobileMenu()">×</button>
+        <ul class="mobile-nav">
+            <li><a href="#features" onclick="toggleMobileMenu()">Features</a></li>
+            <li><a href="#pricing" onclick="toggleMobileMenu()">Pricing</a></li>
+            <li><a href="#about" onclick="toggleMobileMenu()">About</a></li>
+            <li><a href="#contact" onclick="toggleMobileMenu()">Contact</a></li>
+            <li><a href="/login" onclick="toggleMobileMenu()">Sign In</a></li>
+            <li><a href="/signup" onclick="toggleMobileMenu()">Start Free</a></li>
+        </ul>
+    </div>
 
     <!-- Hero Section -->
     <section class="hero">
@@ -769,17 +858,12 @@
             <div class="hero-cta">
                 <a href="/signup" class="btn btn-primary btn-hero">
                     Get Started Free
-                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8zm15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
-                    </svg>
+                    <span>→</span>
                 </a>
                 
-                <a href="#demo" class="hero-demo">
-                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                        <path d="M6.271 5.055a.5.5 0 0 1 .52.26L8 7.207l1.209-1.892a.5.5 0 0 1 .52-.26c.19 0 .363.107.445.276L11.357 8 10.174 10.609a.5.5 0 0 1-.445.276.5.5 0 0 1-.52-.26L8 8.793 6.791 10.625a.5.5 0 0 1-.52.26.5.5 0 0 1-.445-.276L4.643 8l1.183-2.609a.5.5 0 0 1 .445-.276z"/>
-                    </svg>
-                    Watch Demo
+                <a href="tel:+16095073300" class="hero-demo">
+                    <span>📞</span>
+                    Try Demo Call
                 </a>
             </div>
             
@@ -905,16 +989,11 @@
             <div class="cta-buttons">
                 <a href="/signup" class="btn btn-primary btn-hero">
                     Start Free Trial
-                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8zm15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
-                    </svg>
+                    <span>→</span>
                 </a>
                 
                 <a href="tel:+16095073300" class="btn btn-ghost btn-hero">
-                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"/>
-                    </svg>
-                    Call (609) 507-3300
+                    📞 Call (609) 507-3300
                 </a>
             </div>
         </div>
@@ -938,29 +1017,29 @@
                     <h4>Product</h4>
                     <ul class="footer-links">
                         <li><a href="#features">Features</a></li>
-                        <li><a href="/pricing">Pricing</a></li>
-                        <li><a href="/integrations">Integrations</a></li>
-                        <li><a href="/api">API Docs</a></li>
+                        <li><a href="/signup">Pricing</a></li>
+                        <li><a href="#integrations">Integrations</a></li>
+                        <li><a href="#api">API Docs</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-section">
                     <h4>Company</h4>
                     <ul class="footer-links">
-                        <li><a href="/about">About</a></li>
-                        <li><a href="/blog">Blog</a></li>
-                        <li><a href="/careers">Careers</a></li>
-                        <li><a href="/contact">Contact</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#blog">Blog</a></li>
+                        <li><a href="#careers">Careers</a></li>
+                        <li><a href="#contact">Contact</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-section">
                     <h4>Support</h4>
                     <ul class="footer-links">
-                        <li><a href="/help">Help Center</a></li>
-                        <li><a href="/status">Status</a></li>
-                        <li><a href="/privacy">Privacy</a></li>
-                        <li><a href="/terms">Terms</a></li>
+                        <li><a href="#help">Help Center</a></li>
+                        <li><a href="#status">Status</a></li>
+                        <li><a href="#privacy">Privacy</a></li>
+                        <li><a href="#terms">Terms</a></li>
                     </ul>
                 </div>
             </div>
@@ -972,6 +1051,12 @@
     </footer>
 
     <script>
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('active');
+        }
+
         // Smooth scrolling for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
@@ -987,6 +1072,7 @@
         });
 
         // Navbar background on scroll
+        let lastScrollY = window.scrollY;
         window.addEventListener('scroll', () => {
             const navbar = document.querySelector('.navbar');
             if (window.scrollY > 100) {
@@ -1064,9 +1150,41 @@
         });
 
         // CTA phone number click tracking
-        document.querySelector('a[href^="tel:"]').addEventListener('click', () => {
-            // Track phone click for analytics
-            console.log('Phone number clicked:', '+1 (609) 507-3300');
+        document.querySelectorAll('a[href^="tel:"]').forEach(phoneLink => {
+            phoneLink.addEventListener('click', () => {
+                // Track phone click for analytics if needed
+                console.log('Phone number clicked:', phoneLink.getAttribute('href'));
+            });
+        });
+
+        // Prevent mobile menu from staying open on resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 1024) {
+                document.getElementById('mobileMenu').classList.remove('active');
+            }
+        });
+
+        // Close mobile menu when clicking outside
+        document.getElementById('mobileMenu').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                toggleMobileMenu();
+            }
+        });
+
+        // Performance optimization: Reduce motion for users who prefer it
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.documentElement.style.setProperty('--transition-duration', '0s');
+        }
+
+        // Error handling for missing elements
+        window.addEventListener('error', (e) => {
+            console.warn('Non-critical error:', e.error?.message || e.message);
+        });
+
+        // Ensure all external links work correctly
+        document.querySelectorAll('a[href^="http"], a[href^="//"]').forEach(link => {
+            link.setAttribute('target', '_blank');
+            link.setAttribute('rel', 'noopener noreferrer');
         });
     </script>
 </body>
