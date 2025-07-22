@@ -15,6 +15,7 @@ import re
 import uuid
 import smtplib
 import logging
+import httpx
 from datetime import datetime, timedelta
 from contextlib import contextmanager
 from functools import wraps
