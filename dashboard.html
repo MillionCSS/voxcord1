@@ -7,11 +7,41 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-    
-    <link rel="stylesheet" href="/static/styles.css">
     <style>
+        :root {
+            /* Anthropic-inspired color scheme */
+            --bg-primary: #fafafa;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f5f5f5;
+            --bg-accent: #f0f4f8;
+            --border-primary: #e2e8f0;
+            --border-secondary: #cbd5e1;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --accent: #2563eb;
+            --accent-light: #3b82f6;
+            --accent-lighter: #dbeafe;
+            --success: #059669;
+            --success-light: #d1fae5;
+            --warning: #d97706;
+            --warning-light: #fef3c7;
+            --error: #dc2626;
+            --error-light: #fee2e2;
+            --purple: #7c3aed;
+            --purple-light: #f3e8ff;
+            
+            /* Shadows - Anthropic style */
+            --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            
+            /* Typography */
+            --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -20,366 +50,494 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #f8fafc;
-            color: #1f2937;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
         }
 
         /* Sidebar */
         .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
             width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-primary);
+            position: fixed;
             height: 100vh;
-            background: white;
-            border-right: 1px solid #e5e7eb;
-            padding: 32px 24px;
-            z-index: 1000;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            overflow-y: auto;
+            z-index: 40;
         }
 
         .sidebar-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 48px;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-primary);
         }
 
-        .sidebar-logo {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            border-radius: 10px;
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .logo-icon {
+            width: 2rem;
+            height: 2rem;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
+            border-radius: 0.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
-        }
-
-        .sidebar-title {
-            font-size: 20px;
-            font-weight: 800;
-            color: #1f2937;
+            font-size: 1rem;
+            color: white;
         }
 
         .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-section-title {
+            padding: 0 1.5rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .nav-items {
             list-style: none;
         }
 
         .nav-item {
-            margin-bottom: 8px;
+            margin-bottom: 0.25rem;
         }
 
         .nav-link {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            border-radius: 8px;
-            color: #6b7280;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-secondary);
             text-decoration: none;
             font-weight: 500;
-            transition: all 0.2s ease;
-            border: 1px solid transparent;
+            transition: all 0.15s ease;
+            border-radius: 0;
+            position: relative;
         }
 
         .nav-link:hover {
-            background: #f3f4f6;
-            color: #1f2937;
-            border-color: #e5e7eb;
+            background: var(--bg-accent);
+            color: var(--text-primary);
         }
 
         .nav-link.active {
-            background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
-            border-color: #3b82f6;
+            background: var(--accent-lighter);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--accent);
+        }
+
+        .nav-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .badge {
+            background: var(--accent);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.75rem;
+            margin-left: auto;
+        }
+
+        .sidebar-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-primary);
+            background: var(--bg-secondary);
         }
 
         .user-profile {
-            position: absolute;
-            bottom: 24px;
-            left: 24px;
-            right: 24px;
-            padding: 16px;
-            background: #f8fafc;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-        }
-
-        .user-info {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            transition: background 0.15s ease;
+            cursor: pointer;
+        }
+
+        .user-profile:hover {
+            background: var(--bg-accent);
         }
 
         .user-avatar {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+            width: 2.5rem;
+            height: 2.5rem;
             border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
-            font-size: 14px;
             color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .user-info h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .user-info p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
         }
 
         /* Main Content */
         .main-content {
+            flex: 1;
             margin-left: 280px;
-            padding: 32px;
             min-height: 100vh;
         }
 
-        .header {
+        .content-header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-primary);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 30;
+        }
+
+        .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 32px;
+            margin-bottom: 1rem;
         }
 
-        .header-left h1 {
-            font-size: 28px;
-            font-weight: 800;
-            margin-bottom: 4px;
-            color: #1f2937;
-        }
-
-        .header-left p {
-            color: #6b7280;
-            font-size: 14px;
+        .header-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
         }
 
         .header-actions {
             display: flex;
-            gap: 12px;
+            gap: 0.75rem;
         }
 
         .btn {
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            border: 1px solid transparent;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            background: var(--accent);
             color: white;
+            box-shadow: var(--shadow-sm);
         }
 
         .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+            background: var(--accent-light);
+            box-shadow: var(--shadow-md);
         }
 
         .btn-secondary {
-            background: white;
-            color: #3b82f6;
-            border-color: #3b82f6;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-secondary);
         }
 
         .btn-secondary:hover {
-            background: #3b82f6;
-            color: white;
+            background: var(--bg-accent);
+            color: var(--text-primary);
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .breadcrumb-item {
+            color: var(--text-muted);
+            text-decoration: none;
+        }
+
+        .breadcrumb-item.active {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .breadcrumb-separator {
+            color: var(--text-muted);
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 2rem;
         }
 
         /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-            margin-bottom: 32px;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .stat-card {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
-            padding: 24px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-xs);
+            transition: all 0.15s ease;
         }
 
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%);
+        .stat-card:hover {
+            box-shadow: var(--shadow-sm);
+            border-color: var(--border-secondary);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
         }
 
         .stat-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .stat-icon {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.375rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .stat-icon.blue {
+            background: var(--accent-lighter);
+            color: var(--accent);
+        }
+
+        .stat-icon.green {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .stat-icon.purple {
+            background: var(--purple-light);
+            color: var(--purple);
+        }
+
+        .stat-icon.orange {
+            background: var(--warning-light);
+            color: var(--warning);
         }
 
         .stat-value {
-            font-size: 32px;
-            font-weight: 800;
-            color: #1f2937;
-            margin-bottom: 8px;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
         }
 
         .stat-change {
-            font-size: 12px;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 0.25rem;
+            font-size: 0.875rem;
         }
 
         .stat-change.positive {
-            color: #10b981;
+            color: var(--success);
+        }
+
+        .stat-change.neutral {
+            color: var(--text-muted);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow-xs);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.5rem 1.5rem 0;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-body {
+            padding: 1.5rem;
         }
 
         /* Content Grid */
         .content-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
-            gap: 24px;
-            margin-bottom: 32px;
+            gap: 2rem;
+            margin-bottom: 2rem;
         }
 
-        .card {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-header {
-            padding: 24px 24px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .card-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1f2937;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .card-body {
-            padding: 24px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 48px 24px;
-            color: #6b7280;
-        }
-
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.5;
+        /* Call List */
+        .call-list {
+            space-y: 1rem;
         }
 
         .call-item {
-            background: #f8fafc;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 16px;
-            transition: all 0.2s ease;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.15s ease;
             cursor: pointer;
         }
 
         .call-item:hover {
-            background: #f1f5f9;
-            border-color: #d1d5db;
-            transform: translateX(2px);
+            background: var(--bg-secondary);
+            box-shadow: var(--shadow-sm);
+            border-color: var(--border-secondary);
         }
 
         .call-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 0.5rem;
         }
 
         .call-id {
-            font-size: 14px;
             font-weight: 600;
-            color: #1f2937;
+            color: var(--text-primary);
+            font-size: 0.875rem;
         }
 
         .call-status {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.025em;
         }
 
         .status-completed {
-            background: rgba(107, 114, 128, 0.2);
-            color: #6b7280;
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .status-active {
+            background: var(--accent-lighter);
+            color: var(--accent);
         }
 
         .call-meta {
-            color: #6b7280;
-            font-size: 12px;
-            margin-bottom: 8px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
         }
 
         .call-preview {
-            color: #6b7280;
-            font-size: 13px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
             line-height: 1.4;
         }
 
+        /* Phone Number Display */
         .phone-display {
-            background: #f8fafc;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
             text-align: center;
-            margin-bottom: 16px;
+            margin-bottom: 1rem;
         }
 
         .phone-number {
-            font-size: 24px;
+            font-family: var(--font-mono);
+            font-size: 1.5rem;
             font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 8px;
-            font-family: 'Monaco', monospace;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
         }
 
         .phone-status {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            font-size: 12px;
-            color: #10b981;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--success);
+            font-weight: 500;
         }
 
         .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #10b981;
+            width: 0.5rem;
+            height: 0.5rem;
+            background: var(--success);
             border-radius: 50%;
             animation: pulse 2s infinite;
         }
@@ -389,61 +547,84 @@
             50% { opacity: 0.5; }
         }
 
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-description {
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
         /* Settings Panel */
-        .settings-panel {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
-            padding: 24px;
+        .settings-form {
+            space-y: 1.5rem;
         }
 
-        .settings-section {
-            margin-bottom: 32px;
+        .form-section {
+            margin-bottom: 2rem;
         }
 
-        .settings-section:last-child {
+        .form-section:last-child {
             margin-bottom: 0;
         }
 
         .section-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-primary);
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
         }
 
         .form-label {
             display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: #6b7280;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
         }
 
-        .form-input, .form-select, .form-textarea {
+        .form-input,
+        .form-select,
+        .form-textarea {
             width: 100%;
-            padding: 12px 16px;
-            background: #f8fafc;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            color: #1f2937;
-            font-size: 14px;
-            transition: all 0.2s ease;
+            padding: 0.75rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 0.375rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: all 0.15s ease;
         }
 
-        .form-input:focus, .form-select:focus, .form-textarea:focus {
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
             outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-lighter);
         }
 
         .form-textarea {
@@ -451,13 +632,112 @@
             min-height: 100px;
         }
 
-        /* Tab Content */
-        .tab-content {
-            display: none;
+        .form-help {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
         }
 
-        .tab-content.active {
-            display: block;
+        /* Alerts */
+        .alert {
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            border: 1px solid;
+        }
+
+        .alert-success {
+            background: var(--success-light);
+            color: var(--success);
+            border-color: var(--success);
+        }
+
+        .alert-error {
+            background: var(--error-light);
+            color: var(--error);
+            border-color: var(--error);
+        }
+
+        .alert-warning {
+            background: var(--warning-light);
+            color: var(--warning);
+            border-color: var(--warning);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow-xl);
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.25rem;
+            transition: all 0.15s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-accent);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-primary);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
         }
 
         /* Responsive */
@@ -485,406 +765,899 @@
         }
 
         @media (max-width: 768px) {
-            .main-content {
-                padding: 20px;
+            .content-area {
+                padding: 1rem;
             }
 
-            .header {
+            .content-header {
+                padding: 1rem;
+            }
+
+            .header-top {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 16px;
+                gap: 1rem;
             }
 
             .stats-grid {
                 grid-template-columns: 1fr;
             }
+
+            .header-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
         }
+
+        /* Loading States */
+        .loading {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid var(--border-primary);
+            border-radius: 50%;
+            border-top-color: var(--accent);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Utilities */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .text-sm { font-size: 0.875rem; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .text-muted { color: var(--text-muted); }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-logo">📡</div>
-            <div class="sidebar-title">Voxcord</div>
-        </div>
-
-        <nav class="sidebar-nav">
-            <ul>
-                <li class="nav-item">
-                    <a href="#" class="nav-link active" data-tab="dashboard">
-                        <span>📊</span>
-                        Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" data-tab="calls">
-                        <span>📞</span>
-                        Voice Calls
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" data-tab="settings">
-                        <span>⚙️</span>
-                        Settings
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" onclick="logout()">
-                        <span>🚪</span>
-                        Logout
-                    </a>
-                </li>
-            </ul>
-        </nav>
-
-        <div class="user-profile">
-            <div class="user-info">
-                <div class="user-avatar" id="userAvatar">JD</div>
-                <div class="user-details">
-                    <h4 id="userName">John Doe</h4>
-                    <p id="userPlan">Free Plan</p>
-                </div>
-            </div>
-        </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Dashboard Tab -->
-        <div class="tab-content active" id="dashboard-tab">
-            <div class="header">
-                <div class="header-left">
-                    <h1>Dashboard</h1>
-                    <p>Monitor your AI voice assistant performance</p>
-                </div>
-                <div class="header-actions">
-                    <a href="tel:+16095073300" class="btn btn-secondary">
-                        📞 Test Call
-                    </a>
-                    <a href="#" class="btn btn-primary">
-                        ✨ New Assistant
-                    </a>
+    <!-- App Container -->
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">📡</div>
+                    <span>Voxcord</span>
                 </div>
             </div>
 
-            <!-- Stats Grid -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-title">Total Calls</div>
-                    <div class="stat-value" id="totalCalls">0</div>
-                    <div class="stat-change positive">
-                        <span>↗</span> Ready to receive calls
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <ul class="nav-items">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active" data-tab="overview">
+                                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z"/>
+                                </svg>
+                                Overview
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-tab="calls">
+                                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                </svg>
+                                Voice Calls
+                                <span class="badge" id="activeCalls">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-tab="analytics">
+                                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                </svg>
+                                Analytics
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Configure</div>
+                    <ul class="nav-items">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-tab="assistant">
+                                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                </svg>
+                                AI Assistant
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-tab="settings">
+                                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Account</div>
+                    <ul class="nav-items">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-tab="billing">
+                                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                </svg>
+                                Billing
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="logout()">
+                                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                </svg>
+                                Sign out
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile" onclick="toggleUserMenu()">
+                    <div class="user-avatar" id="userAvatar">JD</div>
+                    <div class="user-info">
+                        <h4 id="userName">John Doe</h4>
+                        <p id="userPlan">Free Plan</p>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-title">Success Rate</div>
-                    <div class="stat-value">98%</div>
-                    <div class="stat-change positive">
-                        <span>↗</span> AI-powered responses
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="header-top">
+                    <div>
+                        <h1 class="header-title" id="pageTitle">Overview</h1>
+                        <nav class="breadcrumb">
+                            <a href="#" class="breadcrumb-item">Dashboard</a>
+                            <span class="breadcrumb-separator">/</span>
+                            <span class="breadcrumb-item active" id="breadcrumbCurrent">Overview</span>
+                        </nav>
                     </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-title">Response Time</div>
-                    <div class="stat-value">1.2s</div>
-                    <div class="stat-change positive">
-                        <span>↗</span> Lightning fast
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-title">Plan Status</div>
-                    <div class="stat-value" id="planStatus">Free</div>
-                    <div class="stat-change">
-                        Active and ready
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="testCall()">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                            </svg>
+                            Test Call
+                        </button>
+                        <button class="btn btn-primary" onclick="showNewAssistantModal()">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            New Assistant
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Content Grid -->
-            <div class="content-grid">
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">
-                            📞 Recent Calls
-                        </h2>
-                        <button class="btn btn-secondary" onclick="refreshCalls()">Refresh</button>
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Overview Tab -->
+                <div class="tab-content active" id="overview-tab">
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-title">Total Calls</div>
+                                <div class="stat-icon blue">📞</div>
+                            </div>
+                            <div class="stat-value" id="totalCalls">0</div>
+                            <div class="stat-change neutral">
+                                <span>Ready to receive calls</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-title">Success Rate</div>
+                                <div class="stat-icon green">✅</div>
+                            </div>
+                            <div class="stat-value">98.5%</div>
+                            <div class="stat-change positive">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                                AI-powered accuracy
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-title">Avg Response Time</div>
+                                <div class="stat-icon purple">⚡</div>
+                            </div>
+                            <div class="stat-value">1.2s</div>
+                            <div class="stat-change positive">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                                Lightning fast
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-title">Plan Status</div>
+                                <div class="stat-icon orange">💎</div>
+                            </div>
+                            <div class="stat-value" id="planStatus">Free</div>
+                            <div class="stat-change neutral">
+                                <span>Active subscription</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <div id="callsList">
-                            <div class="empty-state">
-                                <div class="empty-state-icon">📞</div>
-                                <h3>No calls yet</h3>
-                                <p>Your AI assistant is ready and waiting for customer calls</p>
+
+                    <!-- Content Grid -->
+                    <div class="content-grid">
+                        <!-- Recent Calls -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Recent Calls</h2>
+                                <button class="btn btn-secondary" onclick="refreshCalls()">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                    Refresh
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="call-list" id="callsList">
+                                    <div class="empty-state">
+                                        <div class="empty-icon">📞</div>
+                                        <div class="empty-title">No calls yet</div>
+                                        <div class="empty-description">Your AI assistant is ready and waiting for customer calls</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Phone Number & Status -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Your Phone Number</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="phone-display">
+                                    <div class="phone-number">+1 (609) 507-3300</div>
+                                    <div class="phone-status">
+                                        <div class="status-dot"></div>
+                                        <span>Active & Ready</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-muted">
+                                    This is your AI voice assistant's phone number. Share it with customers or integrate with your existing systems.
+                                </p>
+                                
+                                <div class="form-group" style="margin-top: 1rem;">
+                                    <button class="btn btn-primary" style="width: 100%;" onclick="copyPhoneNumber()">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                                        </svg>
+                                        Copy Number
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">
-                            📱 Phone Number
-                        </h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="phone-display">
-                            <div class="phone-number">+1 (609) 507-3300</div>
-                            <div class="phone-status">
-                                <div class="status-dot"></div>
-                                Active & Ready
+                <!-- Calls Tab -->
+                <div class="tab-content" id="calls-tab">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Call History</h2>
+                            <div class="flex gap-2">
+                                <button class="btn btn-secondary" onclick="exportCalls()">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    Export
+                                </button>
+                                <button class="btn btn-secondary" onclick="refreshCalls()">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                    Refresh
+                                </button>
                             </div>
                         </div>
-                        <p style="color: #6b7280; font-size: 13px; text-align: center; line-height: 1.4;">
-                            This is your AI voice assistant's phone number. Share it with customers or integrate with your existing systems.
-                        </p>
+                        <div class="card-body">
+                            <div class="call-list" id="allCallsList">
+                                <div class="empty-state">
+                                    <div class="empty-icon">📞</div>
+                                    <div class="empty-title">No call history</div>
+                                    <div class="empty-description">Start receiving calls to see your conversation history here</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Settings Tab -->
+                <div class="tab-content" id="settings-tab">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Account Settings</h2>
+                            <button class="btn btn-primary" onclick="saveSettings()">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Save Changes
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="settings-form">
+                                <div class="form-section">
+                                    <div class="section-title">Profile Information</div>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label">First Name</label>
+                                        <input type="text" class="form-input" id="firstName" placeholder="Enter your first name">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label">Last Name</label>
+                                        <input type="text" class="form-input" id="lastName" placeholder="Enter your last name">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label">Company</label>
+                                        <input type="text" class="form-input" id="company" placeholder="Enter your company name">
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <div class="section-title">AI Assistant Configuration</div>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label">Business Instructions</label>
+                                        <textarea class="form-textarea" id="businessInstructions" placeholder="Tell your AI how to handle customer calls...">You are a helpful customer service assistant. Be friendly, professional, and concise in your responses. Keep responses under 50 words when possible since this is a phone conversation. Ask clarifying questions when needed and try to resolve customer issues.</textarea>
+                                        <div class="form-help">Customize how your AI assistant responds to customers</div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label">Greeting Message</label>
+                                        <input type="text" class="form-input" id="greetingMessage" placeholder="Hello! Thank you for calling. How can I help you today?">
+                                        <div class="form-help">First message customers hear when they call</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Success/Error Alerts -->
+    <div id="alertContainer" style="position: fixed; top: 20px; right: 20px; z-index: 60;"></div>
+
+    <!-- Call Detail Modal -->
+    <div class="modal-overlay" id="callModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Call Details</h3>
+                <button class="modal-close" onclick="closeCallModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="callModalContent">
+                    <div class="loading"></div>
+                    <span>Loading call details...</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeCallModal()">Close</button>
             </div>
         </div>
-
-        <!-- Settings Tab -->
-        <div class="tab-content" id="settings-tab">
-            <div class="header">
-                <div class="header-left">
-                    <h1>Settings</h1>
-                    <p>Configure your AI voice assistant</p>
-                </div>
-                <div class="header-actions">
-                    <button class="btn btn-primary" onclick="saveSettings()">
-                        💾 Save Changes
-                    </button>
-                </div>
-            </div>
-
-            <div class="settings-panel">
-                <div class="settings-section">
-                    <h3 class="section-title">
-                        🎤 AI Assistant Configuration
-                    </h3>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Business Name</label>
-                        <input type="text" class="form-input" id="businessName" placeholder="Enter your business name">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Industry</label>
-                        <select class="form-select" id="industry">
-                            <option value="">Select industry</option>
-                            <option value="technology">Technology</option>
-                            <option value="healthcare">Healthcare</option>
-                            <option value="finance">Finance</option>
-                            <option value="retail">Retail</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Custom Instructions</label>
-                        <textarea class="form-textarea" id="customInstructions" placeholder="Tell your AI assistant how to behave, what to say, and how to help your customers...">You are a helpful customer service assistant. Be friendly, professional, and concise in your responses. Keep responses under 50 words when possible since this is a phone conversation. Ask clarifying questions when needed and try to resolve customer issues.</textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Greeting Message</label>
-                        <input type="text" class="form-input" id="greetingMessage" placeholder="Hello! Thank you for calling. How can I help you today?">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
+    </div>
 
     <script>
-        // Check authentication on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            checkAuth();
-            initDashboard();
-            loadSettings();
+        // Global state
+        let currentUser = null;
+        let currentTab = 'overview';
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuthentication();
+            await loadDashboardData();
+            initializeEventListeners();
         });
 
         // Authentication check
-        function checkAuth() {
-            const token = localStorage.getItem('authToken');
-            const user = localStorage.getItem('user');
-            
-            if (!token || !user) {
-                window.location.href = '/login';
-                return;
-            }
-            
+        async function checkAuthentication() {
             try {
-                const userData = JSON.parse(user);
-                loadUserData(userData);
-            } catch (e) {
-                console.error('Invalid user data');
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                currentUser = await response.json();
+                updateUserDisplay(currentUser.user);
+            } catch (error) {
+                console.error('Authentication check failed:', error);
                 window.location.href = '/login';
             }
         }
 
-        // Load user data into UI
-        function loadUserData(userData) {
-            document.getElementById('userName').textContent = `${userData.firstName} ${userData.lastName}`;
-            document.getElementById('userPlan').textContent = `${userData.plan.charAt(0).toUpperCase() + userData.plan.slice(1)} Plan`;
-            document.getElementById('planStatus').textContent = userData.plan.charAt(0).toUpperCase() + userData.plan.slice(1);
+        // Update user display
+        function updateUserDisplay(user) {
+            document.getElementById('userName').textContent = user.fullName;
+            document.getElementById('userPlan').textContent = `${user.plan.charAt(0).toUpperCase() + user.plan.slice(1)} Plan`;
+            document.getElementById('planStatus').textContent = user.plan.charAt(0).toUpperCase() + user.plan.slice(1);
             
             // Generate initials for avatar
-            const initials = `${userData.firstName[0]}${userData.lastName[0]}`.toUpperCase();
+            const initials = `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
             document.getElementById('userAvatar').textContent = initials;
+
+            // Update form fields
+            document.getElementById('firstName').value = user.firstName;
+            document.getElementById('lastName').value = user.lastName;
+            document.getElementById('company').value = user.company || '';
         }
 
-        // Tab switching
-        document.querySelectorAll('.nav-link[data-tab]').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                
-                // Remove active class from all nav links and tabs
-                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-                
-                // Add active class to clicked link
-                link.classList.add('active');
-                
-                // Show corresponding tab
-                const tabId = link.getAttribute('data-tab') + '-tab';
-                const tab = document.getElementById(tabId);
-                if (tab) {
-                    tab.classList.add('active');
-                }
-            });
-        });
-
-        // Initialize dashboard
-        function initDashboard() {
-            refreshCalls();
+        // Load dashboard data
+        async function loadDashboardData() {
+            await Promise.all([
+                loadAnalytics(),
+                loadCalls(),
+                loadSettings()
+            ]);
         }
 
-        // Refresh calls list
-        async function refreshCalls() {
-            const callsList = document.getElementById('callsList');
-            const token = localStorage.getItem('authToken');
-            
-            if (!token) return;
-            
+        // Load analytics data
+        async function loadAnalytics() {
             try {
-                callsList.innerHTML = '<div style="text-align: center; padding: 2rem; color: #6b7280;">Loading...</div>';
-                
-                const response = await fetch('/api/calls', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                const response = await fetch('/api/analytics/overview', {
+                    credentials: 'include'
                 });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to fetch calls');
-                }
-                
-                const calls = await response.json();
-                
-                if (calls.length === 0) {
-                    callsList.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">📞</div>
-                            <h3>No calls yet</h3>
-                            <p>Your AI assistant is ready and waiting for customer calls</p>
-                        </div>
-                    `;
-                } else {
-                    callsList.innerHTML = calls.map(call => `
-                        <div class="call-item">
-                            <div class="call-header">
-                                <div class="call-id">Call ${call.id.substring(0, 8)}</div>
-                                <div class="call-status status-${call.status}">${call.status}</div>
-                            </div>
-                            <div class="call-meta">${call.time} • ${call.duration}</div>
-                            <div class="call-preview">${call.preview}</div>
-                        </div>
-                    `).join('');
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('totalCalls').textContent = data.overview.totalCalls;
                     
-                    // Update total calls stat
-                    document.getElementById('totalCalls').textContent = calls.length;
+                    // Animate the numbers
+                    animateNumber('totalCalls', data.overview.totalCalls);
                 }
             } catch (error) {
-                console.error('Error fetching calls:', error);
-                callsList.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">❌</div>
-                        <h3>Error loading calls</h3>
-                        <p>Please try refreshing the page</p>
-                    </div>
-                `;
+                console.error('Failed to load analytics:', error);
             }
+        }
+
+        // Load calls data
+        async function loadCalls() {
+            try {
+                const response = await fetch('/api/calls', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    displayCalls(data.calls);
+                    document.getElementById('activeCalls').textContent = data.calls.filter(call => call.status === 'active').length;
+                }
+            } catch (error) {
+                console.error('Failed to load calls:', error);
+                displayEmptyCalls();
+            }
+        }
+
+        // Display calls
+        function displayCalls(calls) {
+            const callsList = document.getElementById('callsList');
+            const allCallsList = document.getElementById('allCallsList');
+            
+            if (calls.length === 0) {
+                displayEmptyCalls();
+                return;
+            }
+
+            const callsHTML = calls.slice(0, 5).map(call => createCallHTML(call)).join('');
+            const allCallsHTML = calls.map(call => createCallHTML(call)).join('');
+            
+            callsList.innerHTML = callsHTML;
+            allCallsList.innerHTML = allCallsHTML;
+        }
+
+        // Create call HTML
+        function createCallHTML(call) {
+            const timeAgo = getTimeAgo(call.startedAt);
+            const duration = call.duration ? formatDuration(call.duration) : 'Unknown';
+            
+            return `
+                <div class="call-item" onclick="showCallDetails('${call.id}')">
+                    <div class="call-header">
+                        <div class="call-id">Call ${call.id.substring(0, 8)}</div>
+                        <div class="call-status status-${call.status}">${call.status}</div>
+                    </div>
+                    <div class="call-meta">${timeAgo} • ${duration}</div>
+                    <div class="call-preview">${call.preview}</div>
+                </div>
+            `;
+        }
+
+        // Display empty calls state
+        function displayEmptyCalls() {
+            const emptyHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📞</div>
+                    <div class="empty-title">No calls yet</div>
+                    <div class="empty-description">Your AI assistant is ready and waiting for customer calls</div>
+                </div>
+            `;
+            document.getElementById('callsList').innerHTML = emptyHTML;
+            document.getElementById('allCallsList').innerHTML = emptyHTML;
         }
 
         // Load settings
         async function loadSettings() {
-            const token = localStorage.getItem('authToken');
-            if (!token) return;
-            
             try {
                 const response = await fetch('/api/user/settings', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                    credentials: 'include'
                 });
-                
+
                 if (response.ok) {
-                    const settings = await response.json();
+                    const data = await response.json();
                     
-                    if (settings.businessName) document.getElementById('businessName').value = settings.businessName;
-                    if (settings.industry) document.getElementById('industry').value = settings.industry;
-                    if (settings.instructions) document.getElementById('customInstructions').value = settings.instructions;
-                    if (settings.greeting) document.getElementById('greetingMessage').value = settings.greeting;
+                    if (data.settings.businessInstructions) {
+                        document.getElementById('businessInstructions').value = data.settings.businessInstructions;
+                    }
+                    if (data.settings.greetingMessage) {
+                        document.getElementById('greetingMessage').value = data.settings.greetingMessage;
+                    }
                 }
             } catch (error) {
-                console.error('Error loading settings:', error);
+                console.error('Failed to load settings:', error);
+            }
+        }
+
+        // Initialize event listeners
+        function initializeEventListeners() {
+            // Tab navigation
+            document.querySelectorAll('.nav-link[data-tab]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    switchTab(link.dataset.tab);
+                });
+            });
+
+            // Auto-refresh calls every 30 seconds
+            setInterval(loadCalls, 30000);
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+
+            // Update header
+            const titles = {
+                overview: 'Overview',
+                calls: 'Voice Calls',
+                analytics: 'Analytics',
+                assistant: 'AI Assistant',
+                settings: 'Settings',
+                billing: 'Billing'
+            };
+            
+            document.getElementById('pageTitle').textContent = titles[tabName] || tabName;
+            document.getElementById('breadcrumbCurrent').textContent = titles[tabName] || tabName;
+            
+            currentTab = tabName;
+        }
+
+        // Refresh calls
+        async function refreshCalls() {
+            const button = event.target.closest('button');
+            const originalHTML = button.innerHTML;
+            
+            button.innerHTML = '<div class="loading"></div> Refreshing...';
+            button.disabled = true;
+            
+            try {
+                await loadCalls();
+                showAlert('Calls refreshed successfully', 'success');
+            } catch (error) {
+                showAlert('Failed to refresh calls', 'error');
+            } finally {
+                button.innerHTML = originalHTML;
+                button.disabled = false;
             }
         }
 
         // Save settings
         async function saveSettings() {
-            const token = localStorage.getItem('authToken');
-            if (!token) return;
+            const button = event.target.closest('button');
+            const originalHTML = button.innerHTML;
             
-            const settings = {
-                businessName: document.getElementById('businessName').value,
-                industry: document.getElementById('industry').value,
-                instructions: document.getElementById('customInstructions').value,
-                greeting: document.getElementById('greetingMessage').value
-            };
+            button.innerHTML = '<div class="loading"></div> Saving...';
+            button.disabled = true;
             
             try {
+                const settings = {
+                    businessInstructions: document.getElementById('businessInstructions').value,
+                    greetingMessage: document.getElementById('greetingMessage').value
+                };
+
+                const profile = {
+                    firstName: document.getElementById('firstName').value,
+                    lastName: document.getElementById('lastName').value,
+                    company: document.getElementById('company').value
+                };
+
                 const response = await fetch('/api/user/settings', {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(settings)
+                    credentials: 'include',
+                    body: JSON.stringify({ settings, profile })
                 });
-                
+
                 if (response.ok) {
-                    alert('Settings saved successfully!');
+                    showAlert('Settings saved successfully', 'success');
+                    // Update user display
+                    currentUser.user.firstName = profile.firstName;
+                    currentUser.user.lastName = profile.lastName;
+                    currentUser.user.company = profile.company;
+                    updateUserDisplay(currentUser.user);
                 } else {
-                    throw new Error('Failed to save settings');
+                    const error = await response.json();
+                    showAlert(error.error || 'Failed to save settings', 'error');
                 }
             } catch (error) {
-                console.error('Error saving settings:', error);
-                alert('Failed to save settings. Please try again.');
+                showAlert('Failed to save settings', 'error');
+            } finally {
+                button.innerHTML = originalHTML;
+                button.disabled = false;
             }
+        }
+
+        // Show call details modal
+        async function showCallDetails(callId) {
+            const modal = document.getElementById('callModal');
+            const content = document.getElementById('callModalContent');
+            
+            modal.classList.add('active');
+            content.innerHTML = '<div class="loading"></div> <span>Loading call details...</span>';
+            
+            try {
+                const response = await fetch(`/api/calls/${callId}`, {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    displayCallDetails(data.call);
+                } else {
+                    content.innerHTML = '<div class="alert alert-error">Failed to load call details</div>';
+                }
+            } catch (error) {
+                content.innerHTML = '<div class="alert alert-error">Failed to load call details</div>';
+            }
+        }
+
+        // Display call details
+        function displayCallDetails(call) {
+            const content = document.getElementById('callModalContent');
+            const duration = call.duration ? formatDuration(call.duration) : 'Unknown';
+            const startTime = new Date(call.startedAt).toLocaleString();
+            
+            let conversationHTML = '';
+            if (call.conversation && call.conversation.length > 0) {
+                conversationHTML = call.conversation.map(exchange => `
+                    <div style="margin-bottom: 1rem;">
+                        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">
+                            ${exchange.user ? 'Customer' : 'Assistant'}:
+                        </div>
+                        <div style="color: var(--text-secondary); line-height: 1.5;">
+                            ${exchange.user || exchange.assistant}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                conversationHTML = '<div class="empty-state"><div class="empty-description">No conversation recorded</div></div>';
+            }
+            
+            content.innerHTML = `
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="margin-bottom: 1rem; color: var(--text-primary);">Call Information</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.25rem;">Caller Number</div>
+                            <div style="font-weight: 500;">${call.callerNumber || 'Unknown'}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.25rem;">Duration</div>
+                            <div style="font-weight: 500;">${duration}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.25rem;">Started At</div>
+                            <div style="font-weight: 500;">${startTime}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.25rem;">Status</div>
+                            <div class="call-status status-${call.status}">${call.status}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="margin-bottom: 1rem; color: var(--text-primary);">Conversation</h4>
+                    <div style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border-primary); border-radius: 0.5rem; padding: 1rem;">
+                        ${conversationHTML}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Close call modal
+        function closeCallModal() {
+            document.getElementById('callModal').classList.remove('active');
+        }
+
+        // Test call function
+        function testCall() {
+            window.open('tel:+16095073300', '_self');
+        }
+
+        // Copy phone number
+        async function copyPhoneNumber() {
+            const phoneNumber = '+16095073300';
+            
+            try {
+                await navigator.clipboard.writeText(phoneNumber);
+                showAlert('Phone number copied to clipboard', 'success');
+            } catch (error) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = phoneNumber;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showAlert('Phone number copied to clipboard', 'success');
+            }
+        }
+
+        // Export calls
+        function exportCalls() {
+            // This would implement CSV export functionality
+            showAlert('Export functionality coming soon', 'warning');
+        }
+
+        // Show new assistant modal
+        function showNewAssistantModal() {
+            showAlert('Advanced assistant creation coming soon', 'warning');
         }
 
         // Logout function
-        function logout() {
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('user');
-            window.location.href = '/login';
+        async function logout() {
+            try {
+                const response = await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    window.location.href = '/login';
+                } else {
+                    showAlert('Logout failed', 'error');
+                }
+            } catch (error) {
+                showAlert('Logout failed', 'error');
+            }
         }
 
-        // Auto-refresh calls every 30 seconds
-        setInterval(() => {
-            if (document.getElementById('dashboard-tab').classList.contains('active')) {
-                refreshCalls();
+        // Show alert
+        function showAlert(message, type = 'success') {
+            const container = document.getElementById('alertContainer');
+            const alertId = 'alert-' + Date.now();
+            
+            const alertHTML = `
+                <div id="${alertId}" class="alert alert-${type}" style="margin-bottom: 0.5rem; min-width: 300px;">
+                    ${message}
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', alertHTML);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                const alertElement = document.getElementById(alertId);
+                if (alertElement) {
+                    alertElement.remove();
+                }
+            }, 5000);
+        }
+
+        // Utility functions
+        function getTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            return `${Math.floor(seconds / 86400)}d ago`;
+        }
+
+        function formatDuration(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}m ${remainingSeconds}s`;
+        }
+
+        function animateNumber(elementId, targetNumber) {
+            const element = document.getElementById(elementId);
+            const startNumber = 0;
+            const duration = 1000; // 1 second
+            const increment = targetNumber / (duration / 16); // 60fps
+            
+            let currentNumber = startNumber;
+            const timer = setInterval(() => {
+                currentNumber += increment;
+                if (currentNumber >= targetNumber) {
+                    currentNumber = targetNumber;
+                    clearInterval(timer);
+                }
+                element.textContent = Math.floor(currentNumber);
+            }, 16);
+        }
+
+        // Close modal on overlay click
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                e.target.classList.remove('active');
             }
-        }, 30000);
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // ESC to close modals
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+            
+            // Ctrl/Cmd + K for quick actions (future feature)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                // Future: Open command palette
+            }
+        });
     </script>
 </body>
 </html>
