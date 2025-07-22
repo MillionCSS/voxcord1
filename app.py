@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Voxcord - Simplified AI Voice Assistant Platform
+Voxcord Backend - AI Voice Assistant Platform with Demo API
 Clean, minimal production-ready version for Digital Ocean App Platform
 """
 
@@ -95,6 +95,18 @@ class DatabaseManager:
                 )
             ''')
             
+            # Demo sessions table for analytics
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS demo_sessions (
+                    id TEXT PRIMARY KEY,
+                    session_ip TEXT,
+                    messages_count INTEGER DEFAULT 0,
+                    business_config TEXT DEFAULT '{}',
+                    conversation TEXT DEFAULT '[]',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
             conn.commit()
     
     @contextmanager
@@ -151,6 +163,31 @@ class DatabaseManager:
                 ORDER BY started_at DESC LIMIT ?
             ''', (limit,))
             return [dict(row) for row in cursor.fetchall()]
+    
+    def create_demo_session(self, session_data):
+        """Create a demo session for analytics"""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO demo_sessions (id, session_ip, business_config, conversation)
+                VALUES (?, ?, ?, ?)
+            ''', (
+                session_data['id'], session_data['session_ip'], 
+                json.dumps(session_data.get('business_config', {})), 
+                json.dumps(session_data.get('conversation', []))
+            ))
+            conn.commit()
+    
+    def update_demo_session(self, session_id, messages_count, conversation):
+        """Update demo session with new messages"""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                UPDATE demo_sessions 
+                SET messages_count = ?, conversation = ? 
+                WHERE id = ?
+            ''', (messages_count, json.dumps(conversation), session_id))
+            conn.commit()
 
 # Initialize database
 db = DatabaseManager()
@@ -174,7 +211,7 @@ class SecurityManager:
     
     @staticmethod
     def validate_email(email):
-        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}
         return bool(re.match(pattern, email))
 
 # JWT utilities
@@ -254,6 +291,180 @@ def health_check():
             'database': True
         }
     })
+
+# DEMO API ENDPOINT - NEW ADDITION
+@app.route('/api/demo/chat', methods=['POST'])
+def demo_chat():
+    """Handle demo chat requests from landing page"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'error': 'Invalid JSON data'}), 400
+        
+        user_message = data.get('message', '').strip()
+        business_config = data.get('config', {})
+        conversation_history = data.get('conversationHistory', [])
+        
+        if not user_message:
+            return jsonify({'success': False, 'error': 'Message is required'}), 400
+        
+        # Get client IP for session tracking
+        client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        
+        # Generate AI response
+        try:
+            ai_response = generate_demo_ai_response(user_message, business_config, conversation_history)
+        except Exception as e:
+            logger.error(f"AI response generation failed: {e}")
+            ai_response = generate_fallback_response(user_message, business_config)
+        
+        # Track demo usage (optional analytics)
+        try:
+            session_id = str(uuid.uuid4())
+            session_data = {
+                'id': session_id,
+                'session_ip': client_ip,
+                'business_config': business_config,
+                'conversation': conversation_history + [
+                    {'role': 'user', 'content': user_message},
+                    {'role': 'assistant', 'content': ai_response}
+                ]
+            }
+            db.create_demo_session(session_data)
+        except Exception as e:
+            logger.warning(f"Demo session tracking failed: {e}")
+        
+        return jsonify({
+            'success': True,
+            'response': ai_response,
+            'timestamp': datetime.utcnow().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Demo chat error: {e}")
+        return jsonify({
+            'success': False, 
+            'error': 'Demo temporarily unavailable'
+        }), 500
+
+def generate_demo_ai_response(user_message, business_config, conversation_history):
+    """Generate AI response using OpenAI for demo"""
+    if not openai_client:
+        return generate_fallback_response(user_message, business_config)
+    
+    try:
+        # Extract business details
+        business_name = business_config.get('businessName', 'our company')
+        business_type = business_config.get('businessType', 'business')
+        business_hours = business_config.get('businessHours', 'regular business hours')
+        custom_instructions = business_config.get('instructions', '')
+        phone_number = business_config.get('phoneNumber', '(555) 123-4567')
+        
+        # Build system prompt with business context
+        system_prompt = f"""You are a helpful customer service AI assistant for {business_name}, a {business_type}. 
+
+Business Details:
+- Company: {business_name}
+- Type: {business_type}  
+- Hours: {business_hours}
+- Phone: {phone_number}
+
+Instructions: {custom_instructions}
+
+Guidelines:
+- Be friendly, professional, and helpful
+- Keep responses concise (under 100 words) since this is a demo
+- Reference the business name and type naturally in responses
+- Offer to escalate to human agents when appropriate
+- Ask clarifying questions to better assist customers
+- If asked about specific products/services, provide general helpful information
+
+Respond as if you're answering a real customer inquiry for this business."""
+
+        # Build conversation context
+        messages = [{"role": "system", "content": system_prompt}]
+        
+        # Add recent conversation history (last 6 messages)
+        for msg in conversation_history[-6:]:
+            if msg.get('role') and msg.get('content'):
+                messages.append({
+                    "role": msg['role'],
+                    "content": msg['content']
+                })
+        
+        # Add current user message
+        messages.append({"role": "user", "content": user_message})
+        
+        # Generate response with OpenAI
+        response = openai_client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+            max_tokens=150,
+            temperature=0.7,
+            presence_penalty=0.1,
+            frequency_penalty=0.1
+        )
+        
+        ai_response = response.choices[0].message.content.strip()
+        
+        # Ensure response isn't too long
+        if len(ai_response) > 500:
+            ai_response = ai_response[:497] + "..."
+        
+        return ai_response
+        
+    except Exception as e:
+        logger.error(f"OpenAI API error: {e}")
+        return generate_fallback_response(user_message, business_config)
+
+def generate_fallback_response(user_message, business_config):
+    """Generate fallback response when OpenAI is unavailable"""
+    business_name = business_config.get('businessName', 'our company')
+    business_type = business_config.get('businessType', 'business')
+    business_hours = business_config.get('businessHours', 'regular business hours')
+    
+    message = user_message.lower()
+    
+    # Pattern-based responses
+    if any(word in message for word in ['hello', 'hi', 'hey', 'good morning', 'good afternoon']):
+        return f"Hello! Welcome to {business_name}. I'm your AI customer service assistant. How can I help you today?"
+    
+    elif any(word in message for word in ['hours', 'open', 'close', 'when', 'time']):
+        return f"Our {business_type.lower()} hours are {business_hours}. Is there anything specific you'd like to know about our services during these times?"
+    
+    elif any(word in message for word in ['help', 'support', 'assistance', 'problem', 'issue']):
+        return f"I'm here to help with any questions about {business_name}'s {business_type.lower()} services. What specific issue can I assist you with today?"
+    
+    elif any(word in message for word in ['price', 'cost', 'how much', 'billing', 'payment']):
+        return f"For pricing information regarding our {business_type.lower()} services, I can provide general details. Would you like me to connect you with our sales team for a detailed quote?"
+    
+    elif any(word in message for word in ['order', 'purchase', 'buy', 'service']):
+        return f"I'd be happy to help you with information about {business_name}'s services. What specific service or product are you interested in?"
+    
+    elif any(word in message for word in ['location', 'address', 'where', 'directions']):
+        return f"For {business_name} location details and directions, I can help connect you with our main office. Would you like our contact information?"
+    
+    elif any(word in message for word in ['human', 'person', 'agent', 'representative', 'manager']):
+        return f"I understand you'd like to speak with a person. I can help transfer you to one of our human representatives. Our support hours are {business_hours}."
+    
+    elif any(word in message for word in ['return', 'refund', 'exchange', 'policy']):
+        return f"I can help you with {business_name}'s return and refund policies. Could you provide more details about your specific situation?"
+    
+    elif any(word in message for word in ['appointment', 'schedule', 'booking', 'meeting']):
+        return f"I can help you schedule an appointment with {business_name}. Our availability is typically during {business_hours}. What type of service are you looking to book?"
+    
+    else:
+        # Generic helpful response
+        responses = [
+            f"Thank you for contacting {business_name}! I'm here to help with any questions about our {business_type.lower()} services. Could you provide a bit more detail about what you need?",
+            f"I'm your AI assistant for {business_name}. I can help with general information, scheduling, and connecting you with the right department. What brings you here today?",
+            f"Welcome to {business_name}'s automated support! I'm equipped to help with common inquiries and can escalate complex issues to our team. How may I assist you?",
+            f"Hi there! As {business_name}'s AI assistant, I'm here to help make your experience smooth and efficient. What can I help you with today?"
+        ]
+        
+        import random
+        return random.choice(responses)
 
 @app.route('/api/signup', methods=['POST'])
 def api_signup():
@@ -564,7 +775,7 @@ def handle_speech(call_sid):
         return str(response)
 
 def generate_ai_response(user_input, conversation_history):
-    """Generate AI response using OpenAI"""
+    """Generate AI response using OpenAI for phone calls"""
     try:
         if not openai_client:
             return "I'm sorry, I'm currently unavailable. Please try again later."
