@@ -10,9 +10,16 @@ from functools import wraps
 import re
 
 from flask import Flask, request, jsonify, send_file, send_from_directory
-from flask_cors import CORS
 from twilio.twiml.voice_response import VoiceResponse, Gather
 import jwt
+
+# Handle CORS manually if flask-cors is not available
+try:
+    from flask_cors import CORS
+    cors_available = True
+except ImportError:
+    cors_available = False
+    CORS = None
 
 # OpenAI import with error handling
 try:
@@ -35,7 +42,27 @@ class Config:
 # Initialize Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = Config.SECRET_KEY
-CORS(app)
+
+# Setup CORS - handle both with and without flask-cors
+if cors_available:
+    CORS(app)
+else:
+    # Manual CORS handling
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        return response
+    
+    @app.route('/', defaults={'path': ''}, methods=['OPTIONS'])
+    @app.route('/<path:path>', methods=['OPTIONS'])
+    def handle_options(path):
+        response = jsonify({'status': 'OK'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        return response
 
 # Shared phone number for all users
 SHARED_PHONE_NUMBER = "+16095073300"
