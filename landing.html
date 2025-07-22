@@ -281,7 +281,6 @@
             position: relative;
         }
 
-        /* Usage limit overlay */
         .demo-container {
             background: rgba(20, 20, 20, 0.8);
             backdrop-filter: blur(20px);
@@ -548,58 +547,6 @@
             color: #FFFFFF;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-bottom-left-radius: 4px;
-        }
-
-        .message-bubble {
-            max-width: 80%;
-            border-radius: 16px;
-            font-size: 14px;
-            line-height: 1.4;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .message-content {
-            padding: 12px 16px;
-        }
-
-        /* Thin audio bar at bottom of bubble */
-        .audio-bar {
-            width: 100%;
-            height: 28px;
-            background: rgba(16, 185, 129, 0.1);
-            border-top: 1px solid rgba(16, 185, 129, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 11px;
-            font-weight: 600;
-            color: #10B981;
-            font-family: 'Varela Round', sans-serif;
-        }
-
-        .audio-bar:hover {
-            background: rgba(16, 185, 129, 0.15);
-            border-top-color: rgba(16, 185, 129, 0.3);
-        }
-
-        .audio-bar.playing {
-            background: rgba(16, 185, 129, 0.2);
-            color: #FFFFFF;
-            animation: pulse-play 1.5s ease-in-out infinite;
-        }
-
-        @keyframes pulse-play {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        .audio-bar:disabled {
-            background: rgba(255, 255, 255, 0.03);
-            color: rgba(255, 255, 255, 0.2);
-            cursor: not-allowed;
         }
 
         .chat-input-container {
@@ -1090,6 +1037,43 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* Error message styling */
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #F87171;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        /* Success message styling */
+        .success-message {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34D399;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        /* Demo usage counter */
+        .demo-usage {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #FCD34D;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 16px;
+        }
     </style>
 </head>
 <body>
@@ -1135,7 +1119,7 @@
                     <a href="tel:+16095073300" class="btn-hero-secondary">Try our AI line</a>
                 </div>
 
-                        <!-- Interactive Demo Assistant -->
+                <!-- Interactive Demo Assistant -->
                 <div class="demo-assistant">
                     <div class="demo-container">
                         <!-- Usage Limit Overlay -->
@@ -1153,6 +1137,11 @@
                         <div class="demo-header">
                             <h2 class="demo-title">Test Your Support Line</h2>
                             <p class="demo-subtitle">Configure your business details and see how customers experience your automated support</p>
+                        </div>
+
+                        <!-- Demo usage counter -->
+                        <div class="demo-usage" id="demoUsage">
+                            Demo messages: <span id="messageCount">0</span> / 5
                         </div>
 
                         <div class="demo-content">
@@ -1395,8 +1384,9 @@
             constructor() {
                 this.messages = [];
                 this.isTyping = false;
-                this.audioContext = null;
-                this.currentAudio = null;
+                this.messageCount = 0;
+                this.maxMessages = 5;
+                this.apiUrl = window.location.origin; // Use current domain for API calls
                 this.init();
             }
 
@@ -1404,6 +1394,8 @@
                 this.chatInput = document.getElementById('chatInput');
                 this.sendButton = document.getElementById('sendButton');
                 this.chatMessages = document.getElementById('chatMessages');
+                this.demoOverlay = document.getElementById('demoOverlay');
+                this.messageCountDisplay = document.getElementById('messageCount');
                 
                 this.sendButton.addEventListener('click', () => this.sendMessage());
                 this.chatInput.addEventListener('keypress', (e) => {
@@ -1412,86 +1404,104 @@
                     }
                 });
 
-                // Add welcome message
+                // Add welcome message after a short delay
                 setTimeout(() => {
-                    this.addAssistantMessage("Hello! You've reached the automated support line for your business. I have access to your business information and can help with common inquiries. How can I assist you today?");
+                    this.addAssistantMessage("Hello! I'm your AI customer support assistant. I have access to your business information and can help with common inquiries. How can I assist you today?");
                 }, 1000);
+
+                this.updateMessageCount();
+            }
+
+            updateMessageCount() {
+                this.messageCountDisplay.textContent = this.messageCount;
+                
+                if (this.messageCount >= this.maxMessages) {
+                    this.showUsageLimitOverlay();
+                }
+            }
+
+            showUsageLimitOverlay() {
+                this.demoOverlay.classList.add('active');
+                this.chatInput.disabled = true;
+                this.sendButton.disabled = true;
             }
 
             async sendMessage() {
                 const message = this.chatInput.value.trim();
-                if (!message || this.isTyping) return;
+                if (!message || this.isTyping || this.messageCount >= this.maxMessages) return;
 
                 this.addUserMessage(message);
                 this.chatInput.value = '';
                 this.setTyping(true);
+                this.messageCount++;
+                this.updateMessageCount();
 
-                const response = await this.generateResponse(message);
-                
-                setTimeout(() => {
-                    this.addAssistantMessage(response);
-                    this.setTyping(false);
-                }, 800 + Math.random() * 1200);
-            }
-
-            addUserMessage(message) {
-                this.clearInitialMessage();
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'message user';
-                messageDiv.innerHTML = `
-                    <div class="message-bubble">${message}</div>
-                `;
-                this.chatMessages.appendChild(messageDiv);
-                this.scrollToBottom();
-            }
-
-            addAssistantMessage(message) {
-                this.clearInitialMessage();
-                const messageId = 'msg_' + Date.now();
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'message assistant';
-                messageDiv.innerHTML = `
-                    <div class="message-bubble">${message}</div>
-                    <div class="message-actions">
-                        <button class="play-button" onclick="demoAssistant.playMessage('${messageId}', \`${message.replace(/`/g, '\\`').replace(/'/g, "\\'")}\`)">
-                            🔊 Play Voice
-                        </button>
-                    </div>
-                `;
-                this.chatMessages.appendChild(messageDiv);
-                this.scrollToBottom();
-            }
-
-            clearInitialMessage() {
-                const initialMessage = this.chatMessages.querySelector('.initial-message');
-                if (initialMessage) {
-                    initialMessage.remove();
+                try {
+                    const response = await this.callBackendAPI(message);
+                    
+                    setTimeout(() => {
+                        this.addAssistantMessage(response);
+                        this.setTyping(false);
+                    }, 800 + Math.random() * 800);
+                } catch (error) {
+                    console.error('API Error:', error);
+                    setTimeout(() => {
+                        this.addAssistantMessage("I'm sorry, I'm having trouble connecting right now. Please try again or call our support line directly at (609) 507-3300.");
+                        this.setTyping(false);
+                    }, 1000);
                 }
             }
 
-            setTyping(isTyping) {
-                this.isTyping = isTyping;
-                this.sendButton.disabled = isTyping;
-                if (isTyping) {
-                    this.sendButton.innerHTML = '<div class="loading"></div>';
-                } else {
-                    this.sendButton.textContent = 'Send';
+            async callBackendAPI(userMessage) {
+                try {
+                    // Get business configuration
+                    const businessConfig = {
+                        businessName: document.getElementById('businessName').value || 'our company',
+                        businessType: document.getElementById('businessType').value || 'business',
+                        businessHours: document.getElementById('businessHours').value || 'regular business hours',
+                        instructions: document.getElementById('instructions').value || '',
+                        phoneNumber: document.getElementById('phoneNumber').value || '(555) 123-4567'
+                    };
+
+                    // Call the actual backend API endpoint
+                    const response = await fetch(`${this.apiUrl}/api/demo/chat`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            message: userMessage,
+                            config: businessConfig,
+                            conversationHistory: this.messages.slice(-4) // Send last 4 messages for context
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data.success && data.response) {
+                        return data.response;
+                    } else {
+                        throw new Error(data.error || 'Unknown API error');
+                    }
+                } catch (error) {
+                    console.error('Backend API call failed:', error);
+                    // Fallback to local response generation
+                    return this.generateLocalResponse(userMessage);
                 }
             }
 
-            scrollToBottom() {
-                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
-            }
-
-            async generateResponse(userMessage) {
+            generateLocalResponse(userMessage) {
                 const businessName = document.getElementById('businessName').value || 'our company';
                 const businessType = document.getElementById('businessType').value || 'business';
                 const businessHours = document.getElementById('businessHours').value || 'regular business hours';
-                const instructions = document.getElementById('instructions').value || '';
 
-                // Simple response generation based on keywords
                 const message = userMessage.toLowerCase();
 
+                // Local fallback responses when backend is unavailable
                 if (message.includes('hours') || message.includes('open') || message.includes('close')) {
                     return `Our support line is available ${businessHours}. For after-hours inquiries, I can collect your information and someone will get back to you during business hours.`;
                 }
@@ -1508,98 +1518,90 @@
                     return `For pricing and billing information, I can provide general details based on our current rates. For specific quotes or billing issues, would you like me to connect you with our billing department?`;
                 }
 
-                if (message.includes('return') || message.includes('refund') || message.includes('exchange')) {
-                    return `I can help you with returns and refunds. Based on our policy, I'll need to gather some information about your purchase. Can you provide your order number or account details?`;
-                }
-
-                if (message.includes('order') || message.includes('delivery') || message.includes('shipping')) {
-                    return `I can help you track orders and check delivery status. For ${businessName}, I have access to our order management system. Could you provide your order number?`;
-                }
-
-                if (message.includes('appointment') || message.includes('schedule') || message.includes('book')) {
-                    return `I can help you schedule an appointment with ${businessName}. Our availability is typically during ${businessHours}. Would you like me to check our schedule or connect you with someone to book?`;
-                }
-
                 if (message.includes('human') || message.includes('person') || message.includes('agent')) {
                     return `I understand you'd like to speak with a person. I can transfer you to one of our human agents, or if you're calling outside business hours, I can collect your information for a callback.`;
                 }
 
-                // Default responses focused on customer support
-                const responses = [
-                    `Thank you for contacting ${businessName} support. I'm here to help with any questions about our ${businessType.toLowerCase()} services. Could you tell me more about your inquiry?`,
-                    `I have access to ${businessName}'s policies and information. Our support hours are ${businessHours}. What specific question can I help you with today?`,
-                    `Welcome to ${businessName}'s automated support line. I can help with general inquiries, account questions, and common issues. How can I assist you?`,
-                    `I'm here to provide support for ${businessName} customers. Whether it's a question about our services or you need help with something specific, I'm ready to assist. What brings you here today?`,
-                    `Great question! At ${businessName}, we pride ourselves on excellent service. Let me see how I can best assist you with that.`,
-                    `Thanks for reaching out to ${businessName}! I'm your AI assistant and I'm here to help. Could you provide a bit more detail about your inquiry?`
-                ];
-
-                return responses[Math.floor(Math.random() * responses.length)];
+                // Default response
+                return `Thank you for contacting ${businessName} support. I'm here to help with any questions about our ${businessType.toLowerCase()} services. Could you tell me more about your inquiry?`;
             }
 
-            async playMessage(messageId, text) {
-                // Find the button that was clicked
-                const playButtons = document.querySelectorAll('.play-button');
-                let currentButton = null;
+            addUserMessage(message) {
+                this.clearInitialMessage();
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message user';
+                messageDiv.innerHTML = `
+                    <div class="message-bubble">${this.escapeHtml(message)}</div>
+                `;
+                this.chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
                 
-                playButtons.forEach(button => {
-                    if (button.onclick && button.onclick.toString().includes(messageId)) {
-                        currentButton = button;
-                    }
+                // Store message in conversation history
+                this.messages.push({
+                    role: 'user',
+                    content: message,
+                    timestamp: Date.now()
                 });
+            }
 
-                if (!currentButton) return;
+            addAssistantMessage(message) {
+                this.clearInitialMessage();
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message assistant';
+                messageDiv.innerHTML = `
+                    <div class="message-bubble">${this.escapeHtml(message)}</div>
+                `;
+                this.chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+                
+                // Store message in conversation history
+                this.messages.push({
+                    role: 'assistant',
+                    content: message,
+                    timestamp: Date.now()
+                });
+            }
 
-                try {
-                    // Stop any currently playing audio
-                    if (this.currentAudio) {
-                        this.currentAudio.pause();
-                        this.currentAudio = null;
-                    }
-
-                    // Reset all play buttons
-                    playButtons.forEach(btn => {
-                        btn.textContent = '🔊 Play Voice';
-                        btn.classList.remove('playing');
-                    });
-
-                    // Update button to show playing state
-                    currentButton.textContent = '⏸️ Playing...';
-                    currentButton.classList.add('playing');
-
-                    // Simulate voice playback (since we can't use Web Speech API in all browsers)
-                    // In a real implementation, you'd call your TTS API here
-                    await this.simulateVoicePlayback(text);
-
-                    // Reset button after "playback"
-                    currentButton.textContent = '🔊 Play Voice';
-                    currentButton.classList.remove('playing');
-
-                } catch (error) {
-                    console.warn('Voice playback not available:', error);
-                    currentButton.textContent = '🔊 Voice not available';
-                    currentButton.disabled = true;
-                    
-                    setTimeout(() => {
-                        currentButton.textContent = '🔊 Play Voice';
-                        currentButton.disabled = false;
-                    }, 2000);
+            clearInitialMessage() {
+                const initialMessage = this.chatMessages.querySelector('.initial-message');
+                if (initialMessage) {
+                    initialMessage.remove();
                 }
             }
 
-            async simulateVoicePlayback(text) {
-                // Calculate approximate duration based on text length (average speaking rate)
-                const wordsPerMinute = 150;
-                const words = text.split(' ').length;
-                const durationMs = (words / wordsPerMinute) * 60 * 1000;
-                const minDuration = 1000; // At least 1 second
-                const maxDuration = 8000; // At most 8 seconds
+            setTyping(isTyping) {
+                this.isTyping = isTyping;
+                this.sendButton.disabled = isTyping || this.messageCount >= this.maxMessages;
+                this.chatInput.disabled = this.messageCount >= this.maxMessages;
                 
-                const actualDuration = Math.min(Math.max(durationMs, minDuration), maxDuration);
+                if (isTyping) {
+                    this.sendButton.innerHTML = '<div class="loading"></div>';
+                } else {
+                    this.sendButton.textContent = 'Send';
+                }
+            }
+
+            scrollToBottom() {
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            showError(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = message;
+                this.chatMessages.appendChild(errorDiv);
+                this.scrollToBottom();
                 
-                return new Promise(resolve => {
-                    setTimeout(resolve, actualDuration);
-                });
+                // Remove error after 5 seconds
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 5000);
             }
         }
 
@@ -1636,7 +1638,6 @@
         // Performance optimization for scroll events
         let ticking = false;
         function updateOnScroll() {
-            // Any scroll-based animations would go here
             ticking = false;
         }
 
@@ -1645,6 +1646,11 @@
                 requestAnimationFrame(updateOnScroll);
                 ticking = true;
             }
+        });
+
+        // Error handling for demo
+        window.addEventListener('error', (e) => {
+            console.warn('Demo error handled:', e.error?.message || e.message);
         });
     </script>
 </body>
