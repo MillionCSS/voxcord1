@@ -16,6 +16,7 @@ import re
 import logging
 from datetime import datetime, timedelta
 from functools import wraps
+from sqlalchemy import text
 
 # Import Flask and extensions
 from flask import Flask, request, jsonify, send_from_directory, session
@@ -899,10 +900,11 @@ Business context: {business_name} is a {business_type}."""
 
 @app.route('/api/health')
 def health_check():
-    """System health check"""
+    """System health check - FIXED for SQLAlchemy 2.0+"""
     try:
-        # Check database connection
-        db.session.execute('SELECT 1')
+        # FIXED: Use proper SQLAlchemy 2.0+ syntax
+        from sqlalchemy import text
+        db.session.execute(text('SELECT 1'))
         
         # Check external services
         services_status = {
@@ -935,7 +937,6 @@ def health_check():
             'error': str(e),
             'timestamp': datetime.utcnow().isoformat()
         }), 500
-
 # =============================================================================
 # ERROR HANDLERS
 # =============================================================================
