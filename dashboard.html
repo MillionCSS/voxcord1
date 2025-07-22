@@ -185,4 +185,453 @@
 
         .call-item {
             padding: 1.5rem;
-            border
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.2s ease;
+        }
+
+        .call-item:hover {
+            background: #f8fafc;
+        }
+
+        .call-item:last-child {
+            border-bottom: none;
+        }
+
+        .call-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .call-number {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .call-time {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .call-preview {
+            color: #64748b;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .call-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .call-status.completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .call-status.active {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            padding: 1.5rem;
+        }
+
+        .action-button {
+            width: 100%;
+            padding: 1rem;
+            background: #1e40af;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            transition: background 0.2s ease;
+        }
+
+        .action-button:hover {
+            background: #1d4ed8;
+        }
+
+        .action-button.secondary {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .action-button.secondary:hover {
+            background: #e2e8f0;
+        }
+
+        /* Loading States */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            color: #64748b;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #e2e8f0;
+            border-top: 2px solid #1e40af;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty States */
+        .empty-state {
+            padding: 3rem;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard {
+                padding: 1rem;
+            }
+
+            .header {
+                padding: 1rem;
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .welcome-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🎯 Voxcord</div>
+        <div class="user-menu">
+            <div class="user-info">
+                <div id="userName" style="font-weight: 600; margin-bottom: 0.25rem;">Loading...</div>
+                <div id="userPlan" style="font-size: 0.8rem; color: #64748b;">Loading...</div>
+            </div>
+            <div id="userAvatar" class="user-avatar">?</div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1 class="welcome-title">Welcome back, <span id="welcomeName">there</span>!</h1>
+            <p class="welcome-subtitle">Here's what's happening with your AI voice assistant today.</p>
+            
+            <div class="phone-number">
+                <strong>Your AI Phone Number: +1 (609) 507-3300</strong>
+                <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #64748b;">
+                    Give this number to your customers - your AI assistant is ready to help them 24/7!
+                </p>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div id="totalCalls" class="stat-number">-</div>
+                <div class="stat-label">Total Calls</div>
+            </div>
+            <div class="stat-card">
+                <div id="recentCalls" class="stat-number">-</div>
+                <div class="stat-label">Recent Calls</div>
+            </div>
+            <div class="stat-card">
+                <div id="avgDuration" class="stat-number">-</div>
+                <div class="stat-label">Avg Duration</div>
+            </div>
+            <div class="stat-card">
+                <div id="successRate" class="stat-number">-</div>
+                <div class="stat-label">Success Rate</div>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- Recent Calls -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2 class="section-title">Recent Calls</h2>
+                    <a href="#" class="view-all-btn" onclick="showAllCalls()">View All</a>
+                </div>
+                <div id="callsList" class="call-list">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading calls...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2 class="section-title">Quick Actions</h2>
+                </div>
+                <div class="quick-actions">
+                    <button class="action-button" onclick="testCall()">
+                        📞 Test Your AI Assistant
+                    </button>
+                    <button class="action-button secondary" onclick="viewSettings()">
+                        ⚙️ Customize AI Settings
+                    </button>
+                    <button class="action-button secondary" onclick="viewAnalytics()">
+                        📊 View Detailed Analytics
+                    </button>
+                    <button class="action-button secondary" onclick="getSupport()">
+                        💬 Get Support
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        // Check authentication on page load
+        window.addEventListener('load', async function() {
+            await checkAuthentication();
+            if (currentUser) {
+                await loadDashboardData();
+            }
+        });
+
+        // Check if user is authenticated - UPDATED FOR NEW APP.PY
+        async function checkAuthentication() {
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Authentication failed');
+                }
+
+                const data = await response.json();
+                currentUser = data.user;
+                updateUserDisplay(currentUser);
+                
+            } catch (error) {
+                console.error('Authentication check failed:', error);
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('user');
+                window.location.href = '/login';
+            }
+        }
+
+        // Update user display
+        function updateUserDisplay(user) {
+            document.getElementById('userName').textContent = user.fullName;
+            document.getElementById('userPlan').textContent = `${user.plan.charAt(0).toUpperCase() + user.plan.slice(1)} Plan`;
+            document.getElementById('welcomeName').textContent = user.firstName;
+            
+            // Generate initials for avatar
+            const initials = `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+            document.getElementById('userAvatar').textContent = initials;
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            await Promise.all([
+                loadAnalytics(),
+                loadRecentCalls()
+            ]);
+        }
+
+        // Load analytics data - UPDATED FOR NEW APP.PY
+        async function loadAnalytics() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/analytics/overview', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const overview = data.overview;
+                    
+                    document.getElementById('totalCalls').textContent = overview.totalCalls || '0';
+                    document.getElementById('recentCalls').textContent = overview.recentCalls || '0';
+                    document.getElementById('avgDuration').textContent = 
+                        overview.avgDuration ? `${Math.round(overview.avgDuration)}s` : '0s';
+                    document.getElementById('successRate').textContent = 
+                        overview.successRate ? `${overview.successRate}%` : '0%';
+                } else {
+                    // Set default values if API fails
+                    setDefaultAnalytics();
+                }
+            } catch (error) {
+                console.error('Failed to load analytics:', error);
+                setDefaultAnalytics();
+            }
+        }
+
+        function setDefaultAnalytics() {
+            document.getElementById('totalCalls').textContent = '0';
+            document.getElementById('recentCalls').textContent = '0';
+            document.getElementById('avgDuration').textContent = '0s';
+            document.getElementById('successRate').textContent = '0%';
+        }
+
+        // Load recent calls - UPDATED FOR NEW APP.PY
+        async function loadRecentCalls() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/calls?per_page=5', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const callsList = document.getElementById('callsList');
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.calls && data.calls.length > 0) {
+                        callsList.innerHTML = data.calls.map(call => `
+                            <div class="call-item">
+                                <div class="call-header">
+                                    <div class="call-number">${call.callerNumber || 'Unknown'}</div>
+                                    <div class="call-time">${formatTime(call.startedAt)}</div>
+                                </div>
+                                <div class="call-preview">${call.preview || 'No conversation recorded'}</div>
+                                <div style="margin-top: 0.5rem;">
+                                    <span class="call-status ${call.status}">${call.status}</span>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        callsList.innerHTML = `
+                            <div class="empty-state">
+                                <div class="empty-icon">📞</div>
+                                <p>No calls yet</p>
+                                <p style="font-size: 0.9rem; margin-top: 0.5rem;">
+                                    Share your phone number with customers to get started!
+                                </p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    callsList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📞</div>
+                            <p>No calls yet</p>
+                            <p style="font-size: 0.9rem; margin-top: 0.5rem;">
+                                Share your phone number with customers to get started!
+                            </p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load calls:', error);
+                document.getElementById('callsList').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">❌</div>
+                        <p>Failed to load calls</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Format time helper
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 24 * 60 * 60 * 1000) { // Less than 24 hours
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } else {
+                return date.toLocaleDateString();
+            }
+        }
+
+        // Quick Action Functions
+        function testCall() {
+            alert('📞 Call +1 (609) 507-3300 to test your AI assistant!\n\nYour AI will answer and demonstrate how it handles customer calls.');
+        }
+
+        function viewSettings() {
+            alert('⚙️ AI Settings customization coming soon!\n\nYou\'ll be able to customize your AI\'s personality, responses, and behavior.');
+        }
+
+        function showAllCalls() {
+            alert('📋 Detailed call history view coming soon!\n\nYou\'ll see full transcripts, analytics, and conversation insights.');
+        }
+
+        function viewAnalytics() {
+            alert('📊 Advanced analytics coming soon!\n\nDetailed charts, trends, and insights about your AI assistant\'s performance.');
+        }
+
+        function getSupport() {
+            alert('💬 Support coming soon!\n\nFor now, your AI assistant is working perfectly with the shared number +1 (609) 507-3300');
+        }
+
+        // Logout function - UPDATED FOR NEW APP.PY
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        }
+
+        // Auto-refresh data every 30 seconds
+        setInterval(() => {
+            if (currentUser) {
+                loadAnalytics();
+                loadRecentCalls();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
