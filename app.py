@@ -124,6 +124,22 @@ limiter = Limiter(
 app.config['SESSION_SQLALCHEMY'] = db
 sess = Session(app)
 
+# Add this code right before your OpenAI client initialization
+# Clear any proxy environment variables that might interfere
+proxy_env_vars = ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy']
+for var in proxy_env_vars:
+    if var in os.environ:
+        del os.environ[var]
+
+# Now initialize OpenAI client safely
+try:
+    openai_client = OpenAI(api_key=Config.OPENAI_API_KEY) if Config.OPENAI_API_KEY else None
+    if openai_client:
+        logger.info("OpenAI client initialized successfully")
+except Exception as e:
+    logger.error(f"Failed to initialize OpenAI client: {e}")
+    openai_client = None
+
 # Initialize external services
 openai_client = OpenAI(api_key=Config.OPENAI_API_KEY) if Config.OPENAI_API_KEY else None
 twilio_client = Client(Config.TWILIO_ACCOUNT_SID, Config.TWILIO_AUTH_TOKEN) if Config.TWILIO_ACCOUNT_SID else None
