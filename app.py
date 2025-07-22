@@ -24,6 +24,8 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_migrate import Migrate
+migrate = Migrate(app, db)
 
 # External services
 import httpx
@@ -916,17 +918,10 @@ def init_database():
     """Initialize database tables safely"""
     try:
         with app.app_context():
-            # Drop existing tables if they exist and recreate (for clean slate)
-            db.drop_all()
-            db.create_all()
+            # Only create tables if they don't exist
+            db.create_all()  # This is safe - won't drop existing data
             
-            logger.info("✅ Database tables created successfully")
-            
-            # Verify tables exist
-            inspector = db.inspect(db.engine)
-            tables = inspector.get_table_names()
-            logger.info(f"📋 Created tables: {tables}")
-            
+            logger.info("✅ Database tables ensured")
             return True
             
     except Exception as e:
