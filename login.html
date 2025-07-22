@@ -3,14 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In to Your Support Dashboard - Voxcord</title>
-    <meta name="description" content="Access your automated customer support dashboard with call analytics and transcripts.">
-    
-    <!-- Varela Round font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
-    
+    <title>Login - Voxcord</title>
+    <link rel="stylesheet" href="/static/styles.css">
     <style>
         * {
             margin: 0;
@@ -19,364 +13,256 @@
         }
 
         body {
-            font-family: 'Varela Round', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #0F0F0F;
-            color: #FFFFFF;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
-            overflow-x: hidden;
-            padding: 20px;
+            padding: 2rem;
         }
 
-        /* Animated background orbs */
-        .bg-orbs {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+            padding: 3rem;
             width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-            overflow: hidden;
-        }
-
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.2;
-            animation: float 30s ease-in-out infinite;
-        }
-
-        .orb-1 {
-            width: 350px;
-            height: 350px;
-            background: radial-gradient(circle, #3B82F6 0%, #1E40AF 100%);
-            top: -175px;
-            left: -175px;
-            animation-delay: 0s;
-        }
-
-        .orb-2 {
-            width: 280px;
-            height: 280px;
-            background: radial-gradient(circle, #8B5CF6 0%, #5B21B6 100%);
-            top: 25%;
-            right: -140px;
-            animation-delay: -12s;
-        }
-
-        .orb-3 {
-            width: 220px;
-            height: 220px;
-            background: radial-gradient(circle, #06B6D4 0%, #0891B2 100%);
-            bottom: -110px;
-            left: 15%;
-            animation-delay: -20s;
-        }
-
-        @keyframes float {
-            0% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
-            25% { transform: translate(70px, -35px) scale(1.1) rotate(90deg); }
-            50% { transform: translate(35px, 50px) scale(0.9) rotate(180deg); }
-            75% { transform: translate(-50px, 15px) scale(1.05) rotate(270deg); }
-            100% { transform: translate(0px, 0px) scale(1) rotate(360deg); }
-        }
-
-        .container {
-            background: rgba(20, 20, 20, 0.9);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            padding: 48px;
-            width: 100%;
-            max-width: 440px;
-            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative;
-            z-index: 10;
+            max-width: 400px;
+            text-align: center;
         }
 
         .logo {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 32px;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1e40af;
+            margin-bottom: 0.5rem;
         }
 
-        .logo-icon {
-            font-size: 28px;
-            filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.3));
-        }
-
-        .logo-text {
-            font-size: 26px;
-            font-weight: 700;
-            color: #FFFFFF;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: #FFFFFF;
-        }
-
-        .header p {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 16px;
-            line-height: 1.5;
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 2rem;
         }
 
         .form-group {
-            margin-bottom: 24px;
+            margin-bottom: 1.5rem;
+            text-align: left;
         }
 
-        .form-label {
+        .form-group label {
             display: block;
-            font-size: 14px;
+            margin-bottom: 0.5rem;
+            color: #334155;
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 8px;
         }
 
-        .form-input {
+        .form-group input {
             width: 100%;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
             border-radius: 12px;
-            color: #FFFFFF;
-            font-size: 15px;
-            font-family: 'Varela Round', sans-serif;
+            font-size: 1rem;
             transition: all 0.3s ease;
+            background: #f8fafc;
         }
 
-        .form-input::placeholder {
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        .form-input:focus {
+        .form-group input:focus {
             outline: none;
-            border-color: #3B82F6;
-            background: rgba(255, 255, 255, 0.08);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: #1e40af;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
         }
 
-        .submit-btn {
+        .btn {
             width: 100%;
-            padding: 16px 24px;
-            background: #3B82F6;
+            padding: 1rem;
+            background: #1e40af;
+            color: white;
             border: none;
             border-radius: 12px;
-            color: white;
-            font-weight: 700;
-            font-size: 16px;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-bottom: 32px;
-            font-family: 'Varela Round', sans-serif;
-        }
-
-        .submit-btn:hover {
-            background: #2563EB;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4);
-        }
-
-        .submit-btn:disabled {
-            background: rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.3);
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .status-message {
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            font-weight: 500;
-            display: none;
-        }
-
-        .status-message.success {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: #10B981;
-        }
-
-        .status-message.error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #EF4444;
-        }
-
-        .footer-links {
-            text-align: center;
-            padding-top: 24px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .footer-links a {
-            color: rgba(255, 255, 255, 0.6);
-            text-decoration: none;
-            font-size: 14px;
-            margin: 0 16px;
-            transition: color 0.3s ease;
-        }
-
-        .footer-links a:hover {
-            color: #3B82F6;
-        }
-
-        .features-preview {
-            margin-top: 32px;
-            padding: 24px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-        }
-
-        .features-preview h3 {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            color: #FFFFFF;
-        }
-
-        .features-list {
-            list-style: none;
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .features-list li {
+            position: relative;
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 10px;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
-        .features-list .check {
-            color: #10B981;
-            font-weight: bold;
-            font-size: 16px;
+        .btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(30, 64, 175, 0.4);
         }
 
-        .loading {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+        .btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
             border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 8px;
+            animation: spin 1s linear infinite;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        /* Mobile responsiveness */
-        @media (max-width: 480px) {
-            .container {
-                margin: 20px;
-                padding: 32px 24px;
-            }
+        .status-message {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            display: none;
+        }
 
-            .header h1 {
-                font-size: 24px;
-            }
+        .status-message.success {
+            background: #dcfce7;
+            color: #166534;
+            border: 2px solid #bbf7d0;
+        }
 
-            .form-input,
-            .submit-btn {
-                padding: 14px 16px;
-            }
+        .status-message.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 2px solid #fecaca;
+        }
+
+        .divider {
+            margin: 2rem 0;
+            position: relative;
+            text-align: center;
+            color: #94a3b8;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 1rem;
+        }
+
+        .signup-link {
+            margin-top: 2rem;
+            color: #64748b;
+        }
+
+        .signup-link a {
+            color: #1e40af;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        .forgot-password {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .forgot-password a {
+            color: #1e40af;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <!-- Animated background orbs -->
-    <div class="bg-orbs">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-    </div>
-
-    <div class="container">
-        <div class="logo">
-            <div class="logo-icon">📡</div>
-            <div class="logo-text">Voxcord</div>
-        </div>
-
-        <div class="header">
-            <h1>Welcome back</h1>
-            <p>Access your automated customer support dashboard</p>
-        </div>
-
-        <div class="status-message" id="statusMessage"></div>
-
+    <div class="login-container">
+        <div class="logo">🎯 Voxcord</div>
+        <p class="subtitle">Welcome back! Sign in to your account</p>
+        
+        <div id="statusMessage" class="status-message"></div>
+        
         <form id="loginForm">
             <div class="form-group">
-                <label class="form-label" for="email">Email</label>
-                <input type="email" class="form-input" id="email" name="email" placeholder="Enter your email address" required>
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required placeholder="you@company.com">
             </div>
-
+            
             <div class="form-group">
-                <label class="form-label" for="password">Password</label>
-                <input type="password" class="form-input" id="password" name="password" placeholder="Enter your password" required>
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="••••••••">
             </div>
-
-            <button type="submit" class="submit-btn" id="submitBtn">
-                <span id="btnText">Access Dashboard</span>
+            
+            <button type="submit" class="btn" id="submitBtn">
+                <div id="loadingSpinner" class="loading-spinner"></div>
+                <span id="btnText">Sign In</span>
             </button>
         </form>
-
-        <div class="footer-links">
-            <a href="/signup">Start automating support</a>
-            <a href="#forgot">Forgot password?</a>
-            <a href="#help">Need help?</a>
+        
+        <div class="forgot-password">
+            <a href="#" onclick="showForgotPassword()">Forgot your password?</a>
         </div>
-
-        <div class="features-preview">
-            <h3>🚀 Your Support Dashboard Includes:</h3>
-            <ul class="features-list">
-                <li><span class="check">✓</span> Live call transcripts and recordings</li>
-                <li><span class="check">✓</span> Customer support analytics</li>
-                <li><span class="check">✓</span> Automated response management</li>
-                <li><span class="check">✓</span> Business data integration</li>
-            </ul>
+        
+        <div class="signup-link">
+            Don't have an account? <a href="/signup">Create one now</a>
         </div>
     </div>
 
     <script>
-        // Form submission
+        // Show status message
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${type}`;
+            statusDiv.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Show forgot password (placeholder)
+        function showForgotPassword() {
+            alert('Password reset functionality coming soon! Please contact support for now.');
+        }
+
+        // Handle login form submission
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const submitBtn = document.getElementById('submitBtn');
+            const loadingSpinner = document.getElementById('loadingSpinner');
             const btnText = document.getElementById('btnText');
             
             // Show loading state
             submitBtn.disabled = true;
-            btnText.innerHTML = '<div class="loading"></div>Accessing dashboard...';
+            loadingSpinner.style.display = 'inline-block';
+            btnText.textContent = 'Signing in...';
             
             try {
                 const formData = new FormData(this);
                 const data = Object.fromEntries(formData.entries());
                 
-                // Make API call to backend
-                const response = await fetch('/api/login', {
+                // Call your new backend API
+                const response = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -386,52 +272,55 @@
                 
                 const result = await response.json();
                 
-                if (!response.ok) {
+                if (response.ok && result.success) {
+                    showStatus('Login successful! Redirecting...', 'success');
+                    
+                    // Store JWT token and user data
+                    localStorage.setItem('authToken', result.token);
+                    localStorage.setItem('user', JSON.stringify(result.user));
+                    
+                    // Redirect to dashboard after short delay
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1000);
+                } else {
                     throw new Error(result.error || 'Login failed');
                 }
                 
-                showStatus('Login successful! Loading your support dashboard...', 'success');
-                
-                // Store token and user data
-                localStorage.setItem('authToken', result.token);
-                localStorage.setItem('user', JSON.stringify(result.user));
-                
-                // Redirect to dashboard
-                setTimeout(() => {
-                    window.location.href = '/dashboard';
-                }, 1000);
-                
             } catch (error) {
-                showStatus(error.message, 'error');
+                console.error('Login error:', error);
+                showStatus(error.message || 'Login failed. Please try again.', 'error');
             } finally {
                 // Reset button state
                 submitBtn.disabled = false;
-                btnText.textContent = 'Access Dashboard';
+                loadingSpinner.style.display = 'none';
+                btnText.textContent = 'Sign In';
             }
         });
 
-        function showStatus(message, type) {
-            const statusMessage = document.getElementById('statusMessage');
-            statusMessage.textContent = message;
-            statusMessage.className = `status-message ${type}`;
-            statusMessage.style.display = 'block';
+        // Check if user is already logged in
+        window.addEventListener('load', function() {
+            const token = localStorage.getItem('authToken');
+            const user = localStorage.getItem('user');
             
-            // Auto-hide error messages after 5 seconds
-            if (type === 'error') {
-                setTimeout(() => {
-                    statusMessage.style.display = 'none';
-                }, 5000);
-            }
-        }
-
-        // Auto-focus email field
-        document.getElementById('email').focus();
-
-        // Handle Enter key navigation
-        document.getElementById('email').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                document.getElementById('password').focus();
+            if (token && user) {
+                // Verify token is still valid by checking with backend
+                fetch('/api/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Token is valid, redirect to dashboard
+                        window.location.href = '/dashboard';
+                    }
+                })
+                .catch(() => {
+                    // Token is invalid, clear storage
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('user');
+                });
             }
         });
     </script>
