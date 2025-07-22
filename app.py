@@ -124,24 +124,50 @@ limiter = Limiter(
 app.config['SESSION_SQLALCHEMY'] = db
 sess = Session(app)
 
-# Add this code right before your OpenAI client initialization
-# Clear any proxy environment variables that might interfere
-proxy_env_vars = ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy']
-for var in proxy_env_vars:
-    if var in os.environ:
-        del os.environ[var]
-
-# Now initialize OpenAI client safely
-try:
-    openai_client = OpenAI(api_key=Config.OPENAI_API_KEY) if Config.OPENAI_API_KEY else None
-    if openai_client:
-        logger.info("OpenAI client initialized successfully")
-except Exception as e:
-    logger.error(f"Failed to initialize OpenAI client: {e}")
-    openai_client = None
+def initialize_openai_client():
+    """Initialize OpenAI client with Digital Ocean compatibility"""
+    if not Config.OPENAI_API_KEY:
+        logger.warning("OPENAI_API_KEY not set - AI responses will be limited")
+        return None
+    
+    try:
+        # Try httpx approach first (recommended)
+        http_client = httpx.Client(
+            proxies=None,  # Explicitly disable proxies
+            timeout=30.0,  # 30 second timeout
+            limits=httpx.Limits(
+                max_connections=100,
+                max_keepalive_connections=20
+            )
+        )
+        
+        openai_client = OpenAI(
+            api_key=Config.OPENAI_API_KEY,
+            http_client=http_client
+        )
+        
+        logger.info("✅ OpenAI client initialized successfully with httpx")
+        return openai_client
+        
+    except Exception as httpx_error:
+        logger.warning(f"httpx approach failed: {httpx_error}")
+        
+        try:
+            # Fallback: clear environment variables and try again
+            proxy_vars = ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy', 'ALL_PROXY']
+            for var in proxy_vars:
+                os.environ.pop(var, None)
+                
+            openai_client = OpenAI(api_key=Config.OPENAI_API_KEY)
+            logger.info("✅ OpenAI client initialized with environment fallback")
+            return openai_client
+            
+        except Exception as fallback_error:
+            logger.error(f"❌ All OpenAI initialization attempts failed: {fallback_error}")
+            return None
 
 # Initialize external services
-openai_client = OpenAI(api_key=Config.OPENAI_API_KEY) if Config.OPENAI_API_KEY else None
+openai_client = initialize_openai_client()
 twilio_client = Client(Config.TWILIO_ACCOUNT_SID, Config.TWILIO_AUTH_TOKEN) if Config.TWILIO_ACCOUNT_SID else None
 
 # Database Models
