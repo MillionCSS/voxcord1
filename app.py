@@ -1,97 +1,97 @@
-#!/usr/bin/env python3
-"""
-Voxcord Backend - AI Voice Assistant Platform with Demo API
-Clean, minimal production-ready version for Digital Ocean App Platform
-"""
-
 import os
-import hashlib
-import secrets
-import jwt
 import json
 import sqlite3
+import hashlib
+import secrets
+import logging
 import uuid
-import time
-import re
 from datetime import datetime, timedelta
-from contextlib import contextmanager
 from functools import wraps
-from pathlib import Path
+import re
 
 from flask import Flask, request, jsonify, send_file, send_from_directory
+from flask_cors import CORS
 from twilio.twiml.voice_response import VoiceResponse, Gather
-from openai import OpenAI
+import jwt
 
-import logging
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
-# Create Flask app
-app = Flask(__name__)
+# OpenAI import with error handling
+try:
+    from openai import OpenAI
+    openai_available = True
+except ImportError:
+    openai_available = False
+    OpenAI = None
 
 # Configuration
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', secrets.token_hex(32))
     JWT_SECRET = os.getenv('JWT_SECRET', secrets.token_hex(64))
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-    TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID') 
-    TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
+    DATABASE_URL = os.getenv('DATABASE_URL', 'database.db')
     PORT = int(os.getenv('PORT', 5000))
+    TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
+    TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 
+# Initialize Flask app
+app = Flask(__name__)
 app.config['SECRET_KEY'] = Config.SECRET_KEY
+CORS(app)
 
-# Initialize OpenAI
-openai_client = OpenAI(api_key=Config.OPENAI_API_KEY) if Config.OPENAI_API_KEY else None
-
-# Constants
+# Shared phone number for all users
 SHARED_PHONE_NUMBER = "+16095073300"
 
-# Create directories
-AUDIO_DIR = Path("audio_files")
-AUDIO_DIR.mkdir(exist_ok=True)
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Initialize OpenAI client
+openai_client = None
+if openai_available and Config.OPENAI_API_KEY:
+    try:
+        openai_client = OpenAI(api_key=Config.OPENAI_API_KEY)
+    except Exception as e:
+        logger.warning(f"OpenAI initialization failed: {e}")
 
 # Database Manager
 class DatabaseManager:
-    def __init__(self):
-        self.db_path = 'voxcord.db'
+    def __init__(self, db_path=Config.DATABASE_URL):
+        self.db_path = db_path
         self.init_database()
     
+    def get_connection(self):
+        conn = sqlite3.connect(self.db_path, timeout=30.0)
+        conn.row_factory = sqlite3.Row
+        return conn
+    
     def init_database(self):
-        """Initialize SQLite database"""
-        with sqlite3.connect(self.db_path) as conn:
+        with self.get_connection() as conn:
             cursor = conn.cursor()
             
             # Users table
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS users (
-                    id TEXT PRIMARY KEY,
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                     first_name TEXT NOT NULL,
                     last_name TEXT NOT NULL,
                     email TEXT UNIQUE NOT NULL,
                     password_hash TEXT NOT NULL,
-                    company TEXT DEFAULT '',
                     plan TEXT DEFAULT 'free',
-                    verified BOOLEAN DEFAULT TRUE,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    settings TEXT DEFAULT '{}'
+                    settings TEXT DEFAULT '{}',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
             
             # Call sessions table
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS call_sessions (
-                    id TEXT PRIMARY KEY,
-                    call_sid TEXT UNIQUE,
-                    caller_number TEXT,
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    call_sid TEXT UNIQUE NOT NULL,
+                    user_id INTEGER,
+                    from_number TEXT,
+                    conversation TEXT DEFAULT '[]',
                     started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     ended_at TIMESTAMP,
-                    status TEXT DEFAULT 'active',
-                    conversation TEXT DEFAULT '[]'
+                    FOREIGN KEY (user_id) REFERENCES users(id)
                 )
             ''')
             
@@ -100,36 +100,24 @@ class DatabaseManager:
                 CREATE TABLE IF NOT EXISTS demo_sessions (
                     id TEXT PRIMARY KEY,
                     session_ip TEXT,
-                    messages_count INTEGER DEFAULT 0,
                     business_config TEXT DEFAULT '{}',
                     conversation TEXT DEFAULT '[]',
+                    messages_count INTEGER DEFAULT 0,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
             
             conn.commit()
     
-    @contextmanager
-    def get_connection(self):
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row
-        try:
-            yield conn
-        finally:
-            conn.close()
-    
-    def create_user(self, user_data):
+    def create_user(self, first_name, last_name, email, password_hash):
         with self.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                INSERT INTO users (id, first_name, last_name, email, password_hash, company, plan)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                user_data['id'], user_data['first_name'], user_data['last_name'],
-                user_data['email'], user_data['password_hash'], 
-                user_data.get('company', ''), user_data.get('plan', 'free')
-            ))
+                INSERT INTO users (first_name, last_name, email, password_hash)
+                VALUES (?, ?, ?, ?)
+            ''', (first_name, last_name, email, password_hash))
             conn.commit()
+            return cursor.lastrowid
     
     def get_user_by_email(self, email):
         with self.get_connection() as conn:
@@ -138,13 +126,20 @@ class DatabaseManager:
             row = cursor.fetchone()
             return dict(row) if row else None
     
-    def create_call_session(self, call_data):
+    def get_user_by_id(self, user_id):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+            row = cursor.fetchone()
+            return dict(row) if row else None
+    
+    def create_call_session(self, call_sid, user_id, from_number):
         with self.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                INSERT INTO call_sessions (id, call_sid, caller_number)
+                INSERT INTO call_sessions (call_sid, user_id, from_number)
                 VALUES (?, ?, ?)
-            ''', (call_data['id'], call_data['call_sid'], call_data.get('caller_number', '')))
+            ''', (call_sid, user_id, from_number))
             conn.commit()
     
     def update_call_conversation(self, call_sid, conversation):
@@ -169,12 +164,14 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                INSERT INTO demo_sessions (id, session_ip, business_config, conversation)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO demo_sessions (id, session_ip, business_config, conversation, messages_count)
+                VALUES (?, ?, ?, ?, ?)
             ''', (
-                session_data['id'], session_data['session_ip'], 
+                session_data['id'], 
+                session_data['session_ip'], 
                 json.dumps(session_data.get('business_config', {})), 
-                json.dumps(session_data.get('conversation', []))
+                json.dumps(session_data.get('conversation', [])),
+                len(session_data.get('conversation', []))
             ))
             conn.commit()
     
@@ -211,7 +208,7 @@ class SecurityManager:
     
     @staticmethod
     def validate_email(email):
-        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}
+        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         return bool(re.match(pattern, email))
 
 # JWT utilities
@@ -244,10 +241,14 @@ def require_auth(f):
 # Memory storage for active calls
 active_calls = {}
 
-# Routes
+# Routes - Static Pages
 @app.route('/')
 def index():
-    return send_file('landing.html')
+    try:
+        return send_file('landing.html')
+    except:
+        # If landing.html doesn't exist, return the integrated version
+        return send_file('Voxcord - Integrated Landing Page with Working Demo.html')
 
 @app.route('/signup')
 def signup_page():
@@ -277,10 +278,13 @@ def serve_audio(filename):
 @app.route('/api/health')
 def health_check():
     """Health check for monitoring"""
-    with db.get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute('SELECT COUNT(*) as count FROM users')
-        user_count = cursor.fetchone()['count']
+    try:
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT COUNT(*) as count FROM users')
+            user_count = cursor.fetchone()['count']
+    except:
+        user_count = 0
     
     return jsonify({
         'status': 'healthy',
@@ -292,7 +296,7 @@ def health_check():
         }
     })
 
-# DEMO API ENDPOINT - NEW ADDITION
+# DEMO API ENDPOINT - FIXED VERSION
 @app.route('/api/demo/chat', methods=['POST'])
 def demo_chat():
     """Handle demo chat requests from landing page"""
@@ -381,38 +385,29 @@ Guidelines:
 - If asked about specific products/services, provide general helpful information
 
 Respond as if you're answering a real customer inquiry for this business."""
-
-        # Build conversation context
+        
+        # Build conversation messages
         messages = [{"role": "system", "content": system_prompt}]
         
-        # Add recent conversation history (last 6 messages)
-        for msg in conversation_history[-6:]:
-            if msg.get('role') and msg.get('content'):
-                messages.append({
-                    "role": msg['role'],
-                    "content": msg['content']
-                })
+        # Add recent conversation history (last 3 exchanges)
+        for exchange in conversation_history[-6:]:  # Last 3 user-assistant pairs
+            if exchange.get('role') == 'user':
+                messages.append({"role": "user", "content": exchange['content']})
+            elif exchange.get('role') == 'assistant':
+                messages.append({"role": "assistant", "content": exchange['content']})
         
         # Add current user message
         messages.append({"role": "user", "content": user_message})
         
-        # Generate response with OpenAI
+        # Generate response
         response = openai_client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=messages,
             max_tokens=150,
-            temperature=0.7,
-            presence_penalty=0.1,
-            frequency_penalty=0.1
+            temperature=0.7
         )
         
-        ai_response = response.choices[0].message.content.strip()
-        
-        # Ensure response isn't too long
-        if len(ai_response) > 500:
-            ai_response = ai_response[:497] + "..."
-        
-        return ai_response
+        return response.choices[0].message.content.strip()
         
     except Exception as e:
         logger.error(f"OpenAI API error: {e}")
@@ -422,49 +417,24 @@ def generate_fallback_response(user_message, business_config):
     """Generate fallback response when OpenAI is unavailable"""
     business_name = business_config.get('businessName', 'our company')
     business_type = business_config.get('businessType', 'business')
-    business_hours = business_config.get('businessHours', 'regular business hours')
     
-    message = user_message.lower()
+    # Simple keyword-based responses
+    message_lower = user_message.lower()
     
-    # Pattern-based responses
-    if any(word in message for word in ['hello', 'hi', 'hey', 'good morning', 'good afternoon']):
-        return f"Hello! Welcome to {business_name}. I'm your AI customer service assistant. How can I help you today?"
+    if any(word in message_lower for word in ['hours', 'open', 'time']):
+        return f"Hi! {business_name} is typically open during regular business hours. For specific hours, please call us directly or visit our website."
     
-    elif any(word in message for word in ['hours', 'open', 'close', 'when', 'time']):
-        return f"Our {business_type.lower()} hours are {business_hours}. Is there anything specific you'd like to know about our services during these times?"
+    elif any(word in message_lower for word in ['price', 'cost', 'fee']):
+        return f"Thanks for asking about pricing! {business_name} offers competitive rates for our {business_type} services. I'd be happy to connect you with someone who can provide detailed pricing information."
     
-    elif any(word in message for word in ['help', 'support', 'assistance', 'problem', 'issue']):
-        return f"I'm here to help with any questions about {business_name}'s {business_type.lower()} services. What specific issue can I assist you with today?"
+    elif any(word in message_lower for word in ['help', 'support', 'problem']):
+        return f"I'm here to help! As {business_name}'s AI assistant, I can assist with general questions about our {business_type} services. What specific issue can I help you with today?"
     
-    elif any(word in message for word in ['price', 'cost', 'how much', 'billing', 'payment']):
-        return f"For pricing information regarding our {business_type.lower()} services, I can provide general details. Would you like me to connect you with our sales team for a detailed quote?"
-    
-    elif any(word in message for word in ['order', 'purchase', 'buy', 'service']):
-        return f"I'd be happy to help you with information about {business_name}'s services. What specific service or product are you interested in?"
-    
-    elif any(word in message for word in ['location', 'address', 'where', 'directions']):
-        return f"For {business_name} location details and directions, I can help connect you with our main office. Would you like our contact information?"
-    
-    elif any(word in message for word in ['human', 'person', 'agent', 'representative', 'manager']):
-        return f"I understand you'd like to speak with a person. I can help transfer you to one of our human representatives. Our support hours are {business_hours}."
-    
-    elif any(word in message for word in ['return', 'refund', 'exchange', 'policy']):
-        return f"I can help you with {business_name}'s return and refund policies. Could you provide more details about your specific situation?"
-    
-    elif any(word in message for word in ['appointment', 'schedule', 'booking', 'meeting']):
-        return f"I can help you schedule an appointment with {business_name}. Our availability is typically during {business_hours}. What type of service are you looking to book?"
+    elif any(word in message_lower for word in ['hello', 'hi', 'hey']):
+        return f"Hello! Welcome to {business_name}. I'm your AI assistant, ready to help with any questions about our {business_type} services. How can I assist you today?"
     
     else:
-        # Generic helpful response
-        responses = [
-            f"Thank you for contacting {business_name}! I'm here to help with any questions about our {business_type.lower()} services. Could you provide a bit more detail about what you need?",
-            f"I'm your AI assistant for {business_name}. I can help with general information, scheduling, and connecting you with the right department. What brings you here today?",
-            f"Welcome to {business_name}'s automated support! I'm equipped to help with common inquiries and can escalate complex issues to our team. How may I assist you?",
-            f"Hi there! As {business_name}'s AI assistant, I'm here to help make your experience smooth and efficient. What can I help you with today?"
-        ]
-        
-        import random
-        return random.choice(responses)
+        return f"Thank you for contacting {business_name}! I understand you're asking about: '{user_message}'. While I'd love to provide more specific information, I'd recommend speaking with one of our team members who can give you detailed assistance with our {business_type} services."
 
 @app.route('/api/signup', methods=['POST'])
 def api_signup():
@@ -472,39 +442,29 @@ def api_signup():
     try:
         data = request.get_json()
         
-        # Validate required fields
-        required = ['firstName', 'lastName', 'email', 'password']
-        for field in required:
-            if not data.get(field):
-                return jsonify({'error': f'{field} is required'}), 400
+        # Extract and validate fields
+        first_name = data.get('firstName', '').strip()
+        last_name = data.get('lastName', '').strip()
+        email = data.get('email', '').lower().strip()
+        password = data.get('password', '')
         
-        email = data['email'].lower().strip()
+        # Validation
+        if not all([first_name, last_name, email, password]):
+            return jsonify({'error': 'All fields are required'}), 400
         
-        # Validate email
         if not SecurityManager.validate_email(email):
             return jsonify({'error': 'Invalid email format'}), 400
+        
+        if len(password) < 6:
+            return jsonify({'error': 'Password must be at least 6 characters'}), 400
         
         # Check if user exists
         if db.get_user_by_email(email):
             return jsonify({'error': 'Email already registered'}), 400
         
-        # Validate password
-        if len(data['password']) < 6:
-            return jsonify({'error': 'Password must be at least 6 characters'}), 400
-        
         # Create user
-        user_id = str(uuid.uuid4())
-        user_data = {
-            'id': user_id,
-            'first_name': data['firstName'],
-            'last_name': data['lastName'],
-            'email': email,
-            'password_hash': SecurityManager.hash_password(data['password']),
-            'company': data.get('company', ''),
-            'plan': data.get('plan', 'free')
-        }
-        
-        db.create_user(user_data)
+        password_hash = SecurityManager.hash_password(password)
+        user_id = db.create_user(first_name, last_name, email, password_hash)
         
         logger.info(f"User created: {email}")
         
@@ -572,104 +532,42 @@ def user_settings():
             cursor.execute('UPDATE users SET settings = ? WHERE id = ?', 
                          (json.dumps(settings), user_id))
             conn.commit()
-        return jsonify({'success': True})
+            return jsonify({'success': True})
 
-@app.route('/api/calls')
-@require_auth  
-def get_calls():
-    """Get recent calls for dashboard"""
-    calls = db.get_recent_calls()
-    
-    # Format calls for frontend
-    formatted_calls = []
-    for call in calls:
-        conversation = json.loads(call.get('conversation', '[]'))
-        formatted_calls.append({
-            'id': call['call_sid'],
-            'time': call['started_at'],
-            'duration': '2m 15s',  # TODO: Calculate actual duration
-            'status': call['status'],
-            'preview': conversation[-1].get('user', 'No conversation') if conversation else 'No conversation'
-        })
-    
-    return jsonify(formatted_calls)
-
-# Twilio Voice Webhook
+# Twilio Voice Routes
 @app.route('/api/twilio/voice', methods=['POST'])
-def handle_voice_call():
-    """Handle incoming Twilio voice calls with OpenAI voices"""
+def handle_incoming_call():
+    """Handle incoming Twilio voice calls"""
     try:
         call_sid = request.form.get('CallSid')
         from_number = request.form.get('From')
         
-        logger.info(f"Incoming call: {call_sid} from {from_number}")
-        
-        # Create call session
-        call_data = {
-            'id': str(uuid.uuid4()),
-            'call_sid': call_sid,
-            'caller_number': from_number
-        }
-        db.create_call_session(call_data)
+        # Store call session
+        db.create_call_session(call_sid, None, from_number)
         
         # Initialize conversation in memory
         active_calls[call_sid] = []
         
-        # Get user settings (default to echo voice)
-        greeting_text = "Hello! Welcome to Voxcord. How can I help you today?"
-        voice_model = "echo"  # Default OpenAI voice
-        
         response = VoiceResponse()
         
-        # Try to generate OpenAI audio
-        if openai_client:
-            try:
-                # Generate greeting with OpenAI TTS
-                audio_response = openai_client.audio.speech.create(
-                    model="tts-1",
-                    voice=voice_model,
-                    input=greeting_text,
-                    speed=1.0
-                )
-                
-                # Save audio file
-                audio_filename = f"{call_sid}_greeting.mp3"
-                audio_path = AUDIO_DIR / audio_filename
-                
-                # Write audio content to file
-                with open(audio_path, 'wb') as f:
-                    for chunk in audio_response.iter_bytes(chunk_size=1024):
-                        f.write(chunk)
-                
-                # Get the domain from request
-                domain = request.headers.get('Host', 'localhost:5000')
-                if not domain.startswith('http'):
-                    protocol = 'https' if 'ondigitalocean' in domain else 'http'
-                    domain = f"{protocol}://{domain}"
-                
-                # Play the OpenAI generated audio
-                audio_url = f"{domain}/audio/{audio_filename}"
-                response.play(audio_url)
-                
-                logger.info(f"Playing OpenAI audio: {audio_url}")
-                
-            except Exception as e:
-                logger.error(f"OpenAI TTS failed: {e}")
-                # Fallback to Twilio voice
-                response.say(greeting_text, voice='Polly.Joanna', language='en-US')
-        else:
-            # No OpenAI client, use Twilio voice
-            response.say(greeting_text, voice='Polly.Joanna', language='en-US')
+        # Welcome message
+        response.say(
+            "Hello! You've reached Voxcord's AI-powered support line. "
+            "I'm here to help with any questions you may have. "
+            "Please tell me how I can assist you today.",
+            voice='Polly.Joanna'
+        )
         
-        # Gather user input
+        # Gather speech input
         gather = Gather(
             input='speech',
+            timeout=10,
+            speechTimeout='auto',
             action=f'/api/twilio/gather/{call_sid}',
-            method='POST',
-            speech_timeout='auto',
-            language='en-US'
+            method='POST'
         )
-        gather.say("Please tell me what you need assistance with.", voice='Polly.Joanna')
+        
+        gather.say("Please speak after the tone, and I'll do my best to help you.", voice='Polly.Joanna')
         response.append(gather)
         
         # Fallback if no speech detected
@@ -696,70 +594,37 @@ def handle_speech(call_sid):
             response.say("I didn't catch that. Please try again.", voice='Polly.Joanna')
             return str(response)
         
-        # Get conversation from memory
+        # Get or initialize conversation history
         conversation = active_calls.get(call_sid, [])
         
         # Generate AI response
         ai_response = generate_ai_response(speech_result, conversation)
         
-        # Update conversation
+        # Update conversation history
         conversation.append({
             'user': speech_result,
             'assistant': ai_response,
-            'timestamp': time.time()
+            'timestamp': datetime.utcnow().isoformat()
         })
+        
         active_calls[call_sid] = conversation
         
-        # Save to database
+        # Update database
         db.update_call_conversation(call_sid, conversation)
         
+        # Create TwiML response
         response = VoiceResponse()
-        
-        # Try to generate OpenAI voice response
-        if openai_client:
-            try:
-                # Generate AI response with OpenAI TTS
-                audio_response = openai_client.audio.speech.create(
-                    model="tts-1",
-                    voice="echo",
-                    input=ai_response,
-                    speed=1.0
-                )
-                
-                # Save audio file
-                audio_filename = f"{call_sid}_response_{len(conversation)}.mp3"
-                audio_path = AUDIO_DIR / audio_filename
-                
-                # Write audio content
-                with open(audio_path, 'wb') as f:
-                    for chunk in audio_response.iter_bytes(chunk_size=1024):
-                        f.write(chunk)
-                
-                # Get domain and play audio
-                domain = request.headers.get('Host', 'localhost:5000')
-                if not domain.startswith('http'):
-                    protocol = 'https' if 'ondigitalocean' in domain else 'http'
-                    domain = f"{protocol}://{domain}"
-                
-                audio_url = f"{domain}/audio/{audio_filename}"
-                response.play(audio_url)
-                
-            except Exception as e:
-                logger.error(f"OpenAI TTS failed for response: {e}")
-                # Fallback to Twilio voice
-                response.say(ai_response, voice='Polly.Joanna')
-        else:
-            # No OpenAI, use Twilio voice
-            response.say(ai_response, voice='Polly.Joanna')
+        response.say(ai_response, voice='Polly.Joanna')
         
         # Continue conversation
         gather = Gather(
             input='speech',
+            timeout=10,
+            speechTimeout='auto',
             action=f'/api/twilio/gather/{call_sid}',
-            method='POST',
-            speech_timeout='auto',
-            language='en-US'
+            method='POST'
         )
+        
         gather.say("Is there anything else I can help you with?", voice='Polly.Joanna')
         response.append(gather)
         
@@ -810,6 +675,23 @@ def generate_ai_response(user_input, conversation_history):
         logger.error(f"AI response error: {e}")
         return "I apologize, but I'm having trouble processing your request right now."
 
+# Dashboard API Routes
+@app.route('/api/dashboard/stats')
+@require_auth
+def dashboard_stats():
+    """Get dashboard statistics"""
+    try:
+        calls = db.get_recent_calls(30)  # Last 30 calls
+        
+        return jsonify({
+            'totalCalls': len(calls),
+            'recentCalls': calls[:10],
+            'phoneNumber': SHARED_PHONE_NUMBER
+        })
+    except Exception as e:
+        logger.error(f"Dashboard stats error: {e}")
+        return jsonify({'error': 'Failed to load stats'}), 500
+
 # Error handlers
 @app.errorhandler(404)
 def not_found(error):
@@ -826,4 +708,6 @@ if __name__ == '__main__':
         logger.warning("OPENAI_API_KEY not set - AI responses will be limited")
     
     logger.info("Starting Voxcord server...")
+    logger.info(f"Shared phone number: {SHARED_PHONE_NUMBER}")
+    
     app.run(host='0.0.0.0', port=Config.PORT, debug=False)
