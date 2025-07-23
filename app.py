@@ -793,15 +793,29 @@ def generate_ai_response(user_input, call_sid):
 @app.route('/api/demo/chat', methods=['POST'])
 @limiter.limit("20 per hour")
 def demo_chat():
-    """Demo chat for landing page"""
+    """Demo chat for landing page with OpenAI integration"""
     try:
         data = request.get_json() or {}
         message = data.get('message', '').strip()
+        config = data.get('config', {})
+        conversation_history = data.get('conversationHistory', [])
         
         if not message:
             return jsonify({'error': 'Message is required'}), 400
         
-        # Simple demo responses
+        # Try OpenAI first, fallback to simple responses
+        if openai_client:
+            try:
+                ai_response = generate_demo_ai_response(message, config, conversation_history)
+                return jsonify({
+                    'success': True,
+                    'response': ai_response,
+                    'timestamp': datetime.utcnow().isoformat()
+                })
+            except Exception as e:
+                logger.warning(f"OpenAI demo failed, using fallback: {e}")
+        
+        # Fallback to original simple responses
         demo_responses = {
             'hello': "Hello! I'm your AI voice assistant. I can handle customer calls 24/7!",
             'pricing': "Our pricing starts at $99/month for unlimited calls. Perfect for growing businesses!",
@@ -810,7 +824,6 @@ def demo_chat():
             'phone': "You get a dedicated phone number that I'll answer professionally for your business."
         }
         
-        # Find best response
         message_lower = message.lower()
         response_text = "Thanks for trying our demo! I'm an AI that handles phone calls for businesses. Sign up to get your own AI assistant!"
         
@@ -828,6 +841,59 @@ def demo_chat():
     except Exception as e:
         logger.error(f"❌ Demo error: {e}")
         return jsonify({'error': 'Demo temporarily unavailable'}), 500
+
+def generate_demo_ai_response(user_message, config, conversation_history):
+    """Generate AI response for demo using OpenAI"""
+    try:
+        business_name = config.get('businessName', 'Acme Corp')
+        business_type = config.get('businessType', 'Technology Company')
+        business_hours = config.get('businessHours', 'Monday - Friday, 9AM - 6PM')
+        instructions = config.get('instructions', 'Handle basic customer inquiries professionally')
+        
+        # Build context-aware system prompt
+        system_prompt = f"""You are a professional AI customer service assistant for {business_name}, a {business_type}.
+
+Business Details:
+- Company: {business_name}
+- Type: {business_type} 
+- Hours: {business_hours}
+- Instructions: {instructions}
+
+Guidelines:
+- Be helpful, friendly, and professional
+- Keep responses under 100 words for chat
+- Use the business information provided
+- If you don't know something specific, offer to connect them with a human
+- This is a DEMO - occasionally mention they can sign up for their own AI assistant
+
+Respond as the AI assistant that would handle customer calls for this business."""
+
+        # Build messages
+        messages = [{"role": "system", "content": system_prompt}]
+        
+        # Add recent conversation history
+        for exchange in conversation_history[-4:]:
+            if 'user' in exchange:
+                messages.append({"role": "user", "content": exchange['user']})
+            if 'assistant' in exchange:
+                messages.append({"role": "assistant", "content": exchange['assistant']})
+        
+        # Add current message
+        messages.append({"role": "user", "content": user_message})
+        
+        # Generate response
+        response = openai_client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+            max_tokens=150,
+            temperature=0.7
+        )
+        
+        return response.choices[0].message.content.strip()
+        
+    except Exception as e:
+        logger.error(f"OpenAI demo response failed: {e}")
+        raise e
 
 # =============================================================================
 # HEALTH CHECK & MONITORING
