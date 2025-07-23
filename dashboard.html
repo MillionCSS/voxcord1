@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Voxcord</title>
-    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -16,6 +18,7 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: #f8fafc;
             color: #334155;
+            overflow-x: hidden;
         }
 
         /* Header */
@@ -29,9 +32,13 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
             font-size: 1.5rem;
             font-weight: 800;
             color: #1e40af;
@@ -43,16 +50,54 @@
             gap: 1rem;
         }
 
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #1e293b;
+        }
+
+        .user-plan {
+            font-size: 0.75rem;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .plan-badge {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 0.125rem 0.5rem;
+            border-radius: 1rem;
+            font-size: 0.625rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .plan-badge.professional {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .plan-badge.enterprise {
+            background: #f3e8ff;
+            color: #7c3aed;
+        }
+
         .user-avatar {
             width: 40px;
             height: 40px;
-            background: #1e40af;
+            background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%);
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.9rem;
         }
 
@@ -65,216 +110,631 @@
             cursor: pointer;
             font-weight: 500;
             transition: all 0.2s ease;
+            font-size: 0.875rem;
         }
 
         .logout-btn:hover {
             background: #e2e8f0;
+            color: #475569;
         }
 
-        /* Main Container */
-        .dashboard {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            min-height: calc(100vh - 73px);
         }
 
-        .welcome-section {
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 260px;
             background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            border: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+            padding: 2rem 0;
+            position: sticky;
+            top: 73px;
+            height: calc(100vh - 73px);
+            overflow-y: auto;
         }
 
-        .welcome-title {
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-section-title {
+            padding: 0 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: #64748b;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            border-right: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: #f8fafc;
+            color: #1e40af;
+        }
+
+        .nav-item.active {
+            background: #eff6ff;
+            color: #1e40af;
+            border-right-color: #1e40af;
+        }
+
+        .nav-icon {
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 0.625rem;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.5rem;
+            margin-left: auto;
+        }
+
+        /* Main Content */
+        .content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
             font-size: 2rem;
             font-weight: 700;
             color: #1e293b;
             margin-bottom: 0.5rem;
         }
 
-        .welcome-subtitle {
+        .page-subtitle {
             color: #64748b;
-            margin-bottom: 1rem;
+            font-size: 1rem;
         }
 
-        .phone-number {
-            background: #f0f9ff;
-            padding: 1rem;
-            border-radius: 12px;
-            border: 2px solid #0ea5e9;
+        /* Tab Content */
+        .tab-content {
+            display: none;
         }
 
-        .phone-number strong {
-            color: #1e40af;
-            font-size: 1.2rem;
+        .tab-content.active {
+            display: block;
         }
 
-        /* Stats Cards */
+        /* Overview Tab */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
 
         .stat-card {
             background: white;
-            padding: 2rem;
+            padding: 1.5rem;
             border-radius: 16px;
             border: 1px solid #e2e8f0;
-            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .stat-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .stat-icon.blue {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .stat-icon.green {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .stat-icon.purple {
+            background: #f3e8ff;
+            color: #7c3aed;
+        }
+
+        .stat-icon.orange {
+            background: #fed7aa;
+            color: #ea580c;
         }
 
         .stat-number {
-            font-size: 2.5rem;
+            font-size: 2.25rem;
             font-weight: 800;
-            color: #1e40af;
+            color: #1e293b;
+            line-height: 1;
             margin-bottom: 0.5rem;
         }
 
-        .stat-label {
+        .stat-change {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .stat-change.positive {
+            color: #16a34a;
+        }
+
+        .stat-change.negative {
+            color: #dc2626;
+        }
+
+        .stat-change.neutral {
             color: #64748b;
+        }
+
+        /* Charts */
+        .chart-container {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .chart-filter {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: #64748b;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn.active {
+            background: #1e40af;
+            color: white;
+            border-color: #1e40af;
+        }
+
+        .chart-placeholder {
+            height: 300px;
+            background: #f8fafc;
+            border: 2px dashed #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-weight: 500;
+            border-radius: 12px;
+        }
+
+        /* Phone Numbers Tab */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
             font-weight: 600;
+            font-size: 0.875rem;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        /* Content Sections */
-        .content-grid {
+        .btn-primary {
+            background: #1e40af;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .phone-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
         }
 
-        .content-section {
+        .phone-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .phone-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .phone-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .phone-number {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .phone-name {
+            color: #64748b;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .phone-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .phone-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 1rem 0;
+            padding: 1rem 0;
+            border-top: 1px solid #f1f5f9;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .phone-stat {
+            text-align: center;
+        }
+
+        .phone-stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: block;
+        }
+
+        .phone-stat-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .phone-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+        }
+
+        /* Calls Tab */
+        .calls-table {
             background: white;
             border-radius: 16px;
             border: 1px solid #e2e8f0;
             overflow: hidden;
         }
 
-        .section-header {
-            padding: 1.5rem;
+        .table-header {
+            background: #f8fafc;
+            padding: 1rem 1.5rem;
             border-bottom: 1px solid #e2e8f0;
             display: flex;
-            justify-content: space-between;
+            justify-content: between;
             align-items: center;
         }
 
-        .section-title {
-            font-size: 1.25rem;
+        .table-title {
+            font-size: 1.125rem;
             font-weight: 700;
             color: #1e293b;
         }
 
-        .view-all-btn {
-            color: #1e40af;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
+        .table-filters {
+            display: flex;
+            gap: 1rem;
         }
 
-        .view-all-btn:hover {
-            text-decoration: underline;
+        .filter-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            background: white;
         }
 
-        /* Call List */
-        .call-list {
-            max-height: 400px;
-            overflow-y: auto;
+        .table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        .call-item {
-            padding: 1.5rem;
+        .table th,
+        .table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
             border-bottom: 1px solid #f1f5f9;
-            transition: background 0.2s ease;
         }
 
-        .call-item:hover {
+        .table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #64748b;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .table td {
+            color: #1e293b;
+            font-size: 0.875rem;
+        }
+
+        .table tr:hover {
             background: #f8fafc;
         }
 
-        .call-item:last-child {
-            border-bottom: none;
-        }
-
-        .call-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 0.5rem;
-        }
-
-        .call-number {
-            font-weight: 600;
-            color: #1e293b;
-        }
-
-        .call-time {
-            font-size: 0.8rem;
-            color: #64748b;
-        }
-
-        .call-preview {
-            color: #64748b;
-            font-size: 0.9rem;
-            line-height: 1.4;
-        }
-
-        .call-status {
-            padding: 0.25rem 0.5rem;
-            border-radius: 6px;
-            font-size: 0.7rem;
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
         }
 
-        .call-status.completed {
+        .status-badge.completed {
             background: #dcfce7;
-            color: #166534;
+            color: #16a34a;
         }
 
-        .call-status.active {
+        .status-badge.active {
             background: #fef3c7;
-            color: #92400e;
+            color: #d97706;
         }
 
-        /* Quick Actions */
-        .quick-actions {
-            padding: 1.5rem;
+        .status-badge.failed {
+            background: #fecaca;
+            color: #dc2626;
         }
 
-        .action-button {
-            width: 100%;
-            padding: 1rem;
-            background: #1e40af;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 1rem;
-            transition: background 0.2s ease;
+        /* Settings Tab */
+        .settings-section {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 2rem;
+            margin-bottom: 2rem;
         }
 
-        .action-button:hover {
-            background: #1d4ed8;
+        .settings-header {
+            margin-bottom: 1.5rem;
         }
 
-        .action-button.secondary {
-            background: #f1f5f9;
+        .settings-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .settings-subtitle {
             color: #64748b;
+            font-size: 0.875rem;
         }
 
-        .action-button.secondary:hover {
-            background: #e2e8f0;
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            font-family: inherit;
+            background: #f8fafc;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #1e40af;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-help {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #64748b;
+            cursor: pointer;
+            padding: 0.5rem;
+            margin: -0.5rem;
         }
 
         /* Loading States */
         .loading {
             display: flex;
-            justify-content: center;
             align-items: center;
-            padding: 2rem;
+            justify-content: center;
+            padding: 3rem;
             color: #64748b;
         }
 
@@ -294,137 +754,485 @@
 
         /* Empty States */
         .empty-state {
-            padding: 3rem;
+            padding: 4rem 2rem;
             text-align: center;
             color: #64748b;
         }
 
         .empty-icon {
-            font-size: 3rem;
+            font-size: 4rem;
             margin-bottom: 1rem;
             opacity: 0.5;
         }
 
+        .empty-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-subtitle {
+            margin-bottom: 2rem;
+        }
+
         /* Responsive Design */
-        @media (max-width: 768px) {
-            .dashboard {
+        @media (max-width: 1024px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: static;
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+                padding: 1rem 0;
+            }
+
+            .nav-section {
+                margin-bottom: 1rem;
+            }
+
+            .nav-item {
+                padding: 0.5rem 1rem;
+            }
+
+            .content {
                 padding: 1rem;
             }
 
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
             .header {
                 padding: 1rem;
             }
 
-            .content-grid {
+            .user-info {
+                display: none;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .action-bar {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+
+            .phone-grid {
                 grid-template-columns: 1fr;
             }
 
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .welcome-title {
-                font-size: 1.5rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .stats-grid {
+            .phone-stats {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Header -->
     <div class="header">
-        <div class="logo">🎯 Voxcord</div>
+        <div class="logo">
+            <span>📡</span>
+            <span>Voxcord</span>
+        </div>
         <div class="user-menu">
             <div class="user-info">
-                <div id="userName" style="font-weight: 600; margin-bottom: 0.25rem;">Loading...</div>
-                <div id="userPlan" style="font-size: 0.8rem; color: #64748b;">Loading...</div>
+                <div class="user-name" id="userName">Loading...</div>
+                <div class="user-plan">
+                    <span id="userPlan">Loading...</span>
+                    <span class="plan-badge" id="planBadge">Free</span>
+                </div>
             </div>
-            <div id="userAvatar" class="user-avatar">?</div>
+            <div class="user-avatar" id="userAvatar">?</div>
             <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </div>
 
-    <div class="dashboard">
-        <!-- Welcome Section -->
-        <div class="welcome-section">
-            <h1 class="welcome-title">Welcome back, <span id="welcomeName">there</span>!</h1>
-            <p class="welcome-subtitle">Here's what's happening with your AI voice assistant today.</p>
-            
-            <div class="phone-number">
-                <strong>Your AI Phone Number: +1 (609) 507-3300</strong>
-                <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #64748b;">
-                    Give this number to your customers - your AI assistant is ready to help them 24/7!
-                </p>
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="nav-section">
+                <div class="nav-section-title">Dashboard</div>
+                <a href="#" class="nav-item active" onclick="showTab('overview')">
+                    <span class="nav-icon">📊</span>
+                    <span>Overview</span>
+                </a>
             </div>
-        </div>
 
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div id="totalCalls" class="stat-number">-</div>
-                <div class="stat-label">Total Calls</div>
+            <div class="nav-section">
+                <div class="nav-section-title">Voice Lines</div>
+                <a href="#" class="nav-item" onclick="showTab('phone-numbers')">
+                    <span class="nav-icon">📞</span>
+                    <span>Phone Numbers</span>
+                    <span class="nav-badge" id="phoneCountBadge">0</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showTab('calls')">
+                    <span class="nav-icon">📋</span>
+                    <span>Call History</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showTab('analytics')">
+                    <span class="nav-icon">📈</span>
+                    <span>Analytics</span>
+                </a>
             </div>
-            <div class="stat-card">
-                <div id="recentCalls" class="stat-number">-</div>
-                <div class="stat-label">Recent Calls</div>
-            </div>
-            <div class="stat-card">
-                <div id="avgDuration" class="stat-number">-</div>
-                <div class="stat-label">Avg Duration</div>
-            </div>
-            <div class="stat-card">
-                <div id="successRate" class="stat-number">-</div>
-                <div class="stat-label">Success Rate</div>
-            </div>
-        </div>
 
-        <!-- Content Grid -->
-        <div class="content-grid">
-            <!-- Recent Calls -->
-            <div class="content-section">
-                <div class="section-header">
-                    <h2 class="section-title">Recent Calls</h2>
-                    <a href="#" class="view-all-btn" onclick="showAllCalls()">View All</a>
+            <div class="nav-section">
+                <div class="nav-section-title">Account</div>
+                <a href="#" class="nav-item" onclick="showTab('settings')">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showTab('billing')">
+                    <span class="nav-icon">💳</span>
+                    <span>Billing</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="content">
+            <!-- Overview Tab -->
+            <div id="overview-tab" class="tab-content active">
+                <div class="page-header">
+                    <h1 class="page-title">Welcome back, <span id="welcomeName">there</span>!</h1>
+                    <p class="page-subtitle">Here's what's happening with your AI voice assistants today.</p>
                 </div>
-                <div id="callsList" class="call-list">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        Loading calls...
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Total Calls</div>
+                            <div class="stat-icon blue">📞</div>
+                        </div>
+                        <div class="stat-number" id="totalCalls">-</div>
+                        <div class="stat-change neutral">
+                            <span>All time</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">This Month</div>
+                            <div class="stat-icon green">📈</div>
+                        </div>
+                        <div class="stat-number" id="monthlyCallUsage">-</div>
+                        <div class="stat-change neutral">
+                            <span>of <span id="callLimit">-</span> limit</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Avg Duration</div>
+                            <div class="stat-icon purple">⏱️</div>
+                        </div>
+                        <div class="stat-number" id="avgDuration">-</div>
+                        <div class="stat-change neutral">
+                            <span>seconds</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Success Rate</div>
+                            <div class="stat-icon orange">✅</div>
+                        </div>
+                        <div class="stat-number" id="successRate">-</div>
+                        <div class="stat-change positive">
+                            <span>%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Call Volume</h3>
+                        <div class="chart-filter">
+                            <button class="filter-btn active">7 days</button>
+                            <button class="filter-btn">30 days</button>
+                            <button class="filter-btn">90 days</button>
+                        </div>
+                    </div>
+                    <div class="chart-placeholder">
+                        📈 Call volume chart will appear here
                     </div>
                 </div>
             </div>
 
-            <!-- Quick Actions -->
-            <div class="content-section">
-                <div class="section-header">
-                    <h2 class="section-title">Quick Actions</h2>
+            <!-- Phone Numbers Tab -->
+            <div id="phone-numbers-tab" class="tab-content">
+                <div class="page-header">
+                    <h1 class="page-title">Phone Numbers</h1>
+                    <p class="page-subtitle">Manage your AI voice lines and their configurations.</p>
                 </div>
-                <div class="quick-actions">
-                    <button class="action-button" onclick="testCall()">
-                        📞 Test Your AI Assistant
+
+                <div class="action-bar">
+                    <div>
+                        <span id="phoneNumbersCount">Loading...</span>
+                    </div>
+                    <button class="btn btn-primary" onclick="openAddPhoneModal()">
+                        <span>➕</span>
+                        <span>Add Phone Number</span>
                     </button>
-                    <button class="action-button secondary" onclick="viewSettings()">
-                        ⚙️ Customize AI Settings
-                    </button>
-                    <button class="action-button secondary" onclick="viewAnalytics()">
-                        📊 View Detailed Analytics
-                    </button>
-                    <button class="action-button secondary" onclick="getSupport()">
-                        💬 Get Support
-                    </button>
+                </div>
+
+                <div class="phone-grid" id="phoneNumbersGrid">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading phone numbers...
+                    </div>
                 </div>
             </div>
+
+            <!-- Calls Tab -->
+            <div id="calls-tab" class="tab-content">
+                <div class="page-header">
+                    <h1 class="page-title">Call History</h1>
+                    <p class="page-subtitle">Review and analyze your customer conversations.</p>
+                </div>
+
+                <div class="calls-table">
+                    <div class="table-header">
+                        <h3 class="table-title">Recent Calls</h3>
+                        <div class="table-filters">
+                            <select class="filter-select" id="callStatusFilter" onchange="loadCalls()">
+                                <option value="">All Status</option>
+                                <option value="completed">Completed</option>
+                                <option value="active">Active</option>
+                                <option value="failed">Failed</option>
+                            </select>
+                            <select class="filter-select" id="phoneNumberFilter" onchange="loadCalls()">
+                                <option value="">All Numbers</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="callsTableContainer">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Loading calls...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div id="analytics-tab" class="tab-content">
+                <div class="page-header">
+                    <h1 class="page-title">Analytics</h1>
+                    <p class="page-subtitle">Deep insights into your voice assistant performance.</p>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Phone Number Performance</h3>
+                    </div>
+                    <div class="chart-placeholder">
+                        📊 Phone number performance analytics will appear here
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Customer Satisfaction</h3>
+                    </div>
+                    <div class="chart-placeholder">
+                        ⭐ Satisfaction ratings and trends will appear here
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings-tab" class="tab-content">
+                <div class="page-header">
+                    <h1 class="page-title">Account Settings</h1>
+                    <p class="page-subtitle">Manage your profile and account preferences.</p>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-header">
+                        <h3 class="settings-title">Profile Information</h3>
+                        <p class="settings-subtitle">Update your personal and company details.</p>
+                    </div>
+                    <form id="profileForm" class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="profileFirstName">First Name</label>
+                            <input type="text" class="form-input" id="profileFirstName" name="firstName">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="profileLastName">Last Name</label>
+                            <input type="text" class="form-input" id="profileLastName" name="lastName">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="profileEmail">Email</label>
+                            <input type="email" class="form-input" id="profileEmail" name="email" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="profileCompany">Company</label>
+                            <input type="text" class="form-input" id="profileCompany" name="company">
+                        </div>
+                        <div class="form-group full-width">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-header">
+                        <h3 class="settings-title">Plan & Usage</h3>
+                        <p class="settings-subtitle">View your current plan and upgrade options.</p>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Current Plan</label>
+                            <div style="padding: 1rem; background: #f8fafc; border-radius: 10px; border: 2px solid #e2e8f0;">
+                                <div style="font-weight: 600; color: #1e293b;" id="currentPlanName">Loading...</div>
+                                <div style="font-size: 0.875rem; color: #64748b;" id="currentPlanFeatures">Loading...</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Usage This Month</label>
+                            <div style="padding: 1rem; background: #f8fafc; border-radius: 10px; border: 2px solid #e2e8f0;">
+                                <div style="font-weight: 600; color: #1e293b;"><span id="settingsMonthlyUsage">0</span> calls</div>
+                                <div style="font-size: 0.875rem; color: #64748b;">of <span id="settingsCallLimit">unlimited</span> limit</div>
+                            </div>
+                        </div>
+                        <div class="form-group full-width">
+                            <button class="btn btn-primary" onclick="showUpgradeModal()">Upgrade Plan</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Billing Tab -->
+            <div id="billing-tab" class="tab-content">
+                <div class="page-header">
+                    <h1 class="page-title">Billing</h1>
+                    <p class="page-subtitle">Manage your subscription and payment methods.</p>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-header">
+                        <h3 class="settings-title">Current Subscription</h3>
+                        <p class="settings-subtitle">Your current plan and billing information.</p>
+                    </div>
+                    <div class="empty-state">
+                        <div class="empty-icon">💳</div>
+                        <div class="empty-title">Billing Integration Coming Soon</div>
+                        <div class="empty-subtitle">Stripe integration will be available in the next update.</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Phone Number Modal -->
+    <div class="modal" id="addPhoneModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Phone Number</h2>
+                <button class="modal-close" onclick="closeAddPhoneModal()">&times;</button>
+            </div>
+            <form id="addPhoneForm">
+                <div class="form-group">
+                    <label class="form-label" for="areaCode">Area Code (Optional)</label>
+                    <input type="text" class="form-input" id="areaCode" placeholder="e.g. 555" maxlength="3">
+                    <div class="form-help">Leave blank to search all available numbers</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="friendlyName">Friendly Name</label>
+                    <input type="text" class="form-input" id="friendlyName" placeholder="e.g. Main Support Line" required>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddPhoneModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Search Numbers</button>
+                </div>
+            </form>
+            <div id="availableNumbers" style="display: none; margin-top: 2rem;">
+                <h3 style="margin-bottom: 1rem;">Available Numbers</h3>
+                <div id="numbersList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configure Phone Modal -->
+    <div class="modal" id="configurePhoneModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Configure AI Assistant</h2>
+                <button class="modal-close" onclick="closeConfigurePhoneModal()">&times;</button>
+            </div>
+            <form id="configurePhoneForm">
+                <input type="hidden" id="configPhoneId">
+                <div class="form-group">
+                    <label class="form-label" for="configFriendlyName">Line Name</label>
+                    <input type="text" class="form-input" id="configFriendlyName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="configAiName">AI Assistant Name</label>
+                    <input type="text" class="form-input" id="configAiName" placeholder="e.g. Sarah" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="configAiVoice">Voice</label>
+                    <select class="form-select" id="configAiVoice" required>
+                        <option value="alloy">Alloy (Neutral)</option>
+                        <option value="echo">Echo (Calm)</option>
+                        <option value="fable">Fable (Expressive)</option>
+                        <option value="onyx">Onyx (Deep)</option>
+                        <option value="nova">Nova (Energetic)</option>
+                        <option value="shimmer">Shimmer (Warm)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="configBusinessName">Business Name</label>
+                    <input type="text" class="form-input" id="configBusinessName" placeholder="Your Business Name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="configBusinessType">Business Type</label>
+                    <input type="text" class="form-input" id="configBusinessType" placeholder="e.g. Restaurant, E-commerce">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="configBusinessHours">Business Hours</label>
+                    <input type="text" class="form-input" id="configBusinessHours" placeholder="e.g. Mon-Fri 9AM-6PM">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="configBusinessLocation">Location</label>
+                    <input type="text" class="form-input" id="configBusinessLocation" placeholder="City, State">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="configAiInstructions">AI Instructions</label>
+                    <textarea class="form-textarea" id="configAiInstructions" placeholder="How should the AI handle customer inquiries? Include any specific policies or procedures..."></textarea>
+                    <div class="form-help">Be specific about how you want the AI to respond to customers</div>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeConfigurePhoneModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Configuration</button>
+                </div>
+            </form>
         </div>
     </div>
 
     <script>
         let currentUser = null;
+        let phoneNumbers = [];
+        let calls = [];
 
-        // Check authentication on page load
+        // Initialize dashboard
         window.addEventListener('load', async function() {
             await checkAuthentication();
             if (currentUser) {
@@ -432,7 +1240,7 @@
             }
         });
 
-        // Check if user is authenticated - UPDATED FOR NEW APP.PY
+        // Authentication
         async function checkAuthentication() {
             const token = localStorage.getItem('authToken');
             
@@ -465,30 +1273,58 @@
             }
         }
 
-        // Update user display
         function updateUserDisplay(user) {
             document.getElementById('userName').textContent = user.fullName;
             document.getElementById('userPlan').textContent = `${user.plan.charAt(0).toUpperCase() + user.plan.slice(1)} Plan`;
             document.getElementById('welcomeName').textContent = user.firstName;
             
+            // Update plan badge
+            const planBadge = document.getElementById('planBadge');
+            planBadge.textContent = user.plan.charAt(0).toUpperCase() + user.plan.slice(1);
+            planBadge.className = `plan-badge ${user.plan}`;
+            
             // Generate initials for avatar
             const initials = `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
             document.getElementById('userAvatar').textContent = initials;
+
+            // Update settings form
+            document.getElementById('profileFirstName').value = user.firstName;
+            document.getElementById('profileLastName').value = user.lastName;
+            document.getElementById('profileEmail').value = user.email;
+            document.getElementById('profileCompany').value = user.company || '';
+
+            // Update plan information
+            const planNames = {
+                'free': 'Free Plan',
+                'professional': 'Professional Plan', 
+                'enterprise': 'Enterprise Plan'
+            };
+            const planFeatures = {
+                'free': '100 calls/month • 1 phone number',
+                'professional': 'Unlimited calls • 5 phone numbers',
+                'enterprise': 'Unlimited everything • Custom features'
+            };
+
+            document.getElementById('currentPlanName').textContent = planNames[user.plan] || 'Unknown Plan';
+            document.getElementById('currentPlanFeatures').textContent = planFeatures[user.plan] || '';
+            document.getElementById('settingsMonthlyUsage').textContent = user.monthlyCallUsage || 0;
+            document.getElementById('settingsCallLimit').textContent = user.callLimit === -1 ? 'unlimited' : user.callLimit;
         }
 
         // Load dashboard data
         async function loadDashboardData() {
             await Promise.all([
                 loadAnalytics(),
-                loadRecentCalls()
+                loadPhoneNumbers(),
+                loadCalls()
             ]);
         }
 
-        // Load analytics data - UPDATED FOR NEW APP.PY
+        // Analytics
         async function loadAnalytics() {
             try {
                 const token = localStorage.getItem('authToken');
-                const response = await fetch('/api/analytics/overview', {
+                const response = await fetch('/api/analytics/dashboard', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -500,13 +1336,11 @@
                     const overview = data.overview;
                     
                     document.getElementById('totalCalls').textContent = overview.totalCalls || '0';
-                    document.getElementById('recentCalls').textContent = overview.recentCalls || '0';
-                    document.getElementById('avgDuration').textContent = 
-                        overview.avgDuration ? `${Math.round(overview.avgDuration)}s` : '0s';
-                    document.getElementById('successRate').textContent = 
-                        overview.successRate ? `${overview.successRate}%` : '0%';
+                    document.getElementById('monthlyCallUsage').textContent = overview.monthlyCallUsage || '0';
+                    document.getElementById('callLimit').textContent = overview.callLimit === -1 ? 'unlimited' : overview.callLimit;
+                    document.getElementById('avgDuration').textContent = overview.avgDuration ? `${overview.avgDuration}s` : '0s';
+                    document.getElementById('successRate').textContent = overview.successRate ? `${overview.successRate}%` : '0%';
                 } else {
-                    // Set default values if API fails
                     setDefaultAnalytics();
                 }
             } catch (error) {
@@ -517,76 +1351,435 @@
 
         function setDefaultAnalytics() {
             document.getElementById('totalCalls').textContent = '0';
-            document.getElementById('recentCalls').textContent = '0';
+            document.getElementById('monthlyCallUsage').textContent = '0';
+            document.getElementById('callLimit').textContent = 'unlimited';
             document.getElementById('avgDuration').textContent = '0s';
             document.getElementById('successRate').textContent = '0%';
         }
 
-        // Load recent calls - UPDATED FOR NEW APP.PY
-        async function loadRecentCalls() {
+        // Phone Numbers
+        async function loadPhoneNumbers() {
             try {
                 const token = localStorage.getItem('authToken');
-                const response = await fetch('/api/calls?per_page=5', {
+                const response = await fetch('/api/phone-numbers', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
                 });
 
-                const callsList = document.getElementById('callsList');
-
                 if (response.ok) {
                     const data = await response.json();
-                    
-                    if (data.calls && data.calls.length > 0) {
-                        callsList.innerHTML = data.calls.map(call => `
-                            <div class="call-item">
-                                <div class="call-header">
-                                    <div class="call-number">${call.callerNumber || 'Unknown'}</div>
-                                    <div class="call-time">${formatTime(call.startedAt)}</div>
-                                </div>
-                                <div class="call-preview">${call.preview || 'No conversation recorded'}</div>
-                                <div style="margin-top: 0.5rem;">
-                                    <span class="call-status ${call.status}">${call.status}</span>
-                                </div>
-                            </div>
-                        `).join('');
-                    } else {
-                        callsList.innerHTML = `
-                            <div class="empty-state">
-                                <div class="empty-icon">📞</div>
-                                <p>No calls yet</p>
-                                <p style="font-size: 0.9rem; margin-top: 0.5rem;">
-                                    Share your phone number with customers to get started!
-                                </p>
-                            </div>
-                        `;
-                    }
+                    phoneNumbers = data.phoneNumbers;
+                    renderPhoneNumbers();
+                    updatePhoneNumbersBadge();
+                    updatePhoneNumbersFilter();
                 } else {
-                    callsList.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-icon">📞</div>
-                            <p>No calls yet</p>
-                            <p style="font-size: 0.9rem; margin-top: 0.5rem;">
-                                Share your phone number with customers to get started!
-                            </p>
-                        </div>
-                    `;
+                    renderEmptyPhoneNumbers();
                 }
             } catch (error) {
-                console.error('Failed to load calls:', error);
-                document.getElementById('callsList').innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">❌</div>
-                        <p>Failed to load calls</p>
-                    </div>
-                `;
+                console.error('Failed to load phone numbers:', error);
+                renderEmptyPhoneNumbers();
             }
         }
 
-        // Format time helper
-        function formatTime(timestamp) {
-            const date = new Date(timestamp);
+        function renderPhoneNumbers() {
+            const grid = document.getElementById('phoneNumbersGrid');
+            const countText = document.getElementById('phoneNumbersCount');
+            
+            countText.textContent = `${phoneNumbers.length} phone number${phoneNumbers.length !== 1 ? 's' : ''}`;
+
+            if (phoneNumbers.length === 0) {
+                renderEmptyPhoneNumbers();
+                return;
+            }
+
+            grid.innerHTML = phoneNumbers.map(phone => `
+                <div class="phone-card">
+                    <div class="phone-header">
+                        <div>
+                            <div class="phone-name">${phone.friendlyName}</div>
+                            <div class="phone-number">${phone.phoneNumber}</div>
+                        </div>
+                        <div class="phone-status">Active</div>
+                    </div>
+                    <div class="phone-stats">
+                        <div class="phone-stat">
+                            <span class="phone-stat-number">${phone.totalCalls}</span>
+                            <span class="phone-stat-label">Total Calls</span>
+                        </div>
+                        <div class="phone-stat">
+                            <span class="phone-stat-number">${phone.recentCalls}</span>
+                            <span class="phone-stat-label">This Month</span>
+                        </div>
+                        <div class="phone-stat">
+                            <span class="phone-stat-number">${phone.aiName}</span>
+                            <span class="phone-stat-label">AI Name</span>
+                        </div>
+                    </div>
+                    <div class="phone-actions">
+                        <button class="btn btn-primary btn-sm" onclick="configurePhone('${phone.id}')">Configure</button>
+                        <button class="btn btn-secondary btn-sm" onclick="testPhone('${phone.phoneNumber}')">Test Call</button>
+                        <button class="btn btn-danger btn-sm" onclick="releasePhone('${phone.id}', '${phone.phoneNumber}')">Release</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderEmptyPhoneNumbers() {
+            const grid = document.getElementById('phoneNumbersGrid');
+            const countText = document.getElementById('phoneNumbersCount');
+            
+            countText.textContent = 'No phone numbers yet';
+            
+            grid.innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <div class="empty-icon">📞</div>
+                    <div class="empty-title">No phone numbers yet</div>
+                    <div class="empty-subtitle">Add your first phone number to start receiving calls with AI assistance.</div>
+                    <button class="btn btn-primary" onclick="openAddPhoneModal()">Add Phone Number</button>
+                </div>
+            `;
+        }
+
+        function updatePhoneNumbersBadge() {
+            document.getElementById('phoneCountBadge').textContent = phoneNumbers.length;
+        }
+
+        function updatePhoneNumbersFilter() {
+            const filter = document.getElementById('phoneNumberFilter');
+            filter.innerHTML = '<option value="">All Numbers</option>' + 
+                phoneNumbers.map(phone => 
+                    `<option value="${phone.id}">${phone.friendlyName} (${phone.phoneNumber})</option>`
+                ).join('');
+        }
+
+        // Calls
+        async function loadCalls() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const statusFilter = document.getElementById('callStatusFilter')?.value || '';
+                const phoneFilter = document.getElementById('phoneNumberFilter')?.value || '';
+                
+                let url = '/api/calls?per_page=20';
+                if (statusFilter) url += `&status=${statusFilter}`;
+                if (phoneFilter) url += `&phoneNumberId=${phoneFilter}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const container = document.getElementById('callsTableContainer');
+
+                if (response.ok) {
+                    const data = await response.json();
+                    calls = data.calls;
+                    renderCallsTable();
+                } else {
+                    renderEmptyCalls();
+                }
+            } catch (error) {
+                console.error('Failed to load calls:', error);
+                renderEmptyCalls();
+            }
+        }
+
+        function renderCallsTable() {
+            const container = document.getElementById('callsTableContainer');
+            
+            if (calls.length === 0) {
+                renderEmptyCalls();
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Caller</th>
+                            <th>Phone Line</th>
+                            <th>Duration</th>
+                            <th>Started</th>
+                            <th>Status</th>
+                            <th>Preview</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${calls.map(call => `
+                            <tr onclick="viewCallDetails('${call.id}')" style="cursor: pointer;">
+                                <td>${call.callerNumber}</td>
+                                <td>
+                                    <div>${call.phoneNumberName}</div>
+                                    <div style="font-size: 0.75rem; color: #64748b;">${call.phoneNumber}</div>
+                                </td>
+                                <td>${call.duration}s</td>
+                                <td>${formatDate(call.startedAt)}</td>
+                                <td><span class="status-badge ${call.status}">${call.status}</span></td>
+                                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${call.preview}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function renderEmptyCalls() {
+            const container = document.getElementById('callsTableContainer');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📋</div>
+                    <div class="empty-title">No calls yet</div>
+                    <div class="empty-subtitle">Calls will appear here once customers start calling your phone numbers.</div>
+                </div>
+            `;
+        }
+
+        // Modals
+        function openAddPhoneModal() {
+            document.getElementById('addPhoneModal').classList.add('active');
+            document.getElementById('availableNumbers').style.display = 'none';
+        }
+
+        function closeAddPhoneModal() {
+            document.getElementById('addPhoneModal').classList.remove('active');
+            document.getElementById('addPhoneForm').reset();
+            document.getElementById('availableNumbers').style.display = 'none';
+        }
+
+        async function configurePhone(phoneId) {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`/api/phone-numbers/${phoneId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const phone = data.phoneNumber;
+                    const businessInfo = phone.businessInfo || {};
+
+                    document.getElementById('configPhoneId').value = phone.id;
+                    document.getElementById('configFriendlyName').value = phone.friendlyName;
+                    document.getElementById('configAiName').value = phone.aiName;
+                    document.getElementById('configAiVoice').value = phone.aiVoice;
+                    document.getElementById('configBusinessName').value = businessInfo.name || '';
+                    document.getElementById('configBusinessType').value = businessInfo.type || '';
+                    document.getElementById('configBusinessHours').value = businessInfo.hours || '';
+                    document.getElementById('configBusinessLocation').value = businessInfo.location || '';
+                    document.getElementById('configAiInstructions').value = phone.aiInstructions;
+
+                    document.getElementById('configurePhoneModal').classList.add('active');
+                } else {
+                    alert('Failed to load phone number details');
+                }
+            } catch (error) {
+                console.error('Error loading phone details:', error);
+                alert('Failed to load phone number details');
+            }
+        }
+
+        function closeConfigurePhoneModal() {
+            document.getElementById('configurePhoneModal').classList.remove('active');
+        }
+
+        function testPhone(phoneNumber) {
+            alert(`📞 Call ${phoneNumber} to test your AI assistant!\n\nYour AI will answer and demonstrate how it handles customer calls.`);
+        }
+
+        async function releasePhone(phoneId, phoneNumber) {
+            if (!confirm(`Are you sure you want to release ${phoneNumber}? This action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`/api/phone-numbers/${phoneId}/release`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    alert('Phone number released successfully');
+                    await loadPhoneNumbers();
+                } else {
+                    const data = await response.json();
+                    alert(`Failed to release phone number: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Error releasing phone:', error);
+                alert('Failed to release phone number');
+            }
+        }
+
+        // Form submissions
+        document.getElementById('addPhoneForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const areaCode = document.getElementById('areaCode').value;
+            const friendlyName = document.getElementById('friendlyName').value;
+
+            if (!friendlyName.trim()) {
+                alert('Please enter a friendly name for the phone line');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('authToken');
+                let url = '/api/phone-numbers/search';
+                if (areaCode.trim()) {
+                    url += `?areaCode=${areaCode.trim()}`;
+                }
+
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    renderAvailableNumbers(data.numbers, friendlyName);
+                } else {
+                    const data = await response.json();
+                    alert(`Failed to search numbers: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Error searching numbers:', error);
+                alert('Failed to search for available numbers');
+            }
+        });
+
+        function renderAvailableNumbers(numbers, friendlyName) {
+            const container = document.getElementById('numbersList');
+            const availableDiv = document.getElementById('availableNumbers');
+
+            if (numbers.length === 0) {
+                container.innerHTML = '<p style="color: #64748b;">No numbers available in this area. Try a different area code or leave it blank.</p>';
+                availableDiv.style.display = 'block';
+                return;
+            }
+
+            container.innerHTML = numbers.map(number => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 0.5rem;">
+                    <div>
+                        <div style="font-weight: 600;">${number.phone_number}</div>
+                        <div style="font-size: 0.875rem; color: #64748b;">${number.locality}, ${number.region}</div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="purchaseNumber('${number.phone_number}', '${friendlyName}')">
+                        Select (${number.monthly_cost}/mo)
+                    </button>
+                </div>
+            `).join('');
+
+            availableDiv.style.display = 'block';
+        }
+
+        async function purchaseNumber(phoneNumber, friendlyName) {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/phone-numbers/purchase', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        phoneNumber: phoneNumber,
+                        friendlyName: friendlyName
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Phone number purchased successfully!');
+                    closeAddPhoneModal();
+                    await loadPhoneNumbers();
+                } else {
+                    const data = await response.json();
+                    alert(`Failed to purchase number: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Error purchasing number:', error);
+                alert('Failed to purchase phone number');
+            }
+        }
+
+        document.getElementById('configurePhoneForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const phoneId = document.getElementById('configPhoneId').value;
+            const formData = new FormData(this);
+            
+            const configData = {
+                friendlyName: document.getElementById('configFriendlyName').value,
+                aiName: document.getElementById('configAiName').value,
+                aiVoice: document.getElementById('configAiVoice').value,
+                aiInstructions: document.getElementById('configAiInstructions').value,
+                businessInfo: {
+                    name: document.getElementById('configBusinessName').value,
+                    type: document.getElementById('configBusinessType').value,
+                    hours: document.getElementById('configBusinessHours').value,
+                    location: document.getElementById('configBusinessLocation').value
+                }
+            };
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`/api/phone-numbers/${phoneId}/configure`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(configData)
+                });
+
+                if (response.ok) {
+                    alert('Phone number configured successfully!');
+                    closeConfigurePhoneModal();
+                    await loadPhoneNumbers();
+                } else {
+                    const data = await response.json();
+                    alert(`Failed to configure phone number: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Error configuring phone:', error);
+                alert('Failed to configure phone number');
+            }
+        });
+
+        // Navigation
+        function showTab(tabName) {
+            // Update nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Show tab content
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+
+            // Load data if needed
+            if (tabName === 'calls') {
+                loadCalls();
+            }
+        }
+
+        // Utility functions
+        function formatDate(dateString) {
+            const date = new Date(dateString);
             const now = new Date();
             const diff = now - date;
             
@@ -597,41 +1790,30 @@
             }
         }
 
-        // Quick Action Functions
-        function testCall() {
-            alert('📞 Call +1 (609) 507-3300 to test your AI assistant!\n\nYour AI will answer and demonstrate how it handles customer calls.');
+        function viewCallDetails(callId) {
+            alert(`Call details view coming soon!\n\nCall ID: ${callId}`);
         }
 
-        function viewSettings() {
-            alert('⚙️ AI Settings customization coming soon!\n\nYou\'ll be able to customize your AI\'s personality, responses, and behavior.');
+        function showUpgradeModal() {
+            alert('Plan upgrade functionality coming soon!\n\nContact support for immediate upgrades.');
         }
 
-        function showAllCalls() {
-            alert('📋 Detailed call history view coming soon!\n\nYou\'ll see full transcripts, analytics, and conversation insights.');
-        }
-
-        function viewAnalytics() {
-            alert('📊 Advanced analytics coming soon!\n\nDetailed charts, trends, and insights about your AI assistant\'s performance.');
-        }
-
-        function getSupport() {
-            alert('💬 Support coming soon!\n\nFor now, your AI assistant is working perfectly with the shared number +1 (609) 507-3300');
-        }
-
-        // Logout function - UPDATED FOR NEW APP.PY
         function logout() {
             localStorage.removeItem('authToken');
             localStorage.removeItem('user');
             window.location.href = '/login';
         }
 
-        // Auto-refresh data every 30 seconds
+        // Auto-refresh data every 60 seconds
         setInterval(() => {
             if (currentUser) {
                 loadAnalytics();
-                loadRecentCalls();
+                // Only refresh calls if on calls tab
+                if (document.getElementById('calls-tab').classList.contains('active')) {
+                    loadCalls();
+                }
             }
-        }, 30000);
+        }, 60000);
     </script>
 </body>
 </html>
