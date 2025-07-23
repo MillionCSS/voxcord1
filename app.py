@@ -1559,14 +1559,86 @@ def after_request(response):
 # DATABASE INITIALIZATION
 # =============================================================================
 
-def init_database():
-    """Initialize database tables safely"""
+def migrate_database():
+    """Migrate existing database to new schema"""
     try:
         with app.app_context():
-            # Create all tables
+            logger.info("🔄 Starting database migration...")
+            
+            # Check if we need to migrate
+            inspector = db.inspect(db.engine)
+            
+            # Check if vox_users table exists and needs migration
+            if 'vox_users' in inspector.get_table_names():
+                columns = [col['name'] for col in inspector.get_columns('vox_users')]
+                logger.info(f"📋 Existing vox_users columns: {columns}")
+                
+                # Add missing columns to vox_users table
+                missing_columns = []
+                
+                if 'monthly_calls' not in columns:
+                    missing_columns.append("ADD COLUMN monthly_calls INTEGER DEFAULT 0")
+                
+                if 'monthly_reset_date' not in columns:
+                    missing_columns.append("ADD COLUMN monthly_reset_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+                
+                # Execute ALTER TABLE statements
+                if missing_columns:
+                    logger.info(f"➕ Adding missing columns: {missing_columns}")
+                    
+                    for alter_sql in missing_columns:
+                        try:
+                            db.session.execute(text(f"ALTER TABLE vox_users {alter_sql}"))
+                            logger.info(f"✅ Executed: ALTER TABLE vox_users {alter_sql}")
+                        except Exception as e:
+                            logger.warning(f"⚠️ Column might already exist: {e}")
+                    
+                    db.session.commit()
+                    logger.info("✅ User table migration completed")
+                else:
+                    logger.info("✅ User table already up to date")
+            
+            # Create new tables (PhoneNumber, etc.) - this is safe
             db.create_all()
-            logger.info("✅ Database tables ensured")
+            logger.info("✅ New tables created")
+            
+            # Check if phone numbers table exists
+            tables_after = inspector.get_table_names()
+            logger.info(f"📋 All tables after migration: {tables_after}")
+            
             return True
+            
+    except Exception as e:
+        logger.error(f"❌ Database migration failed: {str(e)}")
+        db.session.rollback()
+        return False
+
+# Update the init_database function to use migration
+def init_database():
+    """Initialize database with migration support"""
+    try:
+        with app.app_context():
+            # Log database info
+            db_type = 'PostgreSQL' if 'postgresql' in Config.DATABASE_URL else 'SQLite'
+            logger.info(f"🗄️ Using {db_type} database")
+            
+            # Run migration instead of just create_all
+            success = migrate_database()
+            
+            if success:
+                # Verify migration worked
+                user_count = User.query.count()
+                logger.info(f"👥 Current user count after migration: {user_count}")
+                
+                # Check if PhoneNumber table exists
+                inspector = db.inspect(db.engine)
+                if 'vox_phone_numbers' in inspector.get_table_names():
+                    phone_count = PhoneNumber.query.count()
+                    logger.info(f"📞 Current phone numbers: {phone_count}")
+                
+                return True
+            else:
+                return False
             
     except Exception as e:
         logger.error(f"❌ Database initialization failed: {str(e)}")
