@@ -1482,6 +1482,46 @@ def health_check():
             'timestamp': datetime.utcnow().isoformat()
         }), 500
 
+# Add this debug endpoint to your app.py temporarily
+
+@app.route('/api/debug/database')
+def debug_database():
+    """Debug database information (REMOVE IN PRODUCTION)"""
+    try:
+        # Get database info
+        db_url = Config.DATABASE_URL
+        
+        # Count users
+        user_count = User.query.count()
+        
+        # Check if tables exist
+        inspector = db.inspect(db.engine)
+        tables = inspector.get_table_names()
+        
+        # Get some sample data
+        sample_users = User.query.limit(3).all()
+        
+        return jsonify({
+            'database_url': db_url[:50] + '...' if len(db_url) > 50 else db_url,
+            'database_type': 'PostgreSQL' if 'postgresql' in db_url else 'SQLite',
+            'tables': tables,
+            'user_count': user_count,
+            'sample_users': [
+                {
+                    'id': user.id,
+                    'email': user.email,
+                    'created_at': user.created_at.isoformat()
+                } for user in sample_users
+            ],
+            'database_file_location': db_url if 'sqlite' in db_url else 'N/A - PostgreSQL'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'error': str(e),
+            'database_url': Config.DATABASE_URL[:50] + '...'
+        }), 500
+
 # =============================================================================
 # ERROR HANDLERS (Previous error handlers remain the same)
 # =============================================================================
